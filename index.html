@@ -3,772 +3,614 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Time Attendance System</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Time Attendance</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #F4F6F9;
-    --surface: #FFFFFF;
-    --surface2: #F0F2F5;
-    --border: #E2E6EC;
-    --accent: #2563EB;
-    --accent-soft: #EFF4FF;
-    --accent2: #10B981;
-    --accent2-soft: #ECFDF5;
-    --warn: #F59E0B;
-    --warn-soft: #FFFBEB;
-    --danger: #EF4444;
-    --danger-soft: #FEF2F2;
-    --purple: #8B5CF6;
-    --purple-soft: #F5F3FF;
-    --text: #111827;
-    --text2: #4B5563;
-    --text3: #9CA3AF;
-    --mono: 'DM Mono', monospace;
-    --sans: 'Outfit', sans-serif;
-    --radius: 10px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
-    --shadow-lg: 0 4px 24px rgba(0,0,0,0.10);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 24px;
-  }
-
-  /* HEADER */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .header-left h1 {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-    color: var(--text);
-  }
-  .header-left p {
-    font-size: 13px;
-    color: var(--text3);
-    margin-top: 2px;
-    font-family: var(--mono);
-  }
-  .header-right {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  /* CONTROLS */
-  .controls {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    display: flex;
-    gap: 16px;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-  }
-  .ctrl-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  .ctrl-group label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-  }
-  select, input[type="number"], input[type="time"] {
-    font-family: var(--sans);
-    font-size: 14px;
-    padding: 7px 10px;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    background: var(--surface);
-    color: var(--text);
-    outline: none;
-    transition: border 0.15s;
-  }
-  select:focus, input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
-  }
-
-  /* BUTTONS */
-  .btn {
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 600;
-    padding: 8px 16px;
-    border-radius: 7px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-  }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #1D4ED8; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
-  .btn-success { background: var(--accent2); color: #fff; }
-  .btn-success:hover { background: #059669; transform: translateY(-1px); }
-  .btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
-  .btn-ghost:hover { background: var(--border); }
-  .btn-danger { background: var(--danger-soft); color: var(--danger); border: 1px solid #FECACA; }
-  .btn-danger:hover { background: #FEE2E2; }
-  .btn-sm { padding: 5px 10px; font-size: 12px; }
-
-  /* SUMMARY CARDS */
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    box-shadow: var(--shadow);
-  }
-  .card-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text3);
-    margin-bottom: 6px;
-  }
-  .card-value {
-    font-family: var(--mono);
-    font-size: 22px;
-    font-weight: 500;
-    color: var(--text);
-  }
-  .card-sub {
-    font-size: 11px;
-    color: var(--text3);
-    margin-top: 2px;
-    font-family: var(--mono);
-  }
-  .card.accent { border-color: #BFDBFE; background: var(--accent-soft); }
-  .card.accent .card-value { color: var(--accent); }
-  .card.green { border-color: #A7F3D0; background: var(--accent2-soft); }
-  .card.green .card-value { color: var(--accent2); }
-  .card.amber { border-color: #FDE68A; background: var(--warn-soft); }
-  .card.amber .card-value { color: var(--warn); }
-  .card.red { border-color: #FECACA; background: var(--danger-soft); }
-  .card.red .card-value { color: var(--danger); }
-  .card.purple { border-color: #DDD6FE; background: var(--purple-soft); }
-  .card.purple .card-value { color: var(--purple); }
-
-  /* TABLE */
-  .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow: auto;
-    margin-bottom: 20px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    min-width: 980px;
-  }
-  thead th {
-    background: #F8FAFC;
-    border-bottom: 2px solid var(--border);
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text3);
-    white-space: nowrap;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-  thead th:first-child { border-radius: var(--radius) 0 0 0; }
-  thead th:last-child { border-radius: 0 var(--radius) 0 0; }
-  tbody tr { border-bottom: 1px solid #F1F5F9; transition: background 0.1s; }
-  tbody tr:hover { background: #F8FAFC; }
-  tbody tr:last-child { border-bottom: none; }
-  td { padding: 9px 12px; color: var(--text2); vertical-align: middle; }
-  td.num { font-family: var(--mono); font-size: 12.5px; color: var(--text); text-align: right; }
-  td input, td select {
-    width: 100%;
-    border: 1px solid transparent;
-    background: transparent;
-    padding: 4px 6px;
-    border-radius: 5px;
-    font-size: 13px;
-    font-family: var(--sans);
-    color: var(--text);
-    outline: none;
-    min-width: 0;
-    transition: border 0.15s, background 0.15s;
-  }
-  td input:focus, td select:focus {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-    box-shadow: 0 0 0 2px rgba(37,99,235,0.1);
-  }
-  td input[type="time"] { font-family: var(--mono); font-size: 13px; }
-  td input[type="number"] { font-family: var(--mono); text-align: right; }
-
-  /* DAY TYPE BADGES */
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 9px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .badge-regular { background: var(--accent-soft); color: var(--accent); }
-  .badge-overtime { background: var(--warn-soft); color: #D97706; }
-  .badge-restday { background: var(--purple-soft); color: var(--purple); }
-  .badge-holiday { background: var(--danger-soft); color: var(--danger); }
-  .badge-holiday-ot { background: #FFF1F2; color: #BE123C; border: 1px solid #FECDD3; }
-  .badge-restday-ot { background: #FAF5FF; color: #7C3AED; border: 1px solid #DDD6FE; }
-
-  /* HOURS CELLS */
-  .hrs-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
-  .hrs-main { font-family: var(--mono); font-size: 13px; color: var(--text); }
-  .hrs-ot { font-family: var(--mono); font-size: 11px; color: var(--warn); }
-
-  /* ACTION CELL */
-  .action-cell { display: flex; gap: 4px; }
-
-  /* FOOTER / TOTALS ROW */
-  tfoot td {
-    padding: 10px 12px;
-    background: #F8FAFC;
-    border-top: 2px solid var(--border);
-    font-weight: 700;
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text);
-  }
-
-  /* PAY RATE LEGEND */
-  .legend {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 20px;
-    box-shadow: var(--shadow);
-    margin-bottom: 20px;
-  }
-  .legend-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 10px;
-  }
-  .legend-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--text2);
-    background: var(--surface2);
-    padding: 5px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-  }
-  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-  /* SHIFT SELECTOR */
-  .shift-radio { display: flex; gap: 8px; flex-wrap: wrap; }
-  .shift-radio label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 13px;
-    color: var(--text2);
-    cursor: pointer;
-    padding: 6px 12px;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    background: var(--surface2);
-    transition: all 0.15s;
-    font-weight: 500;
-  }
-  .shift-radio input[type="radio"] { display: none; }
-  .shift-radio input[type="radio"]:checked + span {
-    /* handled via JS */
-  }
-  .shift-radio label.active {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  /* MONTH NAV */
-  .month-nav {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .month-nav span {
-    font-family: var(--mono);
-    font-size: 15px;
-    font-weight: 500;
-    min-width: 120px;
-    text-align: center;
-  }
-  .btn-icon {
-    width: 32px; height: 32px;
-    border-radius: 7px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: var(--text2);
-    transition: all 0.15s;
-  }
-  .btn-icon:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-  /* INLINE EDIT HIGHLIGHT */
-  tr.editing { background: var(--accent-soft) !important; }
-
-  @media (max-width: 700px) {
-    body { padding: 12px; }
-    .summary-grid { grid-template-columns: repeat(2, 1fr); }
-    .header { flex-direction: column; align-items: flex-start; }
-  }
-
-  /* Print */
-  @media print {
-    body { background: white; padding: 0; }
-    .no-print { display: none !important; }
-    .table-wrap { box-shadow: none; border: 1px solid #ddd; }
-  }
+:root{
+  --bg:#F0F4F8;--sur:#fff;--sur2:#F8FAFC;--brd:#E2E8F0;
+  --acc:#2563EB;--acc2:#EFF6FF;--grn:#10B981;--grn2:#ECFDF5;
+  --amb:#F59E0B;--amb2:#FFFBEB;--red:#EF4444;--red2:#FEF2F2;
+  --pur:#8B5CF6;--pur2:#F5F3FF;--txt:#111827;--txt2:#4B5563;--txt3:#9CA3AF;
+  --head:#1E40AF;--dark:#1E293B;
+  --mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;
+  --r:10px;--sh:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;padding:20px;}
+ 
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.hd h1{font-size:20px;font-weight:700;letter-spacing:-.3px;}
+.hd p{font-size:12px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}
+.hd-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.mnav{display:flex;align-items:center;gap:8px;}
+.mnav span{font-family:var(--mono);font-size:14px;font-weight:600;min-width:120px;text-align:center;}
+.ico{width:30px;height:30px;border-radius:7px;border:1px solid var(--brd);background:var(--sur);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--txt2);transition:all .15s;}
+.ico:hover{background:var(--acc);color:#fff;border-color:var(--acc);}
+ 
+.btn{font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 14px;border-radius:7px;
+  border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.b-blue{background:var(--acc);color:#fff;} .b-blue:hover{background:#1D4ED8;}
+.b-gray{background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);} .b-gray:hover{background:var(--brd);}
+.b-red{background:var(--red2);color:var(--red);border:1px solid #FECACA;} .b-red:hover{background:#FEE2E2;}
+.b-green{background:#166534;color:#fff;} .b-green:hover{background:#14532d;}
+ 
+.panel{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
+  padding:16px 20px;box-shadow:var(--sh);margin-bottom:14px;}
+.ptitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+  color:var(--txt3);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--brd);}
+.settings-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+.sf{display:flex;flex-direction:column;gap:5px;}
+.sf label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);}
+.sf input{font-family:var(--sans);font-size:13px;padding:7px 10px;border:1px solid var(--brd);
+  border-radius:6px;background:var(--sur);color:var(--txt);outline:none;transition:border .15s;}
+.sf input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+.sf .hint{font-size:10px;color:var(--txt3);font-style:italic;margin-top:2px;}
+.divider{width:1px;background:var(--brd);align-self:stretch;margin:0 2px;}
+.note{font-size:11px;color:#1E40AF;background:var(--acc2);border:1px solid #BFDBFE;
+  border-radius:7px;padding:8px 14px;margin-top:12px;line-height:1.7;}
+ 
+/* Pay Rate table */
+.rate-table{width:100%;border-collapse:collapse;}
+.rate-table th{background:var(--head);color:#fff;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;padding:9px 12px;text-align:left;}
+.rate-table td{padding:0;border-bottom:1px solid var(--brd);vertical-align:middle;}
+.rate-table tr:last-child td{border-bottom:none;}
+.rate-cat{font-size:12px;font-weight:600;color:var(--txt2);padding:10px 14px;
+  background:var(--sur2);border-right:1px solid var(--brd);width:200px;}
+.rate-in{border-right:1px solid var(--brd);width:130px;}
+.rate-in input{font-family:var(--mono);font-size:14px;font-weight:700;
+  width:100%;border:none;outline:none;padding:10px 12px;text-align:center;
+  background:transparent;transition:background .15s;}
+.rate-in input:focus{background:var(--acc2);}
+.rate-desc{font-size:11px;color:var(--txt3);padding:8px 14px;font-style:italic;}
+ 
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px;}
+.card{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:11px 13px;box-shadow:var(--sh);}
+.card-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);margin-bottom:5px;}
+.card-val{font-family:var(--mono);font-size:18px;font-weight:500;}
+.card-sub{font-size:10px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}
+.ca{border-color:#BFDBFE;background:var(--acc2);} .ca .card-val{color:var(--acc);}
+.cg{border-color:#A7F3D0;background:var(--grn2);} .cg .card-val{color:var(--grn);}
+.cm{border-color:#FDE68A;background:var(--amb2);} .cm .card-val{color:var(--amb);}
+.cr2{border-color:#FECACA;background:var(--red2);} .cr2 .card-val{color:var(--red);}
+.cp{border-color:#DDD6FE;background:var(--pur2);} .cp .card-val{color:var(--pur);}
+ 
+/* Main table */
+.tw{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:auto;margin-bottom:14px;}
+table.main{width:100%;border-collapse:collapse;font-size:12px;min-width:1000px;}
+table.main thead th{background:var(--head);color:#fff;padding:10px;text-align:left;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  white-space:nowrap;position:sticky;top:0;z-index:2;}
+table.main tbody tr{border-bottom:1px solid #F1F5F9;transition:background .1s;}
+table.main tbody tr:hover{background:#F8FAFC;}
+table.main td{padding:6px 9px;color:var(--txt2);vertical-align:middle;}
+table.main td.n{font-family:var(--mono);font-size:11.5px;color:var(--txt);text-align:right;}
+table.main td input,table.main td select{
+  width:100%;border:1px solid transparent;background:transparent;
+  padding:3px 4px;border-radius:5px;font-size:12px;font-family:var(--sans);color:var(--txt);
+  outline:none;transition:border .15s,background .15s;}
+table.main td input:focus,table.main td select:focus{border-color:var(--acc);background:var(--acc2);}
+table.main td input[type="time"]{font-family:var(--mono);font-size:11.5px;}
+table.main td input.date-inp{font-family:var(--mono);font-size:11.5px;text-align:center;width:76px;}
+ 
+/* ── FOOTER ROWS ── */
+.tfoot-row td{padding:9px 10px;font-weight:700;font-family:var(--mono);font-size:12px;}
+ 
+/* Totals row: solid blue, white text */
+.tfoot-tot{background:#1E40AF;}
+.tfoot-tot td{color:#FFFFFF !important;}
+ 
+/* Sub rows (Basic, Allowance, Meal, Attendance, Others): light bg, dark readable text */
+.tfoot-sub{background:#DBEAFE;border-top:1px solid #BFDBFE;}
+.tfoot-sub td{color:#1E3A8A !important;}
+ 
+/* Grand Total: dark navy, white text */
+.tfoot-grand{background:#0F2354;}
+.tfoot-grand td{color:#FFFFFF !important;}
+ 
+.tfoot-lbl{font-family:var(--sans) !important;font-size:11px;font-weight:600;letter-spacing:.3px;}
+ 
+tr.sat{background:#F5F3FF!important;}
+tr.sun{background:#FFF5F5!important;}
+tr.offday{background:#F0FFF4!important;}
+tr.hol{background:#FEF2F2!important;}
+ 
+.xbar{display:flex;align-items:center;gap:10px;background:var(--sur);border:1px solid var(--brd);
+  border-radius:var(--r);padding:14px 20px;box-shadow:var(--sh);}
+.xbar span{flex:1;font-size:12px;color:var(--txt3);}
+ 
+@media(max-width:700px){body{padding:10px;}.cards{grid-template-columns:repeat(2,1fr);}}
+@media print{.noprint{display:none!important;}.tw{box-shadow:none;}}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <div class="header-left">
-    <h1>⏱ Time &amp; Attendance</h1>
-    <p id="headerSub">Loading...</p>
-  </div>
-  <div class="header-right no-print">
-    <div class="month-nav">
-      <button class="btn-icon" onclick="changeMonth(-1)">&#8249;</button>
-      <span id="monthLabel"></span>
-      <button class="btn-icon" onclick="changeMonth(1)">&#8250;</button>
+ 
+<!-- HEADER -->
+<div class="hd">
+  <div><h1>⏱ Time Attendance</h1><p id="sub">Loading…</p></div>
+  <div class="hd-r noprint">
+    <div class="mnav">
+      <button class="ico" onclick="chMon(-1)">&#8249;</button>
+      <span id="monLbl"></span>
+      <button class="ico" onclick="chMon(1)">&#8250;</button>
     </div>
-    <button class="btn btn-primary" onclick="addRow()">+ Add Entry</button>
-    <button class="btn btn-ghost" onclick="fillMonth()">&#x1F4C5; Fill Month</button>
-    <button class="btn btn-ghost" onclick="window.print()">&#x1F5A8; Print</button>
+    <button class="btn b-blue" onclick="addRow()">+ Add Row</button>
+    <button class="btn b-gray" onclick="fillMonth()">📅 Fill Month</button>
+    <button class="btn b-gray" onclick="window.print()">🖨 Print</button>
   </div>
 </div>
-
-<!-- Shift & Rate Config -->
-<div class="controls no-print">
-  <div class="ctrl-group">
-    <label>Shift Type</label>
-    <div class="shift-radio" id="shiftRadio">
-      <label class="active" onclick="setShift(this,'fixed')"><input type="radio" name="shift" checked><span>Fixed (8AM–5PM)</span></label>
-      <label onclick="setShift(this,'custom')"><input type="radio" name="shift"><span>Custom Hours</span></label>
-      <label onclick="setShift(this,'rotating')"><input type="radio" name="shift"><span>Rotating</span></label>
+ 
+<!-- BASIC SETTINGS -->
+<div class="panel noprint">
+  <div class="ptitle">Basic Settings</div>
+  <div class="settings-row">
+    <!-- Shift times -->
+    <div class="sf"><label>Weekday Start</label>
+      <input type="time" id="wdStart" value="09:00" onchange="recalcAll()"></div>
+    <div class="sf"><label>Weekday End</label>
+      <input type="time" id="wdEnd" value="18:00" onchange="recalcAll()"></div>
+    <div class="sf"><label>Saturday Start</label>
+      <input type="time" id="satStart" value="09:00" onchange="recalcAll()"></div>
+    <div class="sf"><label>Saturday End</label>
+      <input type="time" id="satEnd" value="18:00" onchange="recalcAll()"></div>
+    <div class="sf"><label>Break (min)</label>
+      <input type="text" id="brkM" value="60" style="width:64px" oninput="recalcAll()"></div>
+    <div class="divider"></div>
+    <!-- Pay rates -->
+    <div class="sf"><label>Hourly Rate (RM)</label>
+      <input type="text" id="hrRate" value="" placeholder="e.g. 25.00" style="width:110px" oninput="recalcAll()"></div>
+    <div class="sf"><label>Per Day Rate (RM)</label>
+      <input type="text" id="dayRate" value="" placeholder="e.g. 200.00" style="width:110px" oninput="recalcAll()"></div>
+    <div class="divider"></div>
+    <!-- Salary & extras -->
+    <div class="sf"><label>Basic Salary (RM)</label>
+      <input type="text" id="basicSal" value="" placeholder="e.g. 2000.00" style="width:110px" oninput="summary()"></div>
+    <div class="sf"><label>Allowance (RM)</label>
+      <input type="text" id="allowance" value="" placeholder="e.g. 300.00" style="width:110px" oninput="summary()"></div>
+    <div class="sf"><label>Others (RM)</label>
+      <input type="text" id="others" value="" placeholder="e.g. 50.00" style="width:110px" oninput="summary()"></div>
+    <div class="divider"></div>
+    <!-- Meal allowance -->
+    <div class="sf">
+      <label>Meal Allowance (RM)</label>
+      <input type="text" id="mealAmt" value="20" placeholder="e.g. 20.00" style="width:110px" oninput="recalcAll()">
+      <div class="hint">per OT session ≥ 2 hours</div>
+    </div>
+    <!-- Attendance allowance -->
+    <div class="sf">
+      <label>Attendance Allowance (RM)</label>
+      <input type="text" id="attAmt" value="20" placeholder="e.g. 20.00" style="width:110px" oninput="recalcAll()">
+      <div class="hint">per day checked-in on time</div>
     </div>
   </div>
-  <div class="ctrl-group" id="customShiftGroup" style="display:none">
-    <label>Shift Start</label>
-    <input type="time" id="shiftStart" value="08:00">
-  </div>
-  <div class="ctrl-group" id="customShiftGroup2" style="display:none">
-    <label>Shift End</label>
-    <input type="time" id="shiftEnd" value="17:00">
-  </div>
-  <div class="ctrl-group">
-    <label>Regular Hours/Day</label>
-    <input type="number" id="regHours" value="8" min="1" max="24" style="width:80px" onchange="recalcAll()">
-  </div>
-  <div class="ctrl-group">
-    <label>Break (mins)</label>
-    <input type="number" id="breakMins" value="60" min="0" max="120" style="width:80px" onchange="recalcAll()">
-  </div>
-  <div class="ctrl-group">
-    <label>Hourly Rate (₱)</label>
-    <input type="number" id="hourlyRate" value="100" min="1" style="width:90px" onchange="recalcAll()">
-  </div>
-  <button class="btn btn-success no-print" onclick="recalcAll()">&#x21BB; Recalculate</button>
-</div>
-
-<!-- Pay Rate Legend -->
-<div class="legend no-print">
-  <div class="legend-title">Pay Rate Reference</div>
-  <div class="legend-grid">
-    <div class="legend-item"><div class="legend-dot" style="background:#2563EB"></div>Regular: 1.0×</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#D97706"></div>Overtime (first 2h): 1.25×</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#F59E0B"></div>Overtime (beyond 2h): 1.5×</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6"></div>Rest Day: 1.3× regular</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#7C3AED"></div>Rest Day OT: 2.0×</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#EF4444"></div>Holiday: 2.0×</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#BE123C"></div>Holiday OT: 2.0× + 0.3 per OT hr</div>
+  <div class="note">
+    📌 <strong>Mon–Fri &amp; Saturday</strong>: 8h regular (with break). Hours outside shift = Overtime.
+    &nbsp;|&nbsp; <strong>Sunday, Public Holiday</strong>: all hours = OT rate, no break.
+    &nbsp;|&nbsp; <strong>Meal Allowance</strong>: auto-added when OT ≥ 2h.
+    &nbsp;|&nbsp; <strong>Attendance Allowance</strong>: auto-added when Time In is recorded (non Off-Day).
   </div>
 </div>
-
-<!-- Summary Cards -->
-<div class="summary-grid">
-  <div class="card accent">
-    <div class="card-label">Total Days</div>
-    <div class="card-value" id="sumDays">0</div>
-    <div class="card-sub">entries logged</div>
-  </div>
-  <div class="card accent">
-    <div class="card-label">Regular Hours</div>
-    <div class="card-value" id="sumRegHrs">0.00</div>
-    <div class="card-sub">hrs @ 1.0×</div>
-  </div>
-  <div class="card amber">
-    <div class="card-label">Overtime Hours</div>
-    <div class="card-value" id="sumOtHrs">0.00</div>
-    <div class="card-sub">hrs (1.25× / 1.5×)</div>
-  </div>
-  <div class="card purple">
-    <div class="card-label">Rest Day Hrs</div>
-    <div class="card-value" id="sumRdHrs">0.00</div>
-    <div class="card-sub">hrs @ 1.3×</div>
-  </div>
-  <div class="card red">
-    <div class="card-label">Holiday Hrs</div>
-    <div class="card-value" id="sumHolHrs">0.00</div>
-    <div class="card-sub">hrs @ 2.0×</div>
-  </div>
-  <div class="card green">
-    <div class="card-label">Total Hours</div>
-    <div class="card-value" id="sumTotalHrs">0.00</div>
-    <div class="card-sub">all entries</div>
-  </div>
-  <div class="card green">
-    <div class="card-label">Gross Pay</div>
-    <div class="card-value" id="sumPay">₱0</div>
-    <div class="card-sub">computed pay</div>
-  </div>
-</div>
-
-<!-- Main Table -->
-<div class="table-wrap">
-  <table id="attendTable">
-    <thead>
+ 
+<!-- PAY RATE REFERENCE -->
+<div class="panel noprint">
+  <div class="ptitle">Pay Rate Reference — enter multiplier (×) for each type</div>
+  <table class="rate-table">
+    <thead><tr>
+      <th style="width:200px">Category</th>
+      <th style="width:130px;text-align:center">Rate (×)</th>
+      <th>Applies To</th>
+    </tr></thead>
+    <tbody>
       <tr>
-        <th style="width:44px">#</th>
-        <th style="width:60px">Year</th>
-        <th style="width:80px">Month</th>
-        <th style="width:50px">Date</th>
-        <th style="width:72px">Day</th>
-        <th style="width:100px">Day Type</th>
-        <th style="width:92px">Time In</th>
-        <th style="width:92px">Time Out</th>
-        <th style="width:80px; text-align:right">Reg Hrs</th>
-        <th style="width:80px; text-align:right">OT Hrs</th>
-        <th style="width:80px; text-align:right">Total Hrs</th>
-        <th style="width:90px; text-align:right">Rate</th>
-        <th style="width:100px; text-align:right">Pay</th>
-        <th style="width:72px" class="no-print">Actions</th>
+        <td class="rate-cat" style="background:var(--amb2);color:#92400E;">Overtime</td>
+        <td class="rate-in" style="background:var(--amb2);">
+          <input type="text" id="rOT" placeholder="e.g. 1.50" oninput="recalcAll()" style="color:#92400E;"></td>
+        <td class="rate-desc" style="background:var(--amb2);">Mon–Fri &amp; Saturday hours outside normal shift window</td>
       </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-    <tfoot>
       <tr>
-        <td colspan="8" style="font-family:var(--sans);font-weight:700;color:var(--text3);font-size:12px;text-transform:uppercase;letter-spacing:.5px">TOTALS</td>
-        <td class="num" id="ftRegHrs">0.00</td>
-        <td class="num" id="ftOtHrs">0.00</td>
-        <td class="num" id="ftTotalHrs">0.00</td>
-        <td class="num" id="ftRate">—</td>
-        <td class="num" id="ftPay">₱0.00</td>
-        <td class="no-print"></td>
+        <td class="rate-cat" style="background:var(--pur2);color:#5B21B6;">Rest Day (Sunday)</td>
+        <td class="rate-in" style="background:var(--pur2);">
+          <input type="text" id="rSun" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#5B21B6;"></td>
+        <td class="rate-desc" style="background:var(--pur2);">All hours worked on Sunday — no break deducted</td>
+      </tr>
+      <tr>
+        <td class="rate-cat" style="background:var(--red2);color:#991B1B;">Public Holiday</td>
+        <td class="rate-in" style="background:var(--red2);">
+          <input type="text" id="rHol" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#991B1B;"></td>
+        <td class="rate-desc" style="background:var(--red2);">All hours worked on Public Holidays — no break deducted</td>
+      </tr>
+      <tr>
+        <td class="rate-cat" style="background:var(--grn2);color:#065F46;">Off Day</td>
+        <td class="rate-in" style="background:var(--grn2);">
+          <input type="text" id="rOff" placeholder="e.g. 0.00" oninput="recalcAll()" style="color:#065F46;"></td>
+        <td class="rate-desc" style="background:var(--grn2);">Scheduled off / leave — set 0 for unpaid</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+ 
+<!-- SUMMARY CARDS -->
+<div class="cards">
+  <div class="card ca"><div class="card-lbl">Total Days</div><div class="card-val" id="sDays">0</div><div class="card-sub">entries</div></div>
+  <div class="card ca"><div class="card-lbl">Regular Hrs</div><div class="card-val" id="sReg">0.00</div><div class="card-sub">Mon–Fri &amp; Sat</div></div>
+  <div class="card cm"><div class="card-lbl">OT Hrs</div><div class="card-val" id="sOT">0.00</div><div class="card-sub">overtime</div></div>
+  <div class="card cp"><div class="card-lbl">Rest Day Hrs</div><div class="card-val" id="sSun">0.00</div><div class="card-sub">Sunday</div></div>
+  <div class="card cr2"><div class="card-lbl">Public Hol</div><div class="card-val" id="sHol">0.00</div><div class="card-sub">hours</div></div>
+  <div class="card cg"><div class="card-lbl">Total Hrs</div><div class="card-val" id="sTotal">0.00</div><div class="card-sub">all entries</div></div>
+  <div class="card cm"><div class="card-lbl">Meal Allow</div><div class="card-val" id="sMeal">0.00</div><div class="card-sub">RM</div></div>
+  <div class="card cm"><div class="card-lbl">Att. Allow</div><div class="card-val" id="sAtt">0.00</div><div class="card-sub">RM</div></div>
+  <div class="card cg"><div class="card-lbl">OT Pay (RM)</div><div class="card-val" id="sPay">0.00</div><div class="card-sub">excl. basic</div></div>
+  <div class="card cg"><div class="card-lbl">Grand Total (RM)</div><div class="card-val" id="sGrand">0.00</div><div class="card-sub">all included</div></div>
+</div>
+ 
+<!-- ATTENDANCE TABLE -->
+<div class="tw">
+  <table class="main">
+    <thead><tr>
+      <th style="width:28px">#</th>
+      <th style="width:82px">Date</th>
+      <th style="width:36px">Day</th>
+      <th style="width:140px">Day Type</th>
+      <th style="width:80px">Time In</th>
+      <th style="width:80px">Time Out</th>
+      <th style="width:62px;text-align:right">Reg Hrs</th>
+      <th style="width:62px;text-align:right">OT Hrs</th>
+      <th style="width:62px;text-align:right">Total Hrs</th>
+      <th style="width:52px;text-align:right">OT Rate</th>
+      <th style="width:96px;text-align:right">OT Pay (RM)</th>
+      <th style="width:82px;text-align:right">Meal Allow</th>
+      <th style="width:82px;text-align:right">Att. Allow</th>
+      <th style="width:40px" class="noprint">Del</th>
+    </tr></thead>
+    <tbody id="tbody"></tbody>
+    <tfoot>
+      <!-- Totals -->
+      <tr class="tfoot-row tfoot-tot">
+        <td class="tfoot-lbl" colspan="6">Totals</td>
+        <td style="text-align:right" id="fReg">0.00</td>
+        <td style="text-align:right" id="fOT">0.00</td>
+        <td style="text-align:right" id="fTotal">0.00</td>
+        <td style="text-align:right">—</td>
+        <td style="text-align:right" id="fPay">RM 0.00</td>
+        <td style="text-align:right" id="fMealTot">RM 0.00</td>
+        <td style="text-align:right" id="fAttTot">RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+      <!-- Sub rows -->
+      <tr class="tfoot-row tfoot-sub">
+        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);">Basic Salary</td>
+        <td style="text-align:right" id="fBasic">RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+      <tr class="tfoot-row tfoot-sub">
+        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);">Allowance</td>
+        <td style="text-align:right" id="fAllow">RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+      <tr class="tfoot-row tfoot-sub">
+        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);">Meal Allowance</td>
+        <td style="text-align:right" id="fMealSum">RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+      <tr class="tfoot-row tfoot-sub">
+        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);">Attendance Allowance</td>
+        <td style="text-align:right" id="fAttSum">RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+      <tr class="tfoot-row tfoot-sub">
+        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);">Others</td>
+        <td style="text-align:right" id="fOthers">RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+      <!-- Grand Total -->
+      <tr class="tfoot-row tfoot-grand">
+        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);letter-spacing:.4px;font-size:12px;">Grand Total</td>
+        <td style="text-align:right;font-size:13px;" id="fGrand">RM 0.00</td>
+        <td class="noprint"></td>
       </tr>
     </tfoot>
   </table>
 </div>
-
+ 
+<!-- EXPORT BAR -->
+<div class="xbar noprint">
+  <span>Export current month to CSV — opens in Excel &amp; Google Sheets</span>
+  <button class="btn b-green" onclick="exportCSV()">📥 Export to Excel / Sheets</button>
+</div>
+ 
 <script>
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-let currentYear = new Date().getFullYear();
-let currentMonth = new Date().getMonth(); // 0-indexed
-let rows = [];
-let rowId = 0;
-let shiftMode = 'fixed';
-
-/* ── SHIFT ─────────────────────────────────────────── */
-function setShift(el, mode) {
-  document.querySelectorAll('#shiftRadio label').forEach(l => l.classList.remove('active'));
-  el.classList.add('active');
-  shiftMode = mode;
-  const show = mode !== 'fixed';
-  document.getElementById('customShiftGroup').style.display = show ? '' : 'none';
-  document.getElementById('customShiftGroup2').style.display = show ? '' : 'none';
-  recalcAll();
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const TYPES=['Regular','Overtime','Rest Day (Sunday)','Public Holiday','Off Day'];
+ 
+let year=new Date().getFullYear(), mon=new Date().getMonth(), rows=[], rid=0;
+ 
+// ── helpers ────────────────────────────────────────────────────────────
+const toMin = t=>{ const[h,m]=(t||'00:00').split(':').map(Number); return h*60+m; };
+const maxDays = (y,m)=>new Date(y,m+1,0).getDate();
+const num = id=>{ const el=document.getElementById(id); const v=parseFloat(el?el.value:''); return isNaN(v)?0:v; };
+const getHrRate  = ()=>num('hrRate');
+const getDayRate = ()=>num('dayRate');
+const getBrk     = ()=>num('brkM');
+const getMealAmt = ()=>num('mealAmt');
+const getAttAmt  = ()=>num('attAmt');
+const getRates   = ()=>({ot:num('rOT'),sun:num('rSun'),hol:num('rHol'),off:num('rOff')});
+ 
+function shiftFor(dow){
+  if(dow===6) return {s:document.getElementById('satStart').value||'09:00',
+                      e:document.getElementById('satEnd').value||'18:00',cap:8};
+  return             {s:document.getElementById('wdStart').value||'09:00',
+                      e:document.getElementById('wdEnd').value||'18:00', cap:8};
 }
-
-/* ── MONTH NAV ──────────────────────────────────────── */
-function changeMonth(dir) {
-  currentMonth += dir;
-  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-  updateHeader();
-  renderTable();
+function autoType(dow){ return dow===0?'Rest Day (Sunday)':'Regular'; }
+function defTimes(dow){ const sf=shiftFor(dow); return {ti:sf.s,to:sf.e}; }
+ 
+function fmtDate(y,m,d){
+  return String(d).padStart(2,'0')+'/'+String(m+1).padStart(2,'0')+'/'+String(y).slice(-2);
 }
-
-function updateHeader() {
-  document.getElementById('monthLabel').textContent = `${MONTHS[currentMonth].slice(0,3)} ${currentYear}`;
-  document.getElementById('headerSub').textContent = `${MONTHS[currentMonth]} ${currentYear} · ${rows.filter(r=>r.year===currentYear&&r.month===currentMonth).length} entries`;
+function parseDate(str){
+  const p=str.trim().split('/');
+  if(p.length!==3) return null;
+  const[dd,mm,yy]=p.map(Number);
+  if([dd,mm,yy].some(isNaN)) return null;
+  return {year:yy<100?2000+yy:yy, month:mm-1, date:dd};
 }
-
-/* ── FILL MONTH ─────────────────────────────────────── */
-function fillMonth() {
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dow = new Date(currentYear, currentMonth, d).getDay();
-    const isWeekend = dow === 0 || dow === 6;
-    if (rows.find(r => r.year === currentYear && r.month === currentMonth && r.date === d)) continue;
-    addRow(currentYear, currentMonth + 1, d, isWeekend ? 'restday' : 'regular');
+ 
+// ── month nav ──────────────────────────────────────────────────────────
+function chMon(d){ mon+=d; if(mon<0){mon=11;year--;} if(mon>11){mon=0;year++;} render(); summary(); }
+ 
+// ── rows ───────────────────────────────────────────────────────────────
+function addRow(y,m,d,type){
+  y=y??year; m=m??mon; d=d??1;
+  const dow=new Date(y,m,d).getDay();
+  type=type||autoType(dow);
+  const {ti,to}=defTimes(dow);
+  const r={id:++rid,year:y,month:m,date:d,timeIn:ti,timeOut:to,
+    dayType:type,regH:0,otH:0,totalH:0,pay:0,rate:0,meal:0,att:0};
+  calc(r); rows.push(r); render(); summary();
+}
+function delRow(id){ rows=rows.filter(r=>r.id!==id); render(); summary(); }
+function fillMonth(){
+  const nd=maxDays(year,mon);
+  for(let d=1;d<=nd;d++){
+    if(!rows.find(r=>r.year===year&&r.month===mon&&r.date===d)) addRow(year,mon,d);
   }
-  renderTable();
-  recalcAll();
 }
-
-/* ── ADD ROW ────────────────────────────────────────── */
-function addRow(y, m, d, type) {
-  y = y || currentYear;
-  m = m || currentMonth + 1;
-  d = d || new Date().getDate();
-  type = type || 'regular';
-  rows.push({
-    id: ++rowId,
-    year: y,
-    month: m - 1,
-    date: d,
-    timeIn: '08:00',
-    timeOut: '17:00',
-    dayType: type,
-    regHrs: 0, otHrs: 0, totalHrs: 0, pay: 0, rateLabel: ''
+ 
+// ── calc ───────────────────────────────────────────────────────────────
+function calc(r){
+  const rates=getRates(), hr=getHrRate(), dr=getDayRate(), brk=getBrk();
+  const mealAmt=getMealAmt(), attAmt=getAttAmt();
+  const dow=new Date(r.year,r.month,r.date).getDay();
+ 
+  // Reset allowances
+  r.meal=0; r.att=0;
+ 
+  // Off Day — no hours, no attendance allowance
+  if(r.dayType==='Off Day'){
+    r.regH=0; r.otH=0; r.totalH=0;
+    r.rate=rates.off; r.pay=+(dr*rates.off).toFixed(2);
+    return;
+  }
+ 
+  if(!r.timeIn||!r.timeOut){r.regH=r.otH=r.totalH=r.pay=r.rate=0;return;}
+ 
+  // Attendance allowance: any day with a time-in recorded (not Off Day)
+  r.att=+attAmt.toFixed(2);
+ 
+  // Rest Day (Sunday) / Public Holiday — raw hours, NO break, all OT
+  if(r.dayType==='Rest Day (Sunday)'||r.dayType==='Public Holiday'){
+    const wm=Math.max(toMin(r.timeOut)-toMin(r.timeIn),0);
+    const wh=wm/60;
+    r.regH=0; r.otH=+wh.toFixed(2); r.totalH=+wh.toFixed(2);
+    const rt=r.dayType==='Rest Day (Sunday)'?rates.sun:rates.hol;
+    r.rate=rt; r.pay=+(wh*rt*hr).toFixed(2);
+    // Meal: OT >= 2h
+    if(wh>=2) r.meal=+mealAmt.toFixed(2);
+    return;
+  }
+ 
+  // Overtime type (manually selected) — all hours OT with break
+  if(r.dayType==='Overtime'){
+    const wm=Math.max(toMin(r.timeOut)-toMin(r.timeIn)-brk,0);
+    const wh=wm/60;
+    r.regH=0; r.otH=+wh.toFixed(2); r.totalH=+wh.toFixed(2);
+    r.rate=rates.ot; r.pay=+(wh*rates.ot*hr).toFixed(2);
+    if(wh>=2) r.meal=+mealAmt.toFixed(2);
+    return;
+  }
+ 
+  // Regular (Mon–Fri & Saturday full 8h with break)
+  const sf=shiftFor(dow);
+  const ss=toMin(sf.s), se=toMin(sf.e);
+  const ai=toMin(r.timeIn), ao=toMin(r.timeOut);
+  const overlapMin=Math.max(Math.min(ao,se)-Math.max(ai,ss),0);
+  const overlapH=Math.max(overlapMin-brk,0)/60;
+  const beforeH=Math.max(ss-ai,0)/60;
+  const afterH=Math.max(ao-se,0)/60;
+  const regH=Math.min(overlapH,sf.cap);
+  const otH=beforeH+afterH+Math.max(overlapH-sf.cap,0);
+ 
+  r.regH=+regH.toFixed(2); r.otH=+otH.toFixed(2); r.totalH=+(regH+otH).toFixed(2);
+  // Only OT pay shown (regular covered by basic salary)
+  r.rate=otH>0?rates.ot:0;
+  r.pay=+(otH*rates.ot*hr).toFixed(2);
+  // Meal allowance: OT portion >= 2h
+  if(otH>=2) r.meal=+mealAmt.toFixed(2);
+}
+ 
+function recalcAll(){ rows.forEach(r=>calc(r)); render(); summary(); }
+ 
+// ── field updates ──────────────────────────────────────────────────────
+function updDate(id,raw){
+  const r=rows.find(x=>x.id===id); if(!r)return;
+  const p=parseDate(raw); if(!p)return;
+  r.year=p.year; r.month=p.month; r.date=p.date;
+  const dow=new Date(r.year,r.month,r.date).getDay();
+  r.dayType=autoType(dow);
+  const t=defTimes(dow); r.timeIn=t.ti; r.timeOut=t.to;
+  calc(r); render(); summary();
+}
+function updDT(id,val){ const r=rows.find(x=>x.id===id); if(r){r.dayType=val;calc(r);patch(r);summary();} }
+function updTime(id,f,val){ const r=rows.find(x=>x.id===id); if(r){r[f]=val;calc(r);patch(r);summary();} }
+ 
+function patch(r){
+  const tr=document.querySelector(`tr[data-id="${r.id}"]`); if(!tr)return;
+  tr.querySelector('.cr').textContent=r.regH.toFixed(2);
+  const oe=tr.querySelector('.co');
+  oe.textContent=r.otH>0?r.otH.toFixed(2):'—';
+  oe.style.color=r.otH>0?'var(--amb)':'var(--txt3)';
+  tr.querySelector('.ct').textContent=r.totalH.toFixed(2);
+  const showRate=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
+  const ck=tr.querySelector('.ck');
+  ck.textContent=showRate&&r.rate>0?r.rate.toFixed(2)+'×':'—';
+  ck.style.color=showRate?'var(--amb)':'var(--txt3)';
+  const cp=tr.querySelector('.cp2');
+  cp.textContent=r.pay>0?'RM '+r.pay.toLocaleString('en-MY',{minimumFractionDigits:2}):'—';
+  cp.style.color=r.pay>0?'var(--grn)':'var(--txt3)';
+  const cm=tr.querySelector('.cmeal');
+  cm.textContent=r.meal>0?'RM '+r.meal.toFixed(2):'—';
+  cm.style.color=r.meal>0?'var(--amb)':'var(--txt3)';
+  const ca=tr.querySelector('.catt');
+  ca.textContent=r.att>0?'RM '+r.att.toFixed(2):'—';
+  ca.style.color=r.att>0?'var(--grn)':'var(--txt3)';
+}
+ 
+// ── summary ────────────────────────────────────────────────────────────
+function summary(){
+  const v=rows.filter(r=>r.year===year&&r.month===mon);
+  const tPay   =v.reduce((a,r)=>a+r.pay,0);
+  const tH     =v.reduce((a,r)=>a+r.totalH,0);
+  const tReg   =v.reduce((a,r)=>a+r.regH,0);
+  const tOT    =v.reduce((a,r)=>a+r.otH,0);
+  const tSun   =v.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+r.totalH,0);
+  const tHol   =v.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+r.totalH,0);
+  const tMeal  =v.reduce((a,r)=>a+r.meal,0);
+  const tAtt   =v.reduce((a,r)=>a+r.att,0);
+  const basic  =num('basicSal'), allow=num('allowance'), others=num('others');
+  const grand  =tPay+basic+allow+tMeal+tAtt+others;
+  const rm=x=>'RM '+x.toLocaleString('en-MY',{minimumFractionDigits:2});
+ 
+  document.getElementById('sDays').textContent=v.length;
+  document.getElementById('sReg').textContent=tReg.toFixed(2);
+  document.getElementById('sOT').textContent=tOT.toFixed(2);
+  document.getElementById('sSun').textContent=tSun.toFixed(2);
+  document.getElementById('sHol').textContent=tHol.toFixed(2);
+  document.getElementById('sTotal').textContent=tH.toFixed(2);
+  document.getElementById('sMeal').textContent=tMeal.toFixed(2);
+  document.getElementById('sAtt').textContent=tAtt.toFixed(2);
+  document.getElementById('sPay').textContent=tPay.toLocaleString('en-MY',{minimumFractionDigits:2});
+  document.getElementById('sGrand').textContent=grand.toLocaleString('en-MY',{minimumFractionDigits:2});
+ 
+  document.getElementById('fReg').textContent=tReg.toFixed(2);
+  document.getElementById('fOT').textContent=tOT.toFixed(2);
+  document.getElementById('fTotal').textContent=tH.toFixed(2);
+  document.getElementById('fPay').textContent=rm(tPay);
+  document.getElementById('fMealTot').textContent=rm(tMeal);
+  document.getElementById('fAttTot').textContent=rm(tAtt);
+  document.getElementById('fBasic').textContent=rm(basic);
+  document.getElementById('fAllow').textContent=rm(allow);
+  document.getElementById('fMealSum').textContent=rm(tMeal);
+  document.getElementById('fAttSum').textContent=rm(tAtt);
+  document.getElementById('fOthers').textContent=rm(others);
+  document.getElementById('fGrand').textContent=rm(grand);
+ 
+  document.getElementById('monLbl').textContent=MONTHS[mon].slice(0,3)+' '+year;
+  document.getElementById('sub').textContent=MONTHS[mon]+' '+year+' · '+v.length+' entries';
+}
+ 
+// ── render ─────────────────────────────────────────────────────────────
+function render(){
+  const vis=rows.filter(r=>r.year===year&&r.month===mon).sort((a,b)=>a.date-b.date);
+  const tb=document.getElementById('tbody'); tb.innerHTML='';
+  if(!vis.length){
+    tb.innerHTML=`<tr><td colspan="14" style="text-align:center;padding:32px;color:var(--txt3);font-size:13px">
+      No entries for ${MONTHS[mon]} ${year}.<br>Click <strong>+ Add Row</strong> or <strong>Fill Month</strong>.
+    </td></tr>`; summary(); return;
+  }
+  vis.forEach((r,i)=>{
+    const dow=new Date(r.year,r.month,r.date).getDay();
+    const isSat=dow===6, isSun=dow===0;
+    const isHol=r.dayType==='Public Holiday', isOff=r.dayType==='Off Day';
+    const cls=isOff?'offday':isHol?'hol':isSun?'sun':isSat?'sat':'';
+    const dc=isSun?'color:var(--red);font-weight:700':isSat?'color:var(--pur);font-weight:600':'color:var(--txt3)';
+    const showRate=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
+    const opts=TYPES.map(t=>`<option value="${t}"${r.dayType===t?' selected':''}>${t}</option>`).join('');
+    const tr=document.createElement('tr');
+    tr.dataset.id=r.id; if(cls)tr.className=cls;
+    tr.innerHTML=`
+      <td style="color:var(--txt3);font-family:var(--mono);font-size:11px;text-align:center">${i+1}</td>
+      <td><input class="date-inp" type="text" value="${fmtDate(r.year,r.month,r.date)}"
+          placeholder="DD/MM/YY" onchange="updDate(${r.id},this.value)"></td>
+      <td style="text-align:center;font-family:var(--mono);font-size:11px;${dc}">${DAYS[dow]}</td>
+      <td><select onchange="updDT(${r.id},this.value)">${opts}</select></td>
+      <td><input type="time" value="${r.timeIn}" onchange="updTime(${r.id},'timeIn',this.value)"></td>
+      <td><input type="time" value="${r.timeOut}" onchange="updTime(${r.id},'timeOut',this.value)"></td>
+      <td class="n cr">${r.regH.toFixed(2)}</td>
+      <td class="n co" style="${r.otH>0?'color:var(--amb)':'color:var(--txt3)'}">${r.otH>0?r.otH.toFixed(2):'—'}</td>
+      <td class="n ct"><strong>${r.totalH.toFixed(2)}</strong></td>
+      <td class="n ck" style="font-size:11px;${showRate?'color:var(--amb)':'color:var(--txt3)'}">${showRate&&r.rate>0?r.rate.toFixed(2)+'×':'—'}</td>
+      <td class="n cp2" style="${r.pay>0?'color:var(--grn);font-weight:600':'color:var(--txt3)'}">${r.pay>0?'RM '+r.pay.toLocaleString('en-MY',{minimumFractionDigits:2}):'—'}</td>
+      <td class="n cmeal" style="${r.meal>0?'color:var(--amb)':'color:var(--txt3)'}">${r.meal>0?'RM '+r.meal.toFixed(2):'—'}</td>
+      <td class="n catt" style="${r.att>0?'color:var(--grn)':'color:var(--txt3)'}">${r.att>0?'RM '+r.att.toFixed(2):'—'}</td>
+      <td class="noprint" style="text-align:center">
+        <button class="btn b-red" style="padding:3px 7px;font-size:11px" onclick="delRow(${r.id})">✕</button>
+      </td>`;
+    tb.appendChild(tr);
   });
-  renderTable();
-  recalcAll();
+  summary();
 }
-
-/* ── DELETE ROW ─────────────────────────────────────── */
-function deleteRow(id) {
-  rows = rows.filter(r => r.id !== id);
-  renderTable();
-  recalcAll();
-}
-
-/* ── CALCULATE ONE ROW ──────────────────────────────── */
-function calcRow(row) {
-  const rate = parseFloat(document.getElementById('hourlyRate').value) || 100;
-  const regCap = parseFloat(document.getElementById('regHours').value) || 8;
-  const breakM = parseFloat(document.getElementById('breakMins').value) || 60;
-
-  if (!row.timeIn || !row.timeOut) { row.regHrs=0; row.otHrs=0; row.totalHrs=0; row.pay=0; row.rateLabel='—'; return; }
-
-  const toMin = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
-  let workedMin = toMin(row.timeOut) - toMin(row.timeIn) - breakM;
-  if (workedMin < 0) workedMin = 0;
-  const workedHrs = workedMin / 60;
-
-  let regHrs = 0, otHrs = 0, pay = 0, rateLabel = '';
-
-  if (row.dayType === 'regular') {
-    regHrs = Math.min(workedHrs, regCap);
-    otHrs = Math.max(workedHrs - regCap, 0);
-    const ot1 = Math.min(otHrs, 2);      // first 2h OT → 1.25×
-    const ot2 = Math.max(otHrs - 2, 0);  // beyond 2h   → 1.5×
-    pay = regHrs * rate + ot1 * rate * 1.25 + ot2 * rate * 1.5;
-    rateLabel = otHrs > 0 ? (ot2 > 0 ? '1.0/1.25/1.5×' : '1.0/1.25×') : '1.0×';
-
-  } else if (row.dayType === 'restday') {
-    regHrs = Math.min(workedHrs, regCap);
-    otHrs = Math.max(workedHrs - regCap, 0);
-    pay = regHrs * rate * 1.3 + otHrs * rate * 2.0;
-    rateLabel = otHrs > 0 ? '1.3/2.0×' : '1.3×';
-
-  } else if (row.dayType === 'holiday') {
-    regHrs = Math.min(workedHrs, regCap);
-    otHrs = Math.max(workedHrs - regCap, 0);
-    pay = regHrs * rate * 2.0 + otHrs * rate * 2.3;
-    rateLabel = otHrs > 0 ? '2.0/2.3×' : '2.0×';
-
-  } else if (row.dayType === 'holiday-ot') {
-    // Treat entire shift as holiday with OT after regCap
-    regHrs = Math.min(workedHrs, regCap);
-    otHrs = Math.max(workedHrs - regCap, 0);
-    pay = regHrs * rate * 2.0 + otHrs * rate * 2.6;
-    rateLabel = '2.0/2.6×';
-  }
-
-  row.regHrs = +regHrs.toFixed(2);
-  row.otHrs  = +otHrs.toFixed(2);
-  row.totalHrs = +(workedHrs).toFixed(2);
-  row.pay = +pay.toFixed(2);
-  row.rateLabel = rateLabel;
-}
-
-/* ── RECALC ALL ─────────────────────────────────────── */
-function recalcAll() {
-  rows.forEach(r => calcRow(r));
-  renderTable();
-  updateSummary();
-}
-
-/* ── UPDATE SUMMARY ─────────────────────────────────── */
-function updateSummary() {
-  const vis = rows.filter(r => r.year === currentYear && r.month === currentMonth);
-  const sumReg = vis.reduce((a,r) => a + r.regHrs, 0);
-  const sumOt  = vis.reduce((a,r) => a + r.otHrs, 0);
-  const sumTotal = vis.reduce((a,r) => a + r.totalHrs, 0);
-  const sumPay = vis.reduce((a,r) => a + r.pay, 0);
-  const rdHrs = vis.filter(r=>r.dayType==='restday').reduce((a,r)=>a+r.totalHrs,0);
-  const holHrs = vis.filter(r=>r.dayType==='holiday'||r.dayType==='holiday-ot').reduce((a,r)=>a+r.totalHrs,0);
-
-  document.getElementById('sumDays').textContent = vis.length;
-  document.getElementById('sumRegHrs').textContent = sumReg.toFixed(2);
-  document.getElementById('sumOtHrs').textContent = sumOt.toFixed(2);
-  document.getElementById('sumRdHrs').textContent = rdHrs.toFixed(2);
-  document.getElementById('sumHolHrs').textContent = holHrs.toFixed(2);
-  document.getElementById('sumTotalHrs').textContent = sumTotal.toFixed(2);
-  document.getElementById('sumPay').textContent = '₱' + sumPay.toLocaleString('en-PH',{minimumFractionDigits:2});
-
-  // Footer
-  document.getElementById('ftRegHrs').textContent = sumReg.toFixed(2);
-  document.getElementById('ftOtHrs').textContent = sumOt.toFixed(2);
-  document.getElementById('ftTotalHrs').textContent = sumTotal.toFixed(2);
-  document.getElementById('ftPay').textContent = '₱' + sumPay.toLocaleString('en-PH',{minimumFractionDigits:2});
-
-  updateHeader();
-}
-
-/* ── BADGE ──────────────────────────────────────────── */
-function badgeHTML(type) {
-  const map = {
-    regular: ['badge-regular','Regular'],
-    restday: ['badge-restday','Rest Day'],
-    holiday: ['badge-holiday','Holiday'],
-    'holiday-ot': ['badge-holiday-ot','Holiday+OT'],
-  };
-  const [cls, label] = map[type] || ['badge-regular','Regular'];
-  return `<span class="badge ${cls}">${label}</span>`;
-}
-
-/* ── RENDER TABLE ───────────────────────────────────── */
-function renderTable() {
-  const vis = rows
-    .filter(r => r.year === currentYear && r.month === currentMonth)
-    .sort((a,b) => a.date - b.date);
-
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
-
-  vis.forEach((row, i) => {
-    const dow = new Date(row.year, row.month, row.date).getDay();
-    const dayName = DAYS[dow];
-    const tr = document.createElement('tr');
-    tr.dataset.id = row.id;
-
-    tr.innerHTML = `
-      <td style="color:var(--text3);font-family:var(--mono);font-size:12px">${i+1}</td>
-      <td><input type="number" value="${row.year}" min="2000" max="2099" style="width:60px"
-          onchange="updateField(${row.id},'year',this.value)"></td>
-      <td>
-        <select onchange="updateField(${row.id},'month',this.value)">
-          ${MONTHS.map((m,idx)=>`<option value="${idx}" ${row.month===idx?'selected':''}>${m.slice(0,3)}</option>`).join('')}
-        </select>
-      </td>
-      <td><input type="number" value="${row.date}" min="1" max="31" style="width:46px"
-          onchange="updateField(${row.id},'date',this.value)"></td>
-      <td style="color:var(--text3);font-family:var(--mono);font-size:12px">${dayName}</td>
-      <td>
-        <select onchange="updateField(${row.id},'dayType',this.value)">
-          <option value="regular" ${row.dayType==='regular'?'selected':''}>Regular</option>
-          <option value="restday" ${row.dayType==='restday'?'selected':''}>Rest Day</option>
-          <option value="holiday" ${row.dayType==='holiday'?'selected':''}>Holiday</option>
-          <option value="holiday-ot" ${row.dayType==='holiday-ot'?'selected':''}>Holiday+OT</option>
-        </select>
-      </td>
-      <td><input type="time" value="${row.timeIn}" onchange="updateField(${row.id},'timeIn',this.value)"></td>
-      <td><input type="time" value="${row.timeOut}" onchange="updateField(${row.id},'timeOut',this.value)"></td>
-      <td class="num">${row.regHrs.toFixed(2)}</td>
-      <td class="num" style="color:${row.otHrs>0?'var(--warn)':'var(--text3)'}">${row.otHrs > 0 ? row.otHrs.toFixed(2) : '—'}</td>
-      <td class="num"><strong>${row.totalHrs.toFixed(2)}</strong></td>
-      <td class="num" style="font-size:11px;color:var(--text3)">${row.rateLabel}</td>
-      <td class="num" style="color:var(--accent2);font-weight:600">₱${row.pay.toLocaleString('en-PH',{minimumFractionDigits:2})}</td>
-      <td class="no-print">
-        <div class="action-cell">
-          <button class="btn btn-danger btn-sm" onclick="deleteRow(${row.id})" title="Delete">✕</button>
-        </div>
-      </td>
-    `;
-    tbody.appendChild(tr);
+ 
+// ── Export CSV ─────────────────────────────────────────────────────────
+function exportCSV(){
+  const vis=rows.filter(r=>r.year===year&&r.month===mon).sort((a,b)=>a.date-b.date);
+  if(!vis.length){alert('No entries to export for '+MONTHS[mon]+' '+year);return;}
+  const hr=getHrRate(),dr=getDayRate(),brk=getBrk();
+  const basic=num('basicSal'),allow=num('allowance'),others=num('others');
+  const tPay=vis.reduce((a,r)=>a+r.pay,0);
+  const tReg=vis.reduce((a,r)=>a+r.regH,0);
+  const tOT=vis.reduce((a,r)=>a+r.otH,0);
+  const tH=vis.reduce((a,r)=>a+r.totalH,0);
+  const tMeal=vis.reduce((a,r)=>a+r.meal,0);
+  const tAtt=vis.reduce((a,r)=>a+r.att,0);
+  const grand=tPay+basic+allow+tMeal+tAtt+others;
+  const period=MONTHS[mon]+' '+year;
+  const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+  let c='';
+  c+=`TIME ATTENDANCE LOG,${period}\n`;
+  c+=`Hourly Rate (RM),${hr.toFixed(2)},Per Day Rate (RM),${dr.toFixed(2)},Break (min),${brk}\n`;
+  c+=`Meal Allowance (RM),${getMealAmt().toFixed(2)} (per OT >= 2h),Att. Allowance (RM),${getAttAmt().toFixed(2)} (per check-in)\n`;
+  c+=`Basic Salary (RM),${basic.toFixed(2)},Allowance (RM),${allow.toFixed(2)},Others (RM),${others.toFixed(2)}\n\n`;
+  c+=`#,Date,Day,Day Type,Time In,Time Out,Reg Hrs,OT Hrs,Total Hrs,OT Rate (x),OT Pay (RM),Meal Allow (RM),Att. Allow (RM)\n`;
+  vis.forEach((r,i)=>{
+    const dow=new Date(r.year,r.month,r.date).getDay();
+    const showRate=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
+    c+=[i+1,fmtDate(r.year,r.month,r.date),DAYS[dow],q(r.dayType),r.timeIn,r.timeOut,
+        r.regH.toFixed(2),r.otH>0?r.otH.toFixed(2):'0.00',r.totalH.toFixed(2),
+        showRate&&r.rate>0?r.rate.toFixed(2):'0.00',r.pay.toFixed(2),
+        r.meal.toFixed(2),r.att.toFixed(2)].join(',')+'\n';
   });
-
-  if (vis.length === 0) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="14" style="text-align:center;padding:32px;color:var(--text3);font-size:13px">
-      No entries for ${MONTHS[currentMonth]} ${currentYear}. Click <strong>+ Add Entry</strong> or <strong>Fill Month</strong> to get started.
-    </td>`;
-    tbody.appendChild(tr);
-  }
+  c+='\n';
+  c+=`TOTALS,,,,,,${tReg.toFixed(2)},${tOT.toFixed(2)},${tH.toFixed(2)},,${tPay.toFixed(2)},${tMeal.toFixed(2)},${tAtt.toFixed(2)}\n`;
+  c+=`Basic Salary,,,,,,,,,,,,,${basic.toFixed(2)}\n`;
+  c+=`Allowance,,,,,,,,,,,,,${allow.toFixed(2)}\n`;
+  c+=`Meal Allowance,,,,,,,,,,,,,${tMeal.toFixed(2)}\n`;
+  c+=`Attendance Allowance,,,,,,,,,,,,,${tAtt.toFixed(2)}\n`;
+  c+=`Others,,,,,,,,,,,,,${others.toFixed(2)}\n`;
+  c+=`GRAND TOTAL,,,,,,,,,,,,,${grand.toFixed(2)}\n`;
+  const blob=new Blob(['\uFEFF'+c],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='Attendance_'+MONTHS[mon]+'_'+year+'.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 }
-
-/* ── UPDATE FIELD ───────────────────────────────────── */
-function updateField(id, field, val) {
-  const row = rows.find(r => r.id === id);
-  if (!row) return;
-  if (field === 'year' || field === 'date') val = parseInt(val);
-  if (field === 'month') val = parseInt(val);
-  row[field] = val;
-  calcRow(row);
-  renderTable();
-  updateSummary();
-}
-
-/* ── INIT ───────────────────────────────────────────── */
-updateHeader();
-renderTable();
-updateSummary();
+ 
+summary(); render();
 </script>
 </body>
 </html>
-
+ 
