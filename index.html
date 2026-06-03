@@ -317,11 +317,25 @@ tr.hol{background:#FEF2F2!important;}
 </div>
 
 <!-- SYNC + EXPORT BAR -->
-<div class="xbar noprint" style="flex-direction:column;align-items:stretch;gap:8px;">
+<div class="xbar noprint" style="flex-direction:column;align-items:stretch;gap:10px;">
+  <!-- Cloud URL row -->
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--brd);">
+    <span style="font-size:11px;font-weight:700;color:var(--txt3);white-space:nowrap;">☁ Cloud URL</span>
+    <input id="scriptUrlInput" type="text" placeholder="Paste your Google Apps Script Web App URL here…"
+      style="flex:1;min-width:280px;font-family:var(--mono);font-size:11px;padding:7px 10px;
+             border:1px solid var(--brd);border-radius:6px;outline:none;color:var(--txt);"
+      onfocus="this.style.borderColor='var(--acc)'" onblur="this.style.borderColor='var(--brd)'"
+      onchange="setScriptUrl(this.value.trim())">
+    <button class="btn b-blue" onclick="setScriptUrl(document.getElementById('scriptUrlInput').value.trim())"
+      style="font-size:11px;padding:7px 14px;">Connect</button>
+    <button class="btn b-red" onclick="clearScriptUrl()"
+      style="font-size:11px;padding:7px 10px;" title="Disconnect cloud">✕</button>
+  </div>
+  <!-- Status + actions row -->
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
     <span id="syncStatus" style="font-family:var(--mono);font-size:12px;color:var(--txt3);flex:1;">⚪ Initialising…</span>
     <button class="btn b-gray" onclick="manualSave()" style="font-size:11px;padding:6px 12px;">☁ Save Now</button>
-    <button class="btn b-gray" onclick="manualLoad()" style="font-size:11px;padding:6px 12px;">↺ Reload from Cloud</button>
+    <button class="btn b-gray" onclick="manualLoad()" style="font-size:11px;padding:6px 12px;">↺ Reload</button>
     <button class="btn b-green" onclick="exportCSV()">📥 Export CSV</button>
   </div>
 </div>
@@ -369,7 +383,8 @@ let year=new Date().getFullYear(), mon=new Date().getMonth(), rows=[], rid=0;
 // -----------------------------------------------------------------
 // ══════════════════════════════════════════════════════════════════════
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsVPoYVwcEBbWnTaJfJE8KJVVAbpVl-Q4dABx5m7-lkhz2TutreNpgef55iwC5sHS6WQ/exec'; // ← paste your Web App URL here
+let SCRIPT_URL = localStorage.getItem('ta_script_url') || '';  // set via UI below
+
 const LS_DATA  = 'ta_data_v3';
 const LS_SET   = 'ta_settings_v3';
 const SETTING_IDS = ['wdStart','wdEnd','satStart','satEnd','brkM',
@@ -426,33 +441,46 @@ async function saveCloud(){
   const payload = JSON.stringify({ year, mon, rows, rid, settings: getSettings() });
   try{
     setSyncStatus('saving','Saving to cloud…');
-    // Apps Script requires a no-cors POST via a form-encoded body
-    const form = new FormData();
-    form.append('data', payload);
-    await fetch(SCRIPT_URL, { method:'POST', body: form });
+    // Use no-cors so browser does not block cross-origin POST
+    // The response will be opaque but the save still happens on the server
+    await fetch(SCRIPT_URL, {
+      method : 'POST',
+      mode   : 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body   : payload
+    });
+    // no-cors gives opaque response — assume success if no exception thrown
     setSyncStatus('idle','Saved to Google Sheets ✓');
   }catch(e){
-    setSyncStatus('error','Cloud save failed — saved locally');
+    setSyncStatus('error','Save failed — check your Script URL');
   }
 }
 
 async function loadCloud(){
   if(!cloudEnabled()){
     loadLocal();
-    setSyncStatus('offline','Local only — paste Script URL above to enable cloud sync');
+    setSyncStatus('offline','Local only — paste Script URL to enable cloud sync');
     return;
   }
   try{
     setSyncStatus('loading','Loading from cloud…');
-    const res = await fetch(SCRIPT_URL + '?ts=' + Date.now());
-    const text = await res.text();
-    const d = JSON.parse(text);
-    if(d && d.rows){
-      year = d.year ?? new Date().getFullYear();
-      mon  = d.mon  ?? new Date().getMonth();
-      rows = d.rows ?? []; rid = d.rid ?? 0;
+    // GET with no-cors won't work for reading, so we use a JSONP-style
+    // approach: append callback param so Apps Script wraps response
+    const url = SCRIPT_URL + '?callback=__taLoad&ts=' + Date.now();
+    const data = await new Promise((resolve, reject) => {
+      window.__taLoad = (d) => { delete window.__taLoad; resolve(d); };
+      const s = document.createElement('script');
+      s.src = url;
+      s.onerror = () => { delete window.__taLoad; reject(new Error('script load failed')); };
+      document.head.appendChild(s);
+      setTimeout(() => { delete window.__taLoad; reject(new Error('timeout')); }, 8000);
+    });
+    if(data && data.rows){
+      year = data.year ?? new Date().getFullYear();
+      mon  = data.mon  ?? new Date().getMonth();
+      rows = data.rows ?? []; rid = data.rid ?? 0;
       rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; });
-      applySettings(d.settings);
+      applySettings(data.settings);
       saveLocal();
       setSyncStatus('idle','Loaded from Google Sheets ✓');
     } else {
@@ -460,7 +488,7 @@ async function loadCloud(){
       setSyncStatus('idle','Cloud empty — showing local data');
     }
   }catch(e){
-    setSyncStatus('error','Cloud unavailable — using local backup');
+    setSyncStatus('error','Load failed — using local backup');
     loadLocal();
   }
 }
@@ -764,9 +792,31 @@ function exportCSV(){
   document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
+// ── Script URL helpers ────────────────────────────────────────────────
+function setScriptUrl(url){
+  if(!url){ alert('Please paste a valid Google Apps Script Web App URL.'); return; }
+  SCRIPT_URL = url;
+  localStorage.setItem('ta_script_url', url);
+  document.getElementById('scriptUrlInput').value = url;
+  setSyncStatus('loading','Connecting…');
+  manualLoad();
+}
+function clearScriptUrl(){
+  SCRIPT_URL = '';
+  localStorage.removeItem('ta_script_url');
+  document.getElementById('scriptUrlInput').value = '';
+  setSyncStatus('offline','Disconnected — local only');
+}
+function loadUrlInput(){
+  const saved = localStorage.getItem('ta_script_url') || '';
+  const el = document.getElementById('scriptUrlInput');
+  if(el && saved) el.value = saved;
+}
+
 // ── init ───────────────────────────────────────────────────────────────
 (async ()=>{
-  await loadCloud();
+  loadUrlInput();          // restore saved URL into the input field
+  await loadCloud();       // load from cloud or local
   rows.forEach(r=>calc(r));
   summary(); render();
 })();
