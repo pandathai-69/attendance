@@ -117,6 +117,9 @@ table.main td input.date-inp{font-family:var(--mono);font-size:11.5px;text-align
 tr.sat{background:#F5F3FF!important;}
 tr.sun{background:#FFF5F5!important;}
 tr.offday{background:#F0FFF4!important;}
+tr.annual{background:#FEFCE8!important;}
+tr.medical{background:#F0FFF4!important;}
+tr.other{background:#F5F3FF!important;}
 tr.hol{background:#FEF2F2!important;}
 
 .xbar{display:flex;align-items:center;gap:10px;background:var(--sur);border:1px solid var(--brd);
@@ -187,12 +190,35 @@ tr.hol{background:#FEF2F2!important;}
       <input type="text" id="attAmt" value="20" placeholder="e.g. 20.00" style="width:110px" oninput="recalcAll()">
       <div class="hint">per day checked-in on time</div>
     </div>
+    <div class="divider"></div>
+    <!-- Leave Entitlements -->
+    <div style="display:flex;flex-direction:column;gap:5px;min-width:100%;">
+      <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);">Leave Entitlement (days)</span>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="sf">
+          <label>Annual Leave</label>
+          <input type="text" id="leaveAnnual" value="" placeholder="e.g. 14" style="width:90px" oninput="summary();saveSettings()">
+          <div class="hint">days entitled</div>
+        </div>
+        <div class="sf">
+          <label>Medical Leave</label>
+          <input type="text" id="leaveMedical" value="" placeholder="e.g. 14" style="width:90px" oninput="summary();saveSettings()">
+          <div class="hint">days entitled</div>
+        </div>
+        <div class="sf">
+          <label>Unpaid Leave</label>
+          <input type="text" id="leaveOther" value="" placeholder="days" style="width:90px" oninput="summary();saveSettings()">
+          <div class="hint">days entitlement (optional)</div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="note">
     📌 <strong>Mon–Fri &amp; Saturday</strong>: 8h regular (with break). Hours outside shift = Overtime.
     &nbsp;|&nbsp; <strong>Sunday, Public Holiday</strong>: all hours = OT rate, no break.
     &nbsp;|&nbsp; <strong>Meal Allowance</strong>: auto-added when OT ≥ 2h.
     &nbsp;|&nbsp; <strong>Attendance Allowance</strong>: auto-added when Time In is recorded (non Off-Day).
+    &nbsp;|&nbsp; <strong>Unpaid Leave</strong>: deducts 1 × Per Day Rate from Grand Total per day selected.
   </div>
 </div>
 
@@ -247,6 +273,12 @@ tr.hol{background:#FEF2F2!important;}
   <div class="card cg"><div class="card-lbl">OT Pay (RM)</div><div class="card-val" id="sPay">0.00</div><div class="card-sub">excl. basic</div></div>
   <div class="card cg"><div class="card-lbl">Grand Total (RM)</div><div class="card-val" id="sGrand">0.00</div><div class="card-sub">all included</div></div>
 </div>
+<!-- LEAVE BALANCE CARDS -->
+<div class="cards" style="margin-bottom:14px;">
+  <div class="card ca"><div class="card-lbl">Annual Leave</div><div class="card-val" id="sLeaveAnnual" style="font-size:16px;">—</div><div class="card-sub">balance / entitled</div></div>
+  <div class="card cg"><div class="card-lbl">Medical Leave</div><div class="card-val" id="sLeaveMed" style="font-size:16px;">—</div><div class="card-sub">balance / entitled</div></div>
+  <div class="card cr2"><div class="card-lbl">Unpaid Leave</div><div class="card-val" id="sLeaveOth" style="font-size:16px;">—</div><div class="card-sub">taken / deduction (RM)</div></div>
+</div>
 
 <!-- ATTENDANCE TABLE -->
 <div class="tw">
@@ -265,13 +297,15 @@ tr.hol{background:#FEF2F2!important;}
       <th style="width:96px;text-align:right">OT Pay (RM)</th>
       <th style="width:82px;text-align:right">Meal Allow</th>
       <th style="width:82px;text-align:right">Att. Allow</th>
+      <th style="width:100px">Remarks</th>
       <th style="width:40px" class="noprint">Del</th>
     </tr></thead>
     <tbody id="tbody"></tbody>
     <tfoot>
-      <!-- Totals -->
+
+      <!-- ① OT HOURS TOTALS ROW -->
       <tr class="tfoot-row tfoot-tot">
-        <td class="tfoot-lbl" colspan="6">Totals</td>
+        <td class="tfoot-lbl" colspan="7" style="font-family:var(--sans);font-size:10px;">OT Totals</td>
         <td style="text-align:right" id="fReg">0.00</td>
         <td style="text-align:right" id="fOT">0.00</td>
         <td style="text-align:right" id="fTotal">0.00</td>
@@ -281,36 +315,109 @@ tr.hol{background:#FEF2F2!important;}
         <td style="text-align:right" id="fAttTot">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Sub rows -->
-      <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);">Basic Salary</td>
-        <td style="text-align:right" id="fBasic">RM 0.00</td>
+
+      <!-- ② EARNINGS SECTION HEADER -->
+      <tr style="background:#374151;">
+        <td colspan="14" style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#D1D5DB;">Earnings</td>
         <td class="noprint"></td>
       </tr>
+      <!-- OT Pay -->
       <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);">Allowance</td>
-        <td style="text-align:right" id="fAllow">RM 0.00</td>
+        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">OT Pay</td>
+        <td style="text-align:right;color:#F59E0B;font-weight:700;" id="fOTPay">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
+      <!-- Meal Allowance -->
       <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);">Meal Allowance</td>
+        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">Meal Allowance</td>
         <td style="text-align:right" id="fMealSum">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
+      <!-- Attendance Allowance -->
       <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);">Attendance Allowance</td>
+        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">Attendance Allowance</td>
         <td style="text-align:right" id="fAttSum">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
+      <!-- Basic Salary -->
       <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);">Others</td>
+        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">Basic Salary</td>
+        <td style="text-align:right" id="fBasic">RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+      <!-- Allowance -->
+      <tr class="tfoot-row tfoot-sub">
+        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">Allowance</td>
+        <td style="text-align:right" id="fAllow">RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+      <!-- Others -->
+      <tr class="tfoot-row tfoot-sub">
+        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">Others</td>
         <td style="text-align:right" id="fOthers">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Grand Total -->
+      <!-- Sub Total -->
+      <tr style="background:#1E3A8A;">
+        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);color:#BFDBFE;font-size:11px;">Sub Total</td>
+        <td style="text-align:right;color:#fff;font-family:var(--mono);font-weight:700;font-size:12px;" id="fSubTotal">RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+
+      <!-- ③ DEDUCTIONS SECTION HEADER -->
+      <tr style="background:#7F1D1D;">
+        <td colspan="14" style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#FCA5A5;">Deductions</td>
+        <td class="noprint"></td>
+      </tr>
+      <!-- Unpaid Leave Deduction -->
+      <tr class="tfoot-row" style="background:#FEF2F2;">
+        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);color:#991B1B;">Unpaid Leave (<span id="fUnpaidDays">0</span> day/s × Per Day Rate)</td>
+        <td style="text-align:right;color:#EF4444;font-family:var(--mono);font-weight:700;" id="fUnpaidDeduct">− RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+
+      <!-- ④ GRAND TOTAL -->
       <tr class="tfoot-row tfoot-grand">
-        <td class="tfoot-lbl" colspan="12" style="text-align:right;font-family:var(--sans);letter-spacing:.4px;font-size:12px;">Grand Total</td>
-        <td style="text-align:right;font-size:13px;" id="fGrand">RM 0.00</td>
+        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);letter-spacing:.5px;font-size:12px;">Grand Total</td>
+        <td style="text-align:right;font-size:14px;letter-spacing:-.3px;" id="fGrand">RM 0.00</td>
+        <td class="noprint"></td>
+      </tr>
+
+      <!-- ⑤ LEAVE BALANCE SECTION -->
+      <tr style="background:#1E3A8A;">
+        <td colspan="14" style="padding:6px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#93C5FD;">Leave Balance Summary (cumulative — all months)</td>
+        <td class="noprint"></td>
+      </tr>
+      <!-- Header -->
+      <tr style="background:#DBEAFE;">
+        <td colspan="4" style="padding:7px 10px;font-family:var(--sans);font-size:11px;font-weight:700;color:#1E40AF;">Leave Type</td>
+        <td colspan="3" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#1E40AF;">Entitled</td>
+        <td colspan="3" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#EF4444;">Taken</td>
+        <td colspan="3" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#10B981;">Balance</td>
+        <td class="noprint"></td>
+      </tr>
+      <!-- Annual Leave -->
+      <tr style="background:#FEFCE8;">
+        <td colspan="4" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🟡 Annual Leave</td>
+        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#1E40AF;" id="fLeaveAnnualEnt">—</td>
+        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveAnnualTaken">0</td>
+        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#10B981;" id="fLeaveAnnualBal">—</td>
+        <td class="noprint"></td>
+      </tr>
+      <!-- Medical Leave -->
+      <tr style="background:#F0FFF4;">
+        <td colspan="4" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🟢 Medical Leave</td>
+        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#1E40AF;" id="fLeaveMedEnt">—</td>
+        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveMedTaken">0</td>
+        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#10B981;" id="fLeaveMedBal">—</td>
+        <td class="noprint"></td>
+      </tr>
+      <!-- Unpaid Leave -->
+      <tr style="background:#FFF1F2;">
+        <td colspan="4" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🔴 Unpaid Leave</td>
+        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#6B7280;" id="fLeaveOthEnt">—</td>
+        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveOthTaken">0</td>
+        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;color:#EF4444;" id="fLeaveOthBal">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
     </tfoot>
@@ -344,44 +451,181 @@ tr.hol{background:#FEF2F2!important;}
 <script>
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const TYPES=['Regular','Overtime','Rest Day (Sunday)','Public Holiday','Off Day'];
+const TYPES=['— Select —','Regular','Overtime','Rest Day (Sunday)','Public Holiday','Off Day','Annual Leave','Medical Leave','Unpaid Leave'];
 
 let year=new Date().getFullYear(), mon=new Date().getMonth(), rows=[], rid=0;
 
 // ══════════════════════════════════════════════════════════════════════
-// CLOUD STORAGE via Google Apps Script (free, uses your Google account)
+// CLOUD STORAGE + LIVE GOOGLE SHEET via Google Apps Script
 //
-// SETUP — takes about 3 minutes:
+// SETUP:
 //  1. Open Google Sheets → create a new blank spreadsheet
 //  2. Click Extensions → Apps Script
-//  3. Delete any existing code and paste the Apps Script below
-//  4. Click Deploy → New Deployment → Web App
-//     • Execute as: Me   •  Who has access: Anyone
-//  5. Click Deploy → copy the Web App URL
-//  6. Paste the URL into SCRIPT_URL below → save → push to GitHub
+//  3. Delete all code and paste the script below
+//  4. Deploy → New Deployment → Web App
+//     • Execute as: Me  •  Who has access: Anyone
+//  5. Copy the Web App URL → paste into the ☁ Cloud URL field in the app
 //
-// ── Apps Script to paste (copy everything between the dashes) ─────────
-// -----------------------------------------------------------------
-// const SHEET_NAME = 'TAData';
+// The Google Sheet will auto-update every time you make a change —
+// open the sheet anytime to see the latest formatted attendance data.
+//
+// ── PASTE THIS INTO APPS SCRIPT ──────────────────────────────────────
+// const DATA_SHEET  = 'TAData';
+// const LOG_SHEET   = 'Attendance Log';
+// const SUM_SHEET   = 'Monthly Summary';
+// const MONTHS = ['January','February','March','April','May','June',
+//                 'July','August','September','October','November','December'];
+// const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+//
 // function doGet(e){
 //   const ss = SpreadsheetApp.getActiveSpreadsheet();
-//   let sh = ss.getSheetByName(SHEET_NAME);
-//   if(!sh){ sh = ss.insertSheet(SHEET_NAME); }
-//   const data = sh.getRange('A1').getValue();
+//   let sh = ss.getSheetByName(DATA_SHEET) || ss.insertSheet(DATA_SHEET);
+//   const data = sh.getRange('A1').getValue() || '{}';
+//   const cb = e.parameter.callback;
 //   return ContentService
-//     .createTextOutput(data || '{}')
-//     .setMimeType(ContentService.MimeType.JSON);
+//     .createTextOutput(cb ? cb+'('+data+')' : data)
+//     .setMimeType(cb ? ContentService.MimeType.JAVASCRIPT
+//                     : ContentService.MimeType.JSON);
 // }
+//
 // function doPost(e){
-//   const ss = SpreadsheetApp.getActiveSpreadsheet();
-//   let sh = ss.getSheetByName(SHEET_NAME);
-//   if(!sh){ sh = ss.insertSheet(SHEET_NAME); }
-//   sh.getRange('A1').setValue(e.postData.contents);
+//   const ss  = SpreadsheetApp.getActiveSpreadsheet();
+//   const raw = e.postData.contents;
+//   // Save raw JSON for sync
+//   let dsh = ss.getSheetByName(DATA_SHEET) || ss.insertSheet(DATA_SHEET);
+//   dsh.getRange('A1').setValue(raw);
+//   // Write formatted sheets
+//   try {
+//     const d = JSON.parse(raw);
+//     if(d.rows) writeFormattedSheets(ss, d);
+//   } catch(ex) {}
 //   return ContentService
 //     .createTextOutput(JSON.stringify({status:'ok'}))
 //     .setMimeType(ContentService.MimeType.JSON);
 // }
-// -----------------------------------------------------------------
+//
+// function writeFormattedSheets(ss, d){
+//   const rows     = d.rows || [];
+//   const settings = d.settings || {};
+//   const mon      = d.mon ?? 0;
+//   const yr       = d.year ?? new Date().getFullYear();
+//   const period   = MONTHS[mon] + ' ' + yr;
+//   const vis      = rows.filter(r => r.month === mon && r.year === yr)
+//                        .sort((a,b) => a.date - b.date);
+//   const hr    = parseFloat(settings.hrRate)  || 0;
+//   const dr    = parseFloat(settings.dayRate) || 0;
+//   const brk   = parseFloat(settings.brkM)   || 0;
+//   const basic = parseFloat(settings.basicSal)  || 0;
+//   const allow = parseFloat(settings.allowance) || 0;
+//   const others= parseFloat(settings.others)    || 0;
+//   const mealA = parseFloat(settings.mealAmt)   || 0;
+//   const attA  = parseFloat(settings.attAmt)    || 0;
+//   const tPay  = vis.reduce((a,r)=>a+(r.pay||0),0);
+//   const tReg  = vis.reduce((a,r)=>a+(r.regH||0),0);
+//   const tOT   = vis.reduce((a,r)=>a+(r.otH||0),0);
+//   const tH    = vis.reduce((a,r)=>a+(r.totalH||0),0);
+//   const tMeal = vis.reduce((a,r)=>a+(r.meal||0),0);
+//   const tAtt  = vis.reduce((a,r)=>a+(r.att||0),0);
+//   const grand = tPay+basic+allow+tMeal+tAtt+others;
+//
+//   // ── Attendance Log sheet ──
+//   let ls = ss.getSheetByName(LOG_SHEET);
+//   if(!ls) ls = ss.insertSheet(LOG_SHEET);
+//   ls.clearContents(); ls.clearFormats();
+//
+//   const logData = [];
+//   logData.push(['TIME ATTENDANCE LOG — '+period]);
+//   logData.push(['Hourly Rate (RM)', hr, 'Per Day Rate (RM)', dr, 'Break (min)', brk]);
+//   logData.push(['Basic Salary (RM)', basic, 'Allowance (RM)', allow, 'Others (RM)', others]);
+//   logData.push(['Meal Allowance (RM)', mealA, '(per OT ≥ 2h)', 'Att. Allow (RM)', attA, '(per check-in)']);
+//   logData.push([]);
+//   logData.push(['#','Date','Day','Day Type','Time In','Time Out',
+//                 'Reg Hrs','OT Hrs','Total Hrs','OT Rate','OT Pay (RM)',
+//                 'Meal Allow','Att. Allow']);
+//   vis.forEach((r,i) => {
+//     const dow  = new Date(r.year,r.month,r.date).getDay();
+//     const dd   = String(r.date).padStart(2,'0');
+//     const mm   = String(r.month+1).padStart(2,'0');
+//     const yy   = String(r.year).slice(-2);
+//     const showR= ['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
+//     logData.push([i+1, dd+'/'+mm+'/'+yy, DAYS[dow], r.dayType,
+//                   r.timeIn, r.timeOut,
+//                   r.regH||0, r.otH||0, r.totalH||0,
+//                   showR&&r.rate>0?r.rate:0,
+//                   r.pay||0, r.meal||0, r.att||0]);
+//   });
+//   logData.push([]);
+//   logData.push(['TOTALS','','','','','',tReg,tOT,tH,'',tPay,tMeal,tAtt]);
+//   logData.push(['','','','','','','','','','','Basic Salary','',basic]);
+//   logData.push(['','','','','','','','','','','Allowance','',allow]);
+//   logData.push(['','','','','','','','','','','Meal Allowance','',tMeal]);
+//   logData.push(['','','','','','','','','','','Att. Allowance','',tAtt]);
+//   logData.push(['','','','','','','','','','','Others','',others]);
+//   logData.push(['','','','','','','','','','','GRAND TOTAL','',grand]);
+//
+//   ls.getRange(1,1,logData.length,13).setValues(logData);
+//
+//   // Header row styling
+//   ls.getRange('A1').setFontSize(13).setFontWeight('bold').setBackground('#1E293B').setFontColor('#FFFFFF');
+//   ls.getRange(6,1,1,13).setBackground('#1E40AF').setFontColor('#FFFFFF').setFontWeight('bold');
+//   // Totals row
+//   const totRow = 6+vis.length+2;
+//   ls.getRange(totRow,1,1,13).setBackground('#1E40AF').setFontColor('#FFFFFF').setFontWeight('bold');
+//   // Grand total row
+//   ls.getRange(totRow+6,1,1,13).setBackground('#0F2354').setFontColor('#FFFFFF').setFontWeight('bold');
+//   // Column widths
+//   [40,90,45,160,70,70,70,70,75,70,90,90,90].forEach((w,i)=>
+//     ls.setColumnWidth(i+1, w));
+//   ls.setFrozenRows(6);
+//
+//   // ── Monthly Summary sheet ──
+//   let ms = ss.getSheetByName(SUM_SHEET);
+//   if(!ms) ms = ss.insertSheet(SUM_SHEET);
+//   ms.clearContents(); ms.clearFormats();
+//
+//   const regPay = vis.filter(r=>['Regular','Overtime'].includes(r.dayType)).reduce((a,r)=>a+(r.pay||0),0);
+//   const sunPay = vis.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+(r.pay||0),0);
+//   const holPay = vis.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+(r.pay||0),0);
+//   const sunHrs = vis.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+(r.totalH||0),0);
+//   const holHrs = vis.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+(r.totalH||0),0);
+//   const offDays= vis.filter(r=>r.dayType==='Off Day').length;
+//   const regHrs = vis.filter(r=>['Regular','Overtime'].includes(r.dayType)).reduce((a,r)=>a+(r.regH||0),0);
+//   const otHrs  = vis.filter(r=>['Regular','Overtime'].includes(r.dayType)).reduce((a,r)=>a+(r.otH||0),0);
+//
+//   const sumData = [
+//     ['MONTHLY SUMMARY — '+period],
+//     [],
+//     ['HOURS BREAKDOWN','Hours'],
+//     ['Regular (Mon–Fri & Sat)', regHrs],
+//     ['Overtime (Mon–Fri & Sat)', otHrs],
+//     ['Rest Day — Sunday', sunHrs],
+//     ['Public Holiday', holHrs],
+//     ['Off Days', offDays+' day(s)'],
+//     ['TOTAL HOURS', tH],
+//     [],
+//     ['PAY BREAKDOWN','Amount (RM)'],
+//     ['OT Pay (Weekday/Sat)', regPay],
+//     ['Rest Day Pay', sunPay],
+//     ['Public Holiday Pay', holPay],
+//     ['Meal Allowance', tMeal],
+//     ['Attendance Allowance', tAtt],
+//     [],
+//     ['SALARY & ADDITIONS','Amount (RM)'],
+//     ['Basic Salary', basic],
+//     ['Allowance', allow],
+//     ['Others', others],
+//     [],
+//     ['GRAND TOTAL', grand],
+//   ];
+//   ms.getRange(1,1,sumData.length,2).setValues(sumData);
+//   ms.getRange('A1').setFontSize(13).setFontWeight('bold').setBackground('#1E293B').setFontColor('#FFFFFF');
+//   ms.getRange('A3:B3').setBackground('#1E40AF').setFontColor('#FFFFFF').setFontWeight('bold');
+//   ms.getRange('A11:B11').setBackground('#1E40AF').setFontColor('#FFFFFF').setFontWeight('bold');
+//   ms.getRange('A18:B18').setBackground('#1E40AF').setFontColor('#FFFFFF').setFontWeight('bold');
+//   ms.getRange('A23:B23').setBackground('#0F2354').setFontColor('#FFFFFF').setFontWeight('bold');
+//   ms.setColumnWidth(1,220); ms.setColumnWidth(2,140);
+// }
+// ─────────────────────────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════
 
 let SCRIPT_URL = localStorage.getItem('ta_script_url') || '';  // set via UI below
@@ -390,7 +634,8 @@ const LS_DATA  = 'ta_data_v3';
 const LS_SET   = 'ta_settings_v3';
 const SETTING_IDS = ['wdStart','wdEnd','satStart','satEnd','brkM',
                      'hrRate','dayRate','basicSal','allowance','others',
-                     'mealAmt','attAmt','rOT','rSun','rHol','rOff'];
+                     'mealAmt','attAmt','rOT','rSun','rHol','rOff',
+                     'leaveAnnual','leaveMedical','leaveOther'];
 
 let syncTimer = null;
 const cloudEnabled = () => SCRIPT_URL.trim().length > 0;
@@ -428,7 +673,7 @@ function loadLocal(){
       year = o.year ?? new Date().getFullYear();
       mon  = o.mon  ?? new Date().getMonth();
       rows = o.rows ?? []; rid = o.rid ?? 0;
-      rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; });
+      rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; if(!r.dayType)r.dayType='— Select —'; if(!r.remarks)r.remarks=''; });
     }
     const s = localStorage.getItem(LS_SET);
     if(s) applySettings(JSON.parse(s));
@@ -480,7 +725,7 @@ async function loadCloud(){
       year = data.year ?? new Date().getFullYear();
       mon  = data.mon  ?? new Date().getMonth();
       rows = data.rows ?? []; rid = data.rid ?? 0;
-      rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; });
+      rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; if(!r.dayType)r.dayType='— Select —'; if(!r.remarks)r.remarks=''; });
       applySettings(data.settings);
       saveLocal();
       setSyncStatus('idle','Loaded from Google Sheets ✓');
@@ -531,6 +776,9 @@ function shiftFor(dow){
 function autoType(dow){ return dow===0?'Rest Day (Sunday)':'Regular'; }
 function defTimes(dow){ const sf=shiftFor(dow); return {ti:sf.s,to:sf.e}; }
 
+function isoDate(y,m,d){
+  return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
 function fmtDate(y,m,d){
   return String(d).padStart(2,'0')+'/'+String(m+1).padStart(2,'0')+'/'+String(y).slice(-2);
 }
@@ -549,18 +797,25 @@ function chMon(d){ mon+=d; if(mon<0){mon=11;year--;} if(mon>11){mon=0;year++;} r
 function addRow(y,m,d,type){
   y=y??year; m=m??mon; d=d??1;
   const dow=new Date(y,m,d).getDay();
-  type=type||autoType(dow);
-  const {ti,to}=defTimes(dow);
-  const r={id:++rid,year:y,month:m,date:d,timeIn:ti,timeOut:to,
-    dayType:type,regH:0,otH:0,totalH:0,pay:0,rate:0,meal:0,att:0};
+  type=type||'— Select —';
+  const r={id:++rid,year:y,month:m,date:d,timeIn:'',timeOut:'',
+    dayType:type,regH:0,otH:0,totalH:0,pay:0,rate:0,meal:0,att:0,remarks:''};
   calc(r); rows.push(r); render(); summary(); saveData();
 }
 function delRow(id){ rows=rows.filter(r=>r.id!==id); render(); summary(); saveData(); }
 function fillMonth(){
   const nd=maxDays(year,mon);
   for(let d=1;d<=nd;d++){
-    if(!rows.find(r=>r.year===year&&r.month===mon&&r.date===d)) addRow(year,mon,d);
+    if(!rows.find(r=>r.year===year&&r.month===mon&&r.date===d)){
+      const _dow=new Date(year,mon,d).getDay();
+      const _t=autoType(_dow);
+      const _sf=shiftFor(_dow);
+      const row={id:++rid,year,month:mon,date:d,timeIn:_sf.s,timeOut:_sf.e,
+        dayType:_t,regH:0,otH:0,totalH:0,pay:0,rate:0,meal:0,att:0,remarks:''};
+      calc(row); rows.push(row);
+    }
   }
+  render(); summary(); saveData();
 }
 
 // ── calc ───────────────────────────────────────────────────────────────
@@ -572,6 +827,19 @@ function calc(r){
   // Reset allowances
   r.meal=0; r.att=0;
 
+  // Leave types — no hours worked, no pay, no allowances
+  // Leave types
+  if(r.dayType==='Annual Leave'||r.dayType==='Medical Leave'){
+    r.regH=0; r.otH=0; r.totalH=0; r.rate=0; r.pay=0; r.meal=0; r.att=0;
+    return;
+  }
+  if(r.dayType==='Unpaid Leave'){
+    // Deduct per day rate from pay (shown as negative)
+    r.regH=0; r.otH=0; r.totalH=0; r.rate=0; r.meal=0; r.att=0;
+    r.pay=-(getDayRate());  // negative = deduction
+    return;
+  }
+
   // Off Day — no hours, no attendance allowance
   if(r.dayType==='Off Day'){
     r.regH=0; r.otH=0; r.totalH=0;
@@ -579,7 +847,7 @@ function calc(r){
     return;
   }
 
-  if(!r.timeIn||!r.timeOut){r.regH=r.otH=r.totalH=r.pay=r.rate=0;return;}
+  if(r.dayType==='— Select —'||!r.timeIn||!r.timeOut){r.regH=r.otH=r.totalH=r.pay=r.rate=0;r.meal=0;r.att=0;return;}
 
   // Attendance allowance: any day with a time-in recorded (not Off Day)
   r.att=+attAmt.toFixed(2);
@@ -628,6 +896,15 @@ function calc(r){
 function recalcAll(){ rows.forEach(r=>calc(r)); render(); summary(); saveData(); saveSettings(); }
 
 // ── field updates ──────────────────────────────────────────────────────
+function updDateISO(id,val){
+  const r=rows.find(x=>x.id===id); if(!r||!val)return;
+  const[y,m,d]=val.split('-').map(Number);
+  r.year=y; r.month=m-1; r.date=d;
+  const dow=new Date(r.year,r.month,r.date).getDay();
+  r.dayType='— Select —';
+  r.timeIn=''; r.timeOut='';
+  calc(r); render(); summary(); saveData();
+}
 function updDate(id,raw){
   const r=rows.find(x=>x.id===id); if(!r)return;
   const p=parseDate(raw); if(!p)return;
@@ -637,7 +914,18 @@ function updDate(id,raw){
   const t=defTimes(dow); r.timeIn=t.ti; r.timeOut=t.to;
   calc(r); render(); summary(); saveData();
 }
-function updDT(id,val){ const r=rows.find(x=>x.id===id); if(r){r.dayType=val;calc(r);patch(r);summary();saveData();} }
+function updField(id,field,val){ const r=rows.find(x=>x.id===id); if(r){r[field]=val;saveData();} }
+function updDT(id,val){
+  const r=rows.find(x=>x.id===id); if(!r)return;
+  r.dayType=val;
+  if(val!=='— Select —'&&!r.timeIn){
+    const dow=new Date(r.year,r.month,r.date).getDay();
+    if(['Regular','Overtime','Rest Day (Sunday)','Public Holiday'].includes(val)){
+      const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e;
+    }
+  }
+  calc(r); render(); summary(); saveData();
+}
 function updTime(id,f,val){ const r=rows.find(x=>x.id===id); if(r){r[f]=val;calc(r);patch(r);summary();saveData();} }
 
 function patch(r){
@@ -664,49 +952,116 @@ function patch(r){
 
 // ── summary ────────────────────────────────────────────────────────────
 function summary(){
-  const v=rows.filter(r=>r.year===year&&r.month===mon);
-  const tPay   =v.reduce((a,r)=>a+r.pay,0);
-  const tH     =v.reduce((a,r)=>a+r.totalH,0);
-  const tReg   =v.reduce((a,r)=>a+r.regH,0);
-  const tOT    =v.reduce((a,r)=>a+r.otH,0);
-  const tSun   =v.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+r.totalH,0);
-  const tHol   =v.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+r.totalH,0);
-  const tMeal  =v.reduce((a,r)=>a+r.meal,0);
-  const tAtt   =v.reduce((a,r)=>a+r.att,0);
-  const basic  =num('basicSal'), allow=num('allowance'), others=num('others');
-  const grand  =tPay+basic+allow+tMeal+tAtt+others;
-  const rm=x=>'RM '+x.toLocaleString('en-MY',{minimumFractionDigits:2});
+  const v   = rows.filter(r=>r.year===year&&r.month===mon);
+  const all = rows;  // all rows across all months for cumulative leave
 
-  document.getElementById('sDays').textContent=v.length;
-  document.getElementById('sReg').textContent=tReg.toFixed(2);
-  document.getElementById('sOT').textContent=tOT.toFixed(2);
-  document.getElementById('sSun').textContent=tSun.toFixed(2);
-  document.getElementById('sHol').textContent=tHol.toFixed(2);
-  document.getElementById('sTotal').textContent=tH.toFixed(2);
-  document.getElementById('sMeal').textContent=tMeal.toFixed(2);
-  document.getElementById('sAtt').textContent=tAtt.toFixed(2);
-  document.getElementById('sPay').textContent=tPay.toLocaleString('en-MY',{minimumFractionDigits:2});
-  document.getElementById('sGrand').textContent=grand.toLocaleString('en-MY',{minimumFractionDigits:2});
+  // ── Hours ──
+  const tReg  = v.reduce((a,r)=>a+r.regH,0);
+  const tOT   = v.reduce((a,r)=>a+r.otH,0);
+  const tH    = v.reduce((a,r)=>a+r.totalH,0);
+  const tSun  = v.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+r.totalH,0);
+  const tHol  = v.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+r.totalH,0);
 
-  document.getElementById('fReg').textContent=tReg.toFixed(2);
-  document.getElementById('fOT').textContent=tOT.toFixed(2);
-  document.getElementById('fTotal').textContent=tH.toFixed(2);
-  document.getElementById('fPay').textContent=rm(tPay);
-  document.getElementById('fMealTot').textContent=rm(tMeal);
-  document.getElementById('fAttTot').textContent=rm(tAtt);
-  document.getElementById('fBasic').textContent=rm(basic);
-  document.getElementById('fAllow').textContent=rm(allow);
-  document.getElementById('fMealSum').textContent=rm(tMeal);
-  document.getElementById('fAttSum').textContent=rm(tAtt);
-  document.getElementById('fOthers').textContent=rm(others);
-  document.getElementById('fGrand').textContent=rm(grand);
+  // ── OT Pay (from table rows) ──
+  const tOTPay = v.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
 
-  document.getElementById('monLbl').textContent=MONTHS[mon].slice(0,3)+' '+year;
-  document.getElementById('sub').textContent=MONTHS[mon]+' '+year+' · '+v.length+' entries';
+  // ── Allowances ──
+  const tMeal = v.reduce((a,r)=>a+r.meal,0);
+  const tAtt  = v.reduce((a,r)=>a+r.att,0);
+
+  // ── Settings inputs ──
+  const basic  = num('basicSal');
+  const allow  = num('allowance');
+  const others = num('others');
+  const dr     = getDayRate();
+
+  // ── Unpaid Leave (current month deduction) ──
+  const unpaidDaysMon  = v.filter(r=>r.dayType==='Unpaid Leave').length;
+  const unpaidDeductMon = unpaidDaysMon * dr;
+
+  // ── Sub Total = OT Pay + Meal + Att + Basic + Allowance + Others ──
+  const subTotal = tOTPay + tMeal + tAtt + basic + allow + others;
+
+  // ── Grand Total = Sub Total − Unpaid Deductions ──
+  const grand = subTotal - unpaidDeductMon;
+
+  // ── Cumulative leave (ALL months) ──
+  const annualTaken  = all.filter(r=>r.dayType==='Annual Leave').length;
+  const medicalTaken = all.filter(r=>r.dayType==='Medical Leave').length;
+  const unpaidTakenAll= all.filter(r=>r.dayType==='Unpaid Leave').length;
+  const unpaidDeductAll= unpaidTakenAll * dr;
+
+  const annualEnt  = num('leaveAnnual');
+  const medicalEnt = num('leaveMedical');
+  const otherEnt   = num('leaveOther');  // optional for unpaid
+
+  const annualBal  = Math.max(annualEnt - annualTaken, 0);
+  const medicalBal = Math.max(medicalEnt - medicalTaken, 0);
+
+  // ── Helper ──
+  const rm  = x  => 'RM ' + Math.abs(x).toLocaleString('en-MY',{minimumFractionDigits:2});
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+
+  // ── Cards ──
+  set('sDays',    v.length);
+  set('sReg',     tReg.toFixed(2));
+  set('sOT',      tOT.toFixed(2));
+  set('sSun',     tSun.toFixed(2));
+  set('sHol',     tHol.toFixed(2));
+  set('sTotal',   tH.toFixed(2));
+  set('sMeal',    tMeal.toFixed(2));
+  set('sAtt',     tAtt.toFixed(2));
+  set('sPay',     tOTPay.toLocaleString('en-MY',{minimumFractionDigits:2}));
+  set('sGrand',   grand.toLocaleString('en-MY',{minimumFractionDigits:2}));
+  set('sLeaveAnnual', annualEnt ? annualBal+' / '+annualEnt : '—');
+  set('sLeaveMed',    medicalEnt ? medicalBal+' / '+medicalEnt : '—');
+  set('sLeaveOth',    unpaidTakenAll+'d / −RM '+unpaidDeductAll.toFixed(2));
+
+  // ── OT Totals row ──
+  set('fReg',   tReg.toFixed(2));
+  set('fOT',    tOT.toFixed(2));
+  set('fTotal', tH.toFixed(2));
+  set('fPay',   rm(tOTPay));
+  set('fMealTot', rm(tMeal));
+  set('fAttTot',  rm(tAtt));
+
+  // ── Earnings rows ──
+  set('fOTPay',   rm(tOTPay));
+  set('fMealSum', rm(tMeal));
+  set('fAttSum',  rm(tAtt));
+  set('fBasic',   rm(basic));
+  set('fAllow',   rm(allow));
+  set('fOthers',  rm(others));
+  set('fSubTotal',rm(subTotal));
+
+  // ── Deductions ──
+  set('fUnpaidDays', unpaidDaysMon);
+  const ud = document.getElementById('fUnpaidDeduct');
+  if(ud) ud.textContent = unpaidDeductMon > 0 ? '− RM '+unpaidDeductMon.toFixed(2) : '− RM 0.00';
+
+  // ── Grand Total ──
+  set('fGrand', rm(grand));
+
+  // ── Leave balance table ──
+  set('fLeaveAnnualEnt',   annualEnt  || '—');
+  set('fLeaveAnnualTaken', annualTaken);
+  set('fLeaveAnnualBal',   annualEnt  ? annualBal+' day(s)' : '—');
+
+  set('fLeaveMedEnt',      medicalEnt || '—');
+  set('fLeaveMedTaken',    medicalTaken);
+  set('fLeaveMedBal',      medicalEnt ? medicalBal+' day(s)' : '—');
+
+  // Unpaid: show days taken (cumulative) + RM deduction
+  set('fLeaveOthEnt',      otherEnt || '—');
+  set('fLeaveOthTaken',    unpaidTakenAll+' day(s)');
+  set('fLeaveOthBal',      '−RM '+unpaidDeductAll.toFixed(2));
+
+  // ── Nav ──
+  document.getElementById('monLbl').textContent = MONTHS[mon].slice(0,3)+' '+year;
+  document.getElementById('sub').textContent = MONTHS[mon]+' '+year+' · '+v.length+' entries';
   saveSettings();
 }
 
-// ── render ─────────────────────────────────────────────────────────────
 function render(){
   const vis=rows.filter(r=>r.year===year&&r.month===mon).sort((a,b)=>a.date-b.date);
   const tb=document.getElementById('tbody'); tb.innerHTML='';
@@ -719,7 +1074,8 @@ function render(){
     const dow=new Date(r.year,r.month,r.date).getDay();
     const isSat=dow===6, isSun=dow===0;
     const isHol=r.dayType==='Public Holiday', isOff=r.dayType==='Off Day';
-    const cls=isOff?'offday':isHol?'hol':isSun?'sun':isSat?'sat':'';
+    const isAL=r.dayType==='Annual Leave', isML=r.dayType==='Medical Leave', isOL=r.dayType==='Unpaid Leave';
+    const cls=isAL?'annual':isML?'medical':isOL?'other':isOff?'offday':isHol?'hol':isSun?'sun':isSat?'sat':'';
     const dc=isSun?'color:var(--red);font-weight:700':isSat?'color:var(--pur);font-weight:600':'color:var(--txt3)';
     const showRate=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
     const opts=TYPES.map(t=>`<option value="${t}"${r.dayType===t?' selected':''}>${t}</option>`).join('');
@@ -727,8 +1083,12 @@ function render(){
     tr.dataset.id=r.id; if(cls)tr.className=cls;
     tr.innerHTML=`
       <td style="color:var(--txt3);font-family:var(--mono);font-size:11px;text-align:center">${i+1}</td>
-      <td><input class="date-inp" type="text" value="${fmtDate(r.year,r.month,r.date)}"
-          placeholder="DD/MM/YY" onchange="updDate(${r.id},this.value)"></td>
+      <td><input type="date" value="${isoDate(r.year,r.month,r.date)}"
+          style="font-family:var(--mono);font-size:11.5px;border:1px solid transparent;background:transparent;
+          outline:none;width:110px;padding:2px 4px;border-radius:5px;cursor:pointer;"
+          onfocus="this.style.borderColor='var(--acc)';this.style.background='var(--acc2)'"
+          onblur="this.style.borderColor='transparent';this.style.background='transparent'"
+          onchange="updDateISO(${r.id},this.value)"></td>
       <td style="text-align:center;font-family:var(--mono);font-size:11px;${dc}">${DAYS[dow]}</td>
       <td><select onchange="updDT(${r.id},this.value)">${opts}</select></td>
       <td><input type="time" value="${r.timeIn}" onchange="updTime(${r.id},'timeIn',this.value)"></td>
@@ -740,6 +1100,8 @@ function render(){
       <td class="n cp2" style="${r.pay>0?'color:var(--grn);font-weight:600':'color:var(--txt3)'}">${r.pay>0?'RM '+r.pay.toLocaleString('en-MY',{minimumFractionDigits:2}):'—'}</td>
       <td class="n cmeal" style="${r.meal>0?'color:var(--amb)':'color:var(--txt3)'}">${r.meal>0?'RM '+r.meal.toFixed(2):'—'}</td>
       <td class="n catt" style="${r.att>0?'color:var(--grn)':'color:var(--txt3)'}">${r.att>0?'RM '+r.att.toFixed(2):'—'}</td>
+      <td><input type="text" value="${r.remarks||''}" placeholder="…" style="font-size:11px;color:var(--txt2);"
+          onchange="updField(${r.id},'remarks',this.value)"></td>
       <td class="noprint" style="text-align:center">
         <button class="btn b-red" style="padding:3px 7px;font-size:11px" onclick="delRow(${r.id})">✕</button>
       </td>`;
@@ -765,7 +1127,8 @@ function exportXLSX(){
   const tH=vis.reduce((a,r)=>a+r.totalH,0);
   const tMeal=vis.reduce((a,r)=>a+r.meal,0);
   const tAtt=vis.reduce((a,r)=>a+r.att,0);
-  const grand=tPay+basic+allow+tMeal+tAtt+others;
+  const unpaidDed=vis.filter(r=>r.dayType==='Unpaid Leave').length*getDayRate();
+  const grand=tPay+basic+allow+tMeal+tAtt+others-unpaidDed;
   const period=MONTHS[mon]+' '+year;
 
   const wb = XLSX.utils.book_new();
@@ -791,7 +1154,7 @@ function exportXLSX(){
   // Column headers
   aoa.push(['#','Date','Day','Day Type','Time In','Time Out',
             'Reg Hrs','OT Hrs','Total Hrs','OT Rate (×)','OT Pay (RM)',
-            'Meal Allow (RM)','Att. Allow (RM)']);
+            'Meal Allow (RM)','Att. Allow (RM)','Leave Type']);
 
   // Data rows
   vis.forEach((r,i)=>{
@@ -810,7 +1173,8 @@ function exportXLSX(){
       showRate&&r.rate>0?r.rate:0,
       r.pay,
       r.meal,
-      r.att
+      r.att,
+      ['Annual Leave','Medical Leave','Other Leave'].includes(r.dayType)?r.dayType:''
     ]);
   });
 
@@ -846,6 +1210,14 @@ function exportXLSX(){
   const offDays  = vis.filter(r=>r.dayType==='Off Day').length;
   const regWkHrs = vis.filter(r=>['Regular','Overtime'].includes(r.dayType)).reduce((a,r)=>a+r.regH,0);
 
+  // Leave stats (cumulative across all rows)
+  const annualTaken  = rows.filter(r=>r.dayType==='Annual Leave').length;
+  const medicalTaken = rows.filter(r=>r.dayType==='Medical Leave').length;
+  const otherTaken   = rows.filter(r=>r.dayType==='Unpaid Leave').length;
+  const annualEnt    = parseFloat((document.getElementById('leaveAnnual')||{}).value)||0;
+  const medicalEnt   = parseFloat((document.getElementById('leaveMedical')||{}).value)||0;
+  const otherEnt     = parseFloat((document.getElementById('leaveOther')||{}).value)||0;
+
   const s2 = [
     ['MONTHLY SUMMARY — '+period],
     [],
@@ -870,10 +1242,15 @@ function exportXLSX(){
     ['Others', others],
     [],
     ['GRAND TOTAL', grand],
+    [],
+    ['LEAVE BALANCE (Cumulative)','Entitled','Taken','Balance'],
+    ['Annual Leave', annualEnt, annualTaken, Math.max(annualEnt-annualTaken,0)],
+    ['Medical Leave', medicalEnt, medicalTaken, Math.max(medicalEnt-medicalTaken,0)],
+    ['Other Leave', otherEnt, otherTaken, Math.max(otherEnt-otherTaken,0)],
   ];
 
   const ws2 = XLSX.utils.aoa_to_sheet(s2);
-  ws2['!cols'] = [{wch:30},{wch:16}];
+  ws2['!cols'] = [{wch:30},{wch:12},{wch:12},{wch:12}];
   XLSX.utils.book_append_sheet(wb, ws2, 'Monthly Summary');
 
   // Download
