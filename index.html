@@ -678,7 +678,7 @@ function loadLocal(){
       year = o.year ?? new Date().getFullYear();
       mon  = o.mon  ?? new Date().getMonth();
       rows = o.rows ?? []; rid = o.rid ?? 0;
-      rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; if(!r.dayType)r.dayType='— Select —'; if(!r.remarks)r.remarks=''; });
+      rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; if(!r.dayType)r.dayType='— Select —'; if(!r.remarks)r.remarks=''; if(r.date===undefined)r.date=null; });
     }
     const s = localStorage.getItem(LS_SET);
     if(s) applySettings(JSON.parse(s));
@@ -692,11 +692,15 @@ async function saveCloud(){
   const payload = JSON.stringify({ year, mon, rows, rid, settings: getSettings() });
   try{
     setSyncStatus('saving','Saving to cloud…');
-    // Apps Script with no-cors: use GET with data as query string param
-    // Apps Script doGet reads e.parameter.data
-    const url = SCRIPT_URL + '?action=save&data=' + encodeURIComponent(payload);
-    // Use image trick to fire GET without CORS issues
-    await fetch(url, { method:'GET', mode:'no-cors' });
+    // POST with text/plain + no-cors: browser sends the request, Apps Script
+    // receives it via e.postData.contents — this works reliably regardless of payload size
+    await fetch(SCRIPT_URL, {
+      method : 'POST',
+      mode   : 'no-cors',       // avoids CORS preflight
+      headers: { 'Content-Type': 'text/plain' },
+      body   : payload          // raw JSON — Apps Script reads e.postData.contents
+    });
+    // no-cors returns opaque response — if no exception, request was sent
     setSyncStatus('idle','Saved to Google Sheets ✓');
   }catch(e){
     setSyncStatus('error','Save failed — check Script URL');
@@ -726,9 +730,12 @@ async function loadCloud(){
       year = data.year ?? new Date().getFullYear();
       mon  = data.mon  ?? new Date().getMonth();
       rows = data.rows ?? []; rid = data.rid ?? 0;
-      rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; if(!r.dayType)r.dayType='— Select —'; if(!r.remarks)r.remarks=''; });
+      rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; if(!r.dayType)r.dayType='— Select —'; if(!r.remarks)r.remarks=''; if(r.date===undefined)r.date=null; });
       applySettings(data.settings);
       saveLocal();
+      // Sync month/year dropdowns to loaded data
+      const _sm=document.getElementById('selMon'); if(_sm) _sm.value=mon;
+      const _sy=document.getElementById('selYear'); if(_sy) _sy.value=year;
       setSyncStatus('idle','Loaded from Google Sheets ✓');
     } else {
       loadLocal();
@@ -948,7 +955,7 @@ function updDT(id,val){
   const r=rows.find(x=>x.id===id); if(!r)return;
   r.dayType=val;
   if(val!=='— Select —'&&!r.timeIn){
-    const dow=r.date?new Date(r.year,r.month,r.date).getDay():0;
+    const dow = (r.date!=null) ? new Date(r.year,r.month,r.date).getDay() : -1;
     if(['Regular','Overtime','Rest Day (Sunday)','Public Holiday'].includes(val)){
       const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e;
     }
@@ -1092,7 +1099,14 @@ function summary(){
 }
 
 function render(){
-  const vis=rows.filter(r=>r.year===year&&r.month===mon).sort((a,b)=>a.date-b.date);
+  // Include rows matching month OR rows with null date (unsaved new rows)
+  const vis=rows
+    .filter(r=>r.year===year&&r.month===mon)
+    .sort((a,b)=>{
+      if(a.date==null) return 1;   // null dates sink to bottom
+      if(b.date==null) return -1;
+      return a.date-b.date;
+    });
   const tb=document.getElementById('tbody'); tb.innerHTML='';
   if(!vis.length){
     tb.innerHTML=`<tr><td colspan="14" style="text-align:center;padding:32px;color:var(--txt3);font-size:13px">
@@ -1100,8 +1114,8 @@ function render(){
     </td></tr>`; summary(); return;
   }
   vis.forEach((r,i)=>{
-    const dow=r.date?new Date(r.year,r.month,r.date).getDay():0;
-    const isSat=r.date&&dow===6, isSun=r.date&&dow===0;
+    const dow = (r.date!=null) ? new Date(r.year,r.month,r.date).getDay() : -1;
+    const isSat=dow===6, isSun=dow===0;
     const isHol=r.dayType==='Public Holiday', isOff=r.dayType==='Off Day';
     const isAL=r.dayType==='Annual Leave', isML=r.dayType==='Medical Leave', isOL=r.dayType==='Unpaid Leave';
     const cls=isAL?'annual':isML?'medical':isOL?'other':isOff?'offday':isHol?'hol':isSun?'sun':isSat?'sat':'';
@@ -1118,7 +1132,7 @@ function render(){
           onfocus="this.style.borderColor='var(--acc)';this.style.background='var(--acc2)'"
           onblur="this.style.borderColor='transparent';this.style.background='transparent'"
           onchange="updDateISO(${r.id},this.value)"></td>
-      <td style="text-align:center;font-family:var(--mono);font-size:11px;${dc}">${DAYS[dow]}</td>
+      <td style="text-align:center;font-family:var(--mono);font-size:11px;${dc}">${dow>=0?DAYS[dow]:""}</td>
       <td><select onchange="updDT(${r.id},this.value)">${opts}</select></td>
       <td><input type="time" value="${r.timeIn}" onchange="updTime(${r.id},'timeIn',this.value)"></td>
       <td><input type="time" value="${r.timeOut}" onchange="updTime(${r.id},'timeOut',this.value)"></td>
@@ -1145,7 +1159,14 @@ function exportXLSX(){
     alert('SheetJS library not loaded. Check your internet connection and try again.');
     return;
   }
-  const vis=rows.filter(r=>r.year===year&&r.month===mon).sort((a,b)=>a.date-b.date);
+  // Include rows matching month OR rows with null date (unsaved new rows)
+  const vis=rows
+    .filter(r=>r.year===year&&r.month===mon)
+    .sort((a,b)=>{
+      if(a.date==null) return 1;   // null dates sink to bottom
+      if(b.date==null) return -1;
+      return a.date-b.date;
+    });
   if(!vis.length){alert('No entries to export for '+MONTHS[mon]+' '+year);return;}
 
   const hr=getHrRate(), dr=getDayRate(), brk=getBrk();
@@ -1187,7 +1208,7 @@ function exportXLSX(){
 
   // Data rows
   vis.forEach((r,i)=>{
-    const dow=r.date?new Date(r.year,r.month,r.date).getDay():0;
+    const dow = (r.date!=null) ? new Date(r.year,r.month,r.date).getDay() : -1;
     const showRate=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
     aoa.push([
       i+1,
