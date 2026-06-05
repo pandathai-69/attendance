@@ -136,10 +136,17 @@ tr.hol{background:#FEF2F2!important;}
 <div class="hd">
   <div><h1>⏱ Time Attendance</h1><p id="sub">Loading…</p></div>
   <div class="hd-r noprint">
-    <div class="mnav">
-      <button class="ico" onclick="chMon(-1)">&#8249;</button>
-      <span id="monLbl"></span>
-      <button class="ico" onclick="chMon(1)">&#8250;</button>
+    <div class="mnav" style="display:flex;align-items:center;gap:6px;">
+      <select id="selMon" onchange="setMonYear()" style="font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--brd);border-radius:7px;background:var(--sur);color:var(--txt);outline:none;cursor:pointer;">
+        <option value="0">January</option><option value="1">February</option>
+        <option value="2">March</option><option value="3">April</option>
+        <option value="4">May</option><option value="5">June</option>
+        <option value="6">July</option><option value="7">August</option>
+        <option value="8">September</option><option value="9">October</option>
+        <option value="10">November</option><option value="11">December</option>
+      </select>
+      <select id="selYear" onchange="setMonYear()" style="font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--brd);border-radius:7px;background:var(--sur);color:var(--txt);outline:none;cursor:pointer;width:84px;">
+      </select>
     </div>
     <button class="btn b-blue" onclick="addRow()">+ Add Row</button>
     <button class="btn b-gray" onclick="fillMonth()">📅 Fill Month</button>
@@ -685,15 +692,14 @@ async function saveCloud(){
   const payload = JSON.stringify({ year, mon, rows, rid, settings: getSettings() });
   try{
     setSyncStatus('saving','Saving to cloud…');
-    // Use no-cors so browser does not block cross-origin POST
-    // The response will be opaque but the save still happens on the server
+    // Send as URL-encoded form so Apps Script reads via e.parameter.data
+    const body = 'data=' + encodeURIComponent(payload);
     await fetch(SCRIPT_URL, {
       method : 'POST',
       mode   : 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body   : payload
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body   : body
     });
-    // no-cors gives opaque response — assume success if no exception thrown
     setSyncStatus('idle','Saved to Google Sheets ✓');
   }catch(e){
     setSyncStatus('error','Save failed — check your Script URL');
@@ -790,7 +796,31 @@ function parseDate(str){
 }
 
 // ── month nav ──────────────────────────────────────────────────────────
-function chMon(d){ mon+=d; if(mon<0){mon=11;year--;} if(mon>11){mon=0;year++;} render(); summary(); saveData(); }
+function populateYearSelect(){
+  const sel=document.getElementById('selYear'); if(!sel)return;
+  const cur=new Date().getFullYear();
+  sel.innerHTML='';
+  for(let y=cur-5;y<=cur+3;y++){
+    const o=document.createElement('option');
+    o.value=y; o.textContent=y;
+    if(y===year) o.selected=true;
+    sel.appendChild(o);
+  }
+}
+function syncDropdowns(){
+  const sm=document.getElementById('selMon');
+  const sy=document.getElementById('selYear');
+  if(sm) sm.value=mon;
+  if(sy) sy.value=year;
+}
+function setMonYear(){
+  const sm=document.getElementById('selMon');
+  const sy=document.getElementById('selYear');
+  if(sm) mon=parseInt(sm.value);
+  if(sy) year=parseInt(sy.value);
+  render(); summary(); saveData();
+}
+function chMon(d){ mon+=d; if(mon<0){mon=11;year--;} if(mon>11){mon=0;year++;} syncDropdowns(); render(); summary(); saveData(); }
 
 // ── rows ───────────────────────────────────────────────────────────────
 function addRow(y,m,d,type){
@@ -1282,9 +1312,11 @@ function loadUrlInput(){
 
 // ── init ───────────────────────────────────────────────────────────────
 (async ()=>{
-  loadUrlInput();          // restore saved URL into the input field
-  await loadCloud();       // load from cloud or local
+  loadUrlInput();
+  await loadCloud();
   rows.forEach(r=>calc(r));
+  populateYearSelect();
+  syncDropdowns();
   summary(); render();
 })();
 </script>
