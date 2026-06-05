@@ -303,121 +303,119 @@ tr.hol{background:#FEF2F2!important;}
     <tbody id="tbody"></tbody>
     <tfoot>
 
-      <!-- ① OT HOURS TOTALS ROW -->
+      <!-- ① OT TOTALS — aligned with data columns -->
       <tr class="tfoot-row tfoot-tot">
-        <td class="tfoot-lbl" colspan="7" style="font-family:var(--sans);font-size:10px;">OT Totals</td>
-        <td style="text-align:right" id="fReg">0.00</td>
-        <td style="text-align:right" id="fOT">0.00</td>
-        <td style="text-align:right" id="fTotal">0.00</td>
-        <td style="text-align:right">—</td>
-        <td style="text-align:right" id="fPay">RM 0.00</td>
-        <td style="text-align:right" id="fMealTot">RM 0.00</td>
-        <td style="text-align:right" id="fAttTot">RM 0.00</td>
+        <td colspan="6" style="font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:9px 10px;">OT Totals</td>
+        <td class="n" id="fReg">0.00</td>
+        <td class="n" id="fOT">0.00</td>
+        <td class="n" id="fTotal">0.00</td>
+        <td class="n">—</td>
+        <td class="n" id="fPay">RM 0.00</td>
+        <td class="n" id="fMealTot">RM 0.00</td>
+        <td class="n" id="fAttTot">RM 0.00</td>
+        <td></td>
         <td class="noprint"></td>
       </tr>
 
-      <!-- ② EARNINGS SECTION HEADER -->
-      <tr style="background:#374151;">
-        <td colspan="14" style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#D1D5DB;">Earnings</td>
+      <!-- ② EARNINGS HEADER -->
+      <tr style="background:#1E293B;">
+        <td colspan="13" style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94A3B8;">Earnings</td>
+        <td style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94A3B8;text-align:right;">Amount (RM)</td>
         <td class="noprint"></td>
       </tr>
+
       <!-- OT Pay -->
       <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">OT Pay</td>
-        <td style="text-align:right;color:#F59E0B;font-weight:700;" id="fOTPay">RM 0.00</td>
+        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;font-weight:600;color:#374151;text-align:right;">OT Pay</td>
+        <td style="text-align:right;font-family:var(--mono);font-size:12px;font-weight:700;color:#F59E0B;padding:8px 10px;" id="fOTPay">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Meal Allowance -->
       <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">Meal Allowance</td>
-        <td style="text-align:right" id="fMealSum">RM 0.00</td>
+        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#374151;text-align:right;">Meal Allowance</td>
+        <td style="text-align:right;font-family:var(--mono);font-size:12px;padding:8px 10px;" id="fMealSum">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Attendance Allowance -->
       <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">Attendance Allowance</td>
-        <td style="text-align:right" id="fAttSum">RM 0.00</td>
+        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#374151;text-align:right;">Attendance Allowance</td>
+        <td style="text-align:right;font-family:var(--mono);font-size:12px;padding:8px 10px;" id="fAttSum">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Basic Salary -->
       <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">Basic Salary</td>
-        <td style="text-align:right" id="fBasic">RM 0.00</td>
+        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#374151;text-align:right;">Basic Salary</td>
+        <td style="text-align:right;font-family:var(--mono);font-size:12px;padding:8px 10px;" id="fBasic">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Allowance -->
       <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">Allowance</td>
-        <td style="text-align:right" id="fAllow">RM 0.00</td>
+        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#374151;text-align:right;">Allowance</td>
+        <td style="text-align:right;font-family:var(--mono);font-size:12px;padding:8px 10px;" id="fAllow">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Others -->
       <tr class="tfoot-row tfoot-sub">
-        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);">Others</td>
-        <td style="text-align:right" id="fOthers">RM 0.00</td>
+        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#374151;text-align:right;">Others</td>
+        <td style="text-align:right;font-family:var(--mono);font-size:12px;padding:8px 10px;" id="fOthers">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
       <!-- Sub Total -->
       <tr style="background:#1E3A8A;">
-        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);color:#BFDBFE;font-size:11px;">Sub Total</td>
-        <td style="text-align:right;color:#fff;font-family:var(--mono);font-weight:700;font-size:12px;" id="fSubTotal">RM 0.00</td>
+        <td colspan="13" style="padding:9px 10px;font-family:var(--sans);font-size:11px;font-weight:700;color:#BFDBFE;text-align:right;letter-spacing:.3px;">Sub Total</td>
+        <td style="text-align:right;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;padding:9px 10px;" id="fSubTotal">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
 
-      <!-- ③ DEDUCTIONS SECTION HEADER -->
+      <!-- ③ DEDUCTIONS HEADER -->
       <tr style="background:#7F1D1D;">
-        <td colspan="14" style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#FCA5A5;">Deductions</td>
+        <td colspan="13" style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#FCA5A5;">Deductions</td>
+        <td style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#FCA5A5;text-align:right;">Amount (RM)</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Unpaid Leave Deduction -->
-      <tr class="tfoot-row" style="background:#FEF2F2;">
-        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);color:#991B1B;">Unpaid Leave (<span id="fUnpaidDays">0</span> day/s × Per Day Rate)</td>
-        <td style="text-align:right;color:#EF4444;font-family:var(--mono);font-weight:700;" id="fUnpaidDeduct">− RM 0.00</td>
+      <tr style="background:#FEF2F2;">
+        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#991B1B;text-align:right;">
+          Unpaid Leave &nbsp;<span style="font-family:var(--mono);font-size:10px;background:#FEE2E2;padding:2px 6px;border-radius:4px;" id="fUnpaidDays">0 day(s)</span>&nbsp;× Per Day Rate
+        </td>
+        <td style="text-align:right;font-family:var(--mono);font-size:12px;font-weight:700;color:#EF4444;padding:8px 10px;" id="fUnpaidDeduct">− RM 0.00</td>
         <td class="noprint"></td>
       </tr>
 
       <!-- ④ GRAND TOTAL -->
       <tr class="tfoot-row tfoot-grand">
-        <td class="tfoot-lbl" colspan="13" style="text-align:right;font-family:var(--sans);letter-spacing:.5px;font-size:12px;">Grand Total</td>
-        <td style="text-align:right;font-size:14px;letter-spacing:-.3px;" id="fGrand">RM 0.00</td>
+        <td colspan="13" style="padding:10px 10px;font-family:var(--sans);font-size:12px;font-weight:700;text-align:right;letter-spacing:.5px;">Grand Total</td>
+        <td style="text-align:right;font-family:var(--mono);font-size:14px;font-weight:700;padding:10px 10px;" id="fGrand">RM 0.00</td>
         <td class="noprint"></td>
       </tr>
 
-      <!-- ⑤ LEAVE BALANCE SECTION -->
+      <!-- ⑤ LEAVE BALANCE -->
       <tr style="background:#1E3A8A;">
-        <td colspan="14" style="padding:6px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#93C5FD;">Leave Balance Summary (cumulative — all months)</td>
+        <td colspan="14" style="padding:6px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#93C5FD;">
+          Leave Balance Summary &nbsp;<span style="font-weight:400;font-style:italic;color:#60A5FA;">(cumulative — all months)</span>
+        </td>
         <td class="noprint"></td>
       </tr>
-      <!-- Header -->
       <tr style="background:#DBEAFE;">
-        <td colspan="4" style="padding:7px 10px;font-family:var(--sans);font-size:11px;font-weight:700;color:#1E40AF;">Leave Type</td>
-        <td colspan="3" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#1E40AF;">Entitled</td>
-        <td colspan="3" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#EF4444;">Taken</td>
-        <td colspan="3" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#10B981;">Balance</td>
+        <td colspan="5" style="padding:7px 10px;font-family:var(--sans);font-size:11px;font-weight:700;color:#1E40AF;">Leave Type</td>
+        <td colspan="3" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#1E40AF;padding:7px 4px;">Entitled (days)</td>
+        <td colspan="2" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#EF4444;padding:7px 4px;">Taken</td>
+        <td colspan="4" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#10B981;padding:7px 4px;">Balance / Deduction</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Annual Leave -->
       <tr style="background:#FEFCE8;">
-        <td colspan="4" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🟡 Annual Leave</td>
+        <td colspan="5" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🟡 Annual Leave</td>
         <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#1E40AF;" id="fLeaveAnnualEnt">—</td>
-        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveAnnualTaken">0</td>
-        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#10B981;" id="fLeaveAnnualBal">—</td>
+        <td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveAnnualTaken">0</td>
+        <td colspan="4" style="text-align:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#10B981;" id="fLeaveAnnualBal">—</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Medical Leave -->
       <tr style="background:#F0FFF4;">
-        <td colspan="4" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🟢 Medical Leave</td>
+        <td colspan="5" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🟢 Medical Leave</td>
         <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#1E40AF;" id="fLeaveMedEnt">—</td>
-        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveMedTaken">0</td>
-        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#10B981;" id="fLeaveMedBal">—</td>
+        <td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveMedTaken">0</td>
+        <td colspan="4" style="text-align:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#10B981;" id="fLeaveMedBal">—</td>
         <td class="noprint"></td>
       </tr>
-      <!-- Unpaid Leave -->
       <tr style="background:#FFF1F2;">
-        <td colspan="4" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🔴 Unpaid Leave</td>
-        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#6B7280;" id="fLeaveOthEnt">—</td>
-        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveOthTaken">0</td>
-        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;color:#EF4444;" id="fLeaveOthBal">RM 0.00</td>
+        <td colspan="5" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🔴 Unpaid Leave</td>
+        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;color:#6B7280;" id="fLeaveOthEnt">—</td>
+        <td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveOthTaken">0</td>
+        <td colspan="4" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;color:#EF4444;" id="fLeaveOthBal">− RM 0.00</td>
         <td class="noprint"></td>
       </tr>
     </tfoot>
@@ -777,6 +775,7 @@ function autoType(dow){ return dow===0?'Rest Day (Sunday)':'Regular'; }
 function defTimes(dow){ const sf=shiftFor(dow); return {ti:sf.s,to:sf.e}; }
 
 function isoDate(y,m,d){
+  if(!d||!y) return '';
   return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
 }
 function fmtDate(y,m,d){
@@ -795,9 +794,12 @@ function chMon(d){ mon+=d; if(mon<0){mon=11;year--;} if(mon>11){mon=0;year++;} r
 
 // ── rows ───────────────────────────────────────────────────────────────
 function addRow(y,m,d,type){
-  y=y??year; m=m??mon; d=d??1;
-  const dow=new Date(y,m,d).getDay();
-  type=type||'— Select —';
+  y=y??year; m=m??mon;
+  // d left null means user will pick from calendar
+  const hasDate = d !== null && d !== undefined;
+  d = hasDate ? d : null;
+  const dow = hasDate ? new Date(y,m,d).getDay() : 0;
+  type = type || '— Select —';
   const r={id:++rid,year:y,month:m,date:d,timeIn:'',timeOut:'',
     dayType:type,regH:0,otH:0,totalH:0,pay:0,rate:0,meal:0,att:0,remarks:''};
   calc(r); rows.push(r); render(); summary(); saveData();
@@ -919,7 +921,7 @@ function updDT(id,val){
   const r=rows.find(x=>x.id===id); if(!r)return;
   r.dayType=val;
   if(val!=='— Select —'&&!r.timeIn){
-    const dow=new Date(r.year,r.month,r.date).getDay();
+    const dow=r.date?new Date(r.year,r.month,r.date).getDay():0;
     if(['Regular','Overtime','Rest Day (Sunday)','Public Holiday'].includes(val)){
       const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e;
     }
@@ -1035,7 +1037,7 @@ function summary(){
   set('fSubTotal',rm(subTotal));
 
   // ── Deductions ──
-  set('fUnpaidDays', unpaidDaysMon);
+  set('fUnpaidDays', unpaidDaysMon+' day(s)');
   const ud = document.getElementById('fUnpaidDeduct');
   if(ud) ud.textContent = unpaidDeductMon > 0 ? '− RM '+unpaidDeductMon.toFixed(2) : '− RM 0.00';
 
@@ -1071,8 +1073,8 @@ function render(){
     </td></tr>`; summary(); return;
   }
   vis.forEach((r,i)=>{
-    const dow=new Date(r.year,r.month,r.date).getDay();
-    const isSat=dow===6, isSun=dow===0;
+    const dow=r.date?new Date(r.year,r.month,r.date).getDay():0;
+    const isSat=r.date&&dow===6, isSun=r.date&&dow===0;
     const isHol=r.dayType==='Public Holiday', isOff=r.dayType==='Off Day';
     const isAL=r.dayType==='Annual Leave', isML=r.dayType==='Medical Leave', isOL=r.dayType==='Unpaid Leave';
     const cls=isAL?'annual':isML?'medical':isOL?'other':isOff?'offday':isHol?'hol':isSun?'sun':isSat?'sat':'';
@@ -1158,7 +1160,7 @@ function exportXLSX(){
 
   // Data rows
   vis.forEach((r,i)=>{
-    const dow=new Date(r.year,r.month,r.date).getDay();
+    const dow=r.date?new Date(r.year,r.month,r.date).getDay():0;
     const showRate=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
     aoa.push([
       i+1,
