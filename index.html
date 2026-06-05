@@ -80,8 +80,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:10
 
 /* Main table */
 .tw{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
-  box-shadow:var(--sh);overflow:auto;margin-bottom:14px;}
-table.main{width:100%;border-collapse:collapse;font-size:12px;min-width:1000px;}
+  box-shadow:var(--sh);overflow-x:auto;overflow-y:visible;margin-bottom:14px;width:100%;}
+table.main{width:100%;border-collapse:collapse;font-size:12px;min-width:1080px;}
 table.main thead th{background:var(--head);color:#fff;padding:10px;text-align:left;
   font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
   white-space:nowrap;position:sticky;top:0;z-index:2;}
@@ -310,7 +310,7 @@ tr.hol{background:#FEF2F2!important;}
     <tbody id="tbody"></tbody>
     <tfoot>
 
-      <!-- ① OT TOTALS — aligned with data columns -->
+      <!-- ① OT TOTALS — 15 cols: 1-6 label | 7=Reg | 8=OT | 9=Total | 10=Rate | 11=Pay | 12=Meal | 13=Att | 14=Remarks | 15=Del -->
       <tr class="tfoot-row tfoot-tot">
         <td colspan="6" style="font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:9px 10px;">OT Totals</td>
         <td class="n" id="fReg">0.00</td>
@@ -320,8 +320,8 @@ tr.hol{background:#FEF2F2!important;}
         <td class="n" id="fPay">RM 0.00</td>
         <td class="n" id="fMealTot">RM 0.00</td>
         <td class="n" id="fAttTot">RM 0.00</td>
-        <td></td>
-        <td class="noprint"></td>
+        <td style="padding:0"></td>
+        <td class="noprint" style="padding:0"></td>
       </tr>
 
       <!-- ② EARNINGS HEADER -->
@@ -692,17 +692,14 @@ async function saveCloud(){
   const payload = JSON.stringify({ year, mon, rows, rid, settings: getSettings() });
   try{
     setSyncStatus('saving','Saving to cloud…');
-    // Send as URL-encoded form so Apps Script reads via e.parameter.data
-    const body = 'data=' + encodeURIComponent(payload);
-    await fetch(SCRIPT_URL, {
-      method : 'POST',
-      mode   : 'no-cors',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body   : body
-    });
+    // Apps Script with no-cors: use GET with data as query string param
+    // Apps Script doGet reads e.parameter.data
+    const url = SCRIPT_URL + '?action=save&data=' + encodeURIComponent(payload);
+    // Use image trick to fire GET without CORS issues
+    await fetch(url, { method:'GET', mode:'no-cors' });
     setSyncStatus('idle','Saved to Google Sheets ✓');
   }catch(e){
-    setSyncStatus('error','Save failed — check your Script URL');
+    setSyncStatus('error','Save failed — check Script URL');
   }
 }
 
