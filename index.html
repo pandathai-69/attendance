@@ -672,7 +672,7 @@ function setStat(state,msg){
   el.style.color=state==='ok'?'#10b981':state==='err'?'#ef4444':'#f59e0b';
 }
 
-// JSONP helper — injects a <script> tag and waits for callback
+// JSONP helper — injects a script tag and waits for callback
 // Retries once on script error (transient network issues)
 function jsonp(url, cbName, timeoutMs, retry){
   return new Promise((res,rej)=>{
@@ -826,6 +826,42 @@ window.addEventListener('offline',updateOnlineStatus);
 // ═══════════════════════════════════════════════════════════════════════
 // PUBLIC HOLIDAYS — Malaysia
 // ═══════════════════════════════════════════════════════════════════════
+// ── EXPORT XLSX ────────────────────────────────────────────────────────────
+function exportXLSX(){
+  if(typeof XLSX==='undefined'){alert('SheetJS not loaded — check internet connection.');return;}
+  const vis=rows.filter(r=>r.year===year&&r.month===mon).sort((a,b)=>(a.date||99)-(b.date||99));
+  if(!vis.length){alert('No data to export for '+MN[mon]+' '+year+'.');return;}
+  const bas=n('bas'),alw=n('alw'),oth=n('oth'),dr=n('drR');
+  const tPay=vis.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
+  const tMeal=vis.reduce((a,r)=>a+r.meal,0),tAtt=vis.reduce((a,r)=>a+r.att,0);
+  const tReg=vis.reduce((a,r)=>a+r.regH,0),tOT=vis.reduce((a,r)=>a+r.otH,0);
+  const unDed=vis.filter(r=>r.dayType==='Unpaid Leave').length*dr;
+  const grand=tPay+tMeal+tAtt+bas+alw+oth-unDed;
+  const wb=XLSX.utils.book_new();
+  const hdr=['#','Date','Day','Day Type','Time In','Time Out','Reg Hrs','OT Hrs','Tot Hrs','Rate','OT Pay','Meal','Att.','Remarks'];
+  const data=[hdr];
+  vis.forEach((r,i)=>{
+    const dow=r.date?new Date(r.year,r.month,r.date).getDay():-1;
+    const dd=r.date?pad2(r.date)+'/'+pad2(r.month+1)+'/'+String(r.year).slice(-2):'';
+    const sR=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
+    data.push([i+1,dd,dow>=0?DN[dow]:'',r.dayType||'',r.timeIn||'',r.timeOut||'',
+      r.regH,r.otH,r.totH,sR&&r.rate>0?r.rate:0,r.pay>0?r.pay:0,r.meal,r.att,r.remarks||'']);
+  });
+  data.push([],[' TOTALS','','','','','',tReg,tOT,vis.reduce((a,r)=>a+r.totH,0),'',tPay,tMeal,tAtt,'']);
+  data.push([' OT Pay','','','','','','','','','',tPay,'','','']);
+  data.push([' Meal Allow','','','','','','','','','',tMeal,'','','']);
+  data.push([' Att. Allow','','','','','','','','','',tAtt,'','','']);
+  data.push([' Basic Salary','','','','','','','','','',bas,'','','']);
+  data.push([' Allowance','','','','','','','','','',alw,'','','']);
+  data.push([' Others','','','','','','','','','',oth,'','','']);
+  if(unDed>0) data.push([' Unpaid Deduction','','','','','','','','','','-'+unDed.toFixed(2),'','','']);
+  data.push([' GRAND TOTAL','','','','','','','','','',grand,'','','']);
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:4},{wch:10},{wch:5},{wch:18},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:7},{wch:11},{wch:9},{wch:9},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,ws,MN[mon].slice(0,3)+' '+year);
+  XLSX.writeFile(wb,'Attendance_'+MN[mon]+'_'+year+'.xlsx');
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // PAYSLIP
 // ═══════════════════════════════════════════════════════════════════════
@@ -934,7 +970,7 @@ function exportPayslipPDF(){
 })();
 </script>
 <!-- PAYSLIP MODAL -->
-<div id="payslipModal" onclick="if(event.target===this)closePayslip()">
+<div id="payslipModal" onclick="if(event.target===this){closePayslip();}">
   <div id="payslipInner">
     <div class="ps-head">
       <h2>📋 Payslip</h2>
