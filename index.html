@@ -703,22 +703,26 @@ function jsonp(url, cbName, timeoutMs){
 async function doSave(){
   if(!CLOUD_URL) return;
   const payload=JSON.stringify({rows,rid,year,mon,settings:getSettings()});
-  // CHUNK=300 raw chars → encodes to ~600 → total URL ~850 chars (safe for Apps Script)
   const CHUNK=300;
   const total=Math.ceil(payload.length/CHUNK);
   const ts=Date.now();
+  setStat('saving','🔄 Saving ('+total+' parts, '+payload.length+' chars)…');
+  console.log('[SAVE] payload='+payload.length+' chars, total chunks='+total);
   try{
-    setStat('saving','🔄 Saving ('+total+' parts)…');
     for(let i=0;i<total;i++){
       const rawChunk=payload.slice(i*CHUNK,(i+1)*CHUNK);
       const encChunk=encodeURIComponent(rawChunk);
       const cbName='__taSave_'+ts+'_'+i;
       const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
-      await jsonp(url, cbName, 20000);
+      console.log('[SAVE] chunk '+i+'/'+total+' url_len='+url.length);
+      const result=await jsonp(url, cbName, 20000);
+      console.log('[SAVE] chunk '+i+' response='+JSON.stringify(result));
     }
     setStat('ok','🟢 Saved to Google Sheets ✓');
+    console.log('[SAVE] all done');
   }catch(e){
     setStat('err','🔴 Save failed: '+e.message);
+    console.error('[SAVE] error:',e);
   }
 }
 
