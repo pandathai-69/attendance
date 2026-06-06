@@ -665,6 +665,12 @@ function fixRow(r){
 }
 
 // ── CLOUD SYNC ─────────────────────────────────────────────────────────────
+// WHY JSONP FOR BOTH SAVE AND LOAD:
+// GitHub Pages → Apps Script: browser blocks no-cors POST silently.
+// JSONP (script tag GET) bypasses CORS entirely — the only reliable method.
+// Payload is compressed and sent as a URL param — Apps Script reads e.parameter.d
+// Large payloads are chunked: if > 1800 chars, data is split into multiple GET calls.
+
 let saveTimer=null;
 function scheduleSave(){
   if(!CLOUD_URL) return;
@@ -677,30 +683,46 @@ function setStat(state,msg){
   el.textContent=msg;
   el.style.color=state==='ok'?'#10b981':state==='err'?'#ef4444':'#f59e0b';
 }
+
+// JSONP helper — injects a <script> tag and waits for callback
+function jsonp(url, cbName, timeoutMs){
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    window[cbName]=function(d){ delete window[cbName]; s.remove(); res(d); };
+    s.src=url; s.onerror=()=>{ delete window[cbName]; s.remove(); rej(new Error('script error')); };
+    document.head.appendChild(s);
+    setTimeout(()=>{ delete window[cbName]; s.remove(); rej(new Error('timeout')); }, timeoutMs||10000);
+  });
+}
+
 async function doSave(){
   if(!CLOUD_URL) return;
   const payload=JSON.stringify({rows,rid,year,mon,settings:getSettings()});
+  // Split into chunks of 1800 chars so URL stays under 2048 limit
+  const CHUNK=1800;
+  const enc=encodeURIComponent(payload);
+  const total=Math.ceil(enc.length/CHUNK);
   try{
-    await fetch(CLOUD_URL,{
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'text/plain'},
-      body:payload
-    });
-    setStat('ok','🟢 Saved ✓');
-  }catch(e){ setStat('err','🔴 Save failed'); }
+    setStat('saving','🔄 Saving ('+total+' part'+(total>1?'s':'')+')…');
+    for(let i=0;i<total;i++){
+      const chunk=enc.slice(i*CHUNK,(i+1)*CHUNK);
+      const cbName='__taSave_'+Date.now()+'_'+i;
+      const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+chunk+'&cb='+cbName+'&ts='+Date.now();
+      await jsonp(url, cbName, 12000);
+    }
+    setStat('ok','🟢 Saved to Google Sheets ✓');
+  }catch(e){
+    setStat('err','🔴 Save failed: '+e.message);
+  }
 }
+
 async function doLoad(){
   if(!CLOUD_URL){ setStat('','⚪ Local only'); return; }
   setStat('saving','🔄 Loading…');
   try{
-    const url=CLOUD_URL+'?cb=__taLoad&ts='+Date.now();
-    const data=await new Promise((res,rej)=>{
-      window.__taLoad=d=>{ delete window.__taLoad; res(d); };
-      const s=document.createElement('script'); s.src=url;
-      s.onerror=()=>{ delete window.__taLoad; rej(new Error('load fail')); };
-      document.head.appendChild(s);
-      setTimeout(()=>{ delete window.__taLoad; rej(new Error('timeout')); },8000);
-    });
+    const cbName='__taLoad_'+Date.now();
+    const url=CLOUD_URL+'?action=load&cb='+cbName+'&ts='+Date.now();
+    const data=await jsonp(url, cbName, 12000);
     if(data&&data.rows){
       rows=data.rows; rid=data.rid||0;
       year=data.year||new Date().getFullYear();
@@ -708,10 +730,12 @@ async function doLoad(){
       rows.forEach(fixRow);
       applySettings(data.settings);
       saveLocal(); syncSels();
-      setStat('ok','🟢 Loaded ✓');
-    } else { setStat('ok','🟢 Cloud empty'); }
+      setStat('ok','🟢 Loaded from Google Sheets ✓');
+    } else {
+      setStat('ok','🟡 Cloud empty — showing local');
+    }
   }catch(e){
-    setStat('err','🔴 Load failed — using local');
+    setStat('err','🔴 Load failed — using local backup');
     loadLocal();
   }
 }
