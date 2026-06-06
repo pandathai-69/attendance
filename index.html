@@ -703,17 +703,19 @@ function jsonp(url, cbName, timeoutMs){
 async function doSave(){
   if(!CLOUD_URL) return;
   const payload=JSON.stringify({rows,rid,year,mon,settings:getSettings()});
-  // Split into chunks of 1800 chars so URL stays under 2048 limit
   const CHUNK=1800;
   const enc=encodeURIComponent(payload);
   const total=Math.ceil(enc.length/CHUNK);
+  // ONE timestamp for ALL chunks — critical so PropertiesService keys match
+  const ts=Date.now();
   try{
     setStat('saving','🔄 Saving ('+total+' part'+(total>1?'s':'')+')…');
     for(let i=0;i<total;i++){
       const chunk=enc.slice(i*CHUNK,(i+1)*CHUNK);
-      const cbName='__taSave_'+Date.now()+'_'+i;
-      const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+chunk+'&cb='+cbName+'&ts='+Date.now();
-      await jsonp(url, cbName, 12000);
+      const cbName='__taSave_'+ts+'_'+i;
+      // ts is fixed — same key across all chunks so Apps Script can reassemble
+      const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+chunk+'&cb='+cbName+'&ts='+ts;
+      await jsonp(url, cbName, 15000);
     }
     setStat('ok','🟢 Saved to Google Sheets ✓');
   }catch(e){
@@ -743,6 +745,10 @@ async function doLoad(){
     setStat('err','🔴 Load failed — using local backup');
     loadLocal();
   }
+  // Always recalc and render after load — regardless of success or failure
+  rows.forEach(r=>calcRow(r));
+  renderTable();
+  calcSummary();
 }
 // ── DEBUG & TEST ─────────────────────────────────────────────────────────
 function dbg(msg){
@@ -816,62 +822,20 @@ function setUrl(url){
   CLOUD_URL=url;
   localStorage.setItem('ta_url',url);
   document.getElementById('urlIn').value=url;
-  manualLoad();
+  doLoad();
 }
 function clearUrl(){ CLOUD_URL=''; localStorage.removeItem('ta_url'); setStat('','⚪ Local only'); }
-async function manualLoad(){
-  await doLoad();
-  rows.forEach(r=>calcRow(r));
-  renderTable(); calcSummary();
-}
-
-// ── EXPORT XLSX ────────────────────────────────────────────────────────────
-function exportXLSX(){
-  if(typeof XLSX==='undefined'){ alert('SheetJS not loaded — check internet.'); return; }
-  const vis=rows.filter(r=>r.year===year&&r.month===mon).sort((a,b)=>(a.date||99)-(b.date||99));
-  if(!vis.length){ alert('No data to export.'); return; }
-  const basic=n('bas'),alw=n('alw'),oth=n('oth');
-  const tPay=vis.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
-  const tMeal=vis.reduce((a,r)=>a+r.meal,0);
-  const tAtt=vis.reduce((a,r)=>a+r.att,0);
-  const tReg=vis.reduce((a,r)=>a+r.regH,0);
-  const tOT=vis.reduce((a,r)=>a+r.otH,0);
-  const tTot=vis.reduce((a,r)=>a+r.totH,0);
-  const unDed=vis.filter(r=>r.dayType==='Unpaid Leave').length*n('drR');
-  const grand=tPay+tMeal+tAtt+basic+alw+oth-unDed;
-  const wb=XLSX.utils.book_new();
-  const hdr=['#','Date','Day','Day Type','Time In','Time Out','Reg Hrs','OT Hrs','Tot Hrs','Rate','OT Pay','Meal','Att.','Remarks'];
-  const data=[hdr];
-  vis.forEach((r,i)=>{
-    const dow=r.date?new Date(r.year,r.month,r.date).getDay():-1;
-    const dd=r.date?`${pad2(r.date)}/${pad2(r.month+1)}/${String(r.year).slice(-2)}`:'';
-    data.push([i+1,dd,dow>=0?DN[dow]:'',r.dayType||'',r.timeIn||'',r.timeOut||'',
-      r.regH,r.otH,r.totH,r.rate>0?r.rate:0,r.pay>0?r.pay:0,r.meal,r.att,r.remarks||'']);
-  });
-  data.push([]);
-  data.push(['TOTALS','','','','','',tReg,tOT,tTot,'',tPay,tMeal,tAtt,'']);
-  data.push(['','','','OT Pay','','','','','','',tPay,'','','']);
-  data.push(['','','','Meal Allow','','','','','','',tMeal,'','','']);
-  data.push(['','','','Att. Allow','','','','','','',tAtt,'','','']);
-  data.push(['','','','Basic Salary','','','','','','',basic,'','','']);
-  data.push(['','','','Allowance','','','','','','',alw,'','','']);
-  data.push(['','','','Others','','','','','','',oth,'','','']);
-  data.push(['','','','Unpaid Deduction','','','','','','',unDed>0?-unDed:0,'','','']);
-  data.push(['','','','GRAND TOTAL','','','','','','',grand,'','','']);
-  const ws=XLSX.utils.aoa_to_sheet(data);
-  ws['!cols']=[{wch:4},{wch:10},{wch:5},{wch:18},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:7},{wch:11},{wch:9},{wch:9},{wch:14}];
-  XLSX.utils.book_append_sheet(wb,ws,MN[mon].slice(0,3)+' '+year);
-  XLSX.writeFile(wb,'Attendance_'+MN[mon]+'_'+year+'.xlsx');
-}
-
-// ── INIT ───────────────────────────────────────────────────────────────────
+async function manualLoad(){ await doLoad(); }
 (async function init(){
   const savedUrl=localStorage.getItem('ta_url')||'';
   if(savedUrl){ CLOUD_URL=savedUrl; document.getElementById('urlIn').value=savedUrl; }
   buildYearSel(); loadLocal(); syncSels();
-  if(CLOUD_URL){ await doLoad(); rows.forEach(r=>calcRow(r)); }
-  else { rows.forEach(r=>calcRow(r)); }
-  renderTable(); calcSummary();
+  if(CLOUD_URL){
+    await doLoad(); // doLoad handles recalc + render internally
+  } else {
+    rows.forEach(r=>calcRow(r));
+    renderTable(); calcSummary();
+  }
 })();
 </script>
 </body>
