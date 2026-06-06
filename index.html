@@ -378,6 +378,8 @@ let CLOUD_URL='';
 const g = id => { const el=document.getElementById(id); return el?el.value:''; };
 const n = id => { const v=parseFloat(g(id)); return isNaN(v)?0:v; };
 const toMin = t => { if(!t) return 0; const [h,m]=(t+'').split(':').map(Number); return h*60+(m||0); };
+// Returns worked minutes, handling past-midnight (timeOut < timeIn adds 24h)
+const workedMin = (ti,to) => { let a=toMin(ti), b=toMin(to); if(b<=a) b+=1440; return Math.max(b-a,0); };
 const maxDays = (y,m) => new Date(y,m+1,0).getDate();
 const pad2 = x => String(x).padStart(2,'0');
 const isoD = (y,m,d) => d?`${y}-${pad2(m+1)}-${pad2(d)}`:'';
@@ -422,7 +424,7 @@ function calcRow(r){
   const dow=new Date(r.year,r.month,r.date).getDay();
 
   if(dt==='Rest Day (Sunday)'||dt==='Public Holiday'){
-    const wm=Math.max(toMin(r.timeOut)-toMin(r.timeIn),0);
+    const wm=workedMin(r.timeIn,r.timeOut);  // handles past midnight
     const wh=wm/60;
     r.otH=+wh.toFixed(2); r.totH=r.otH;
     r.rate=dt==='Rest Day (Sunday)'?rSun:rHol;
@@ -432,7 +434,7 @@ function calcRow(r){
   }
 
   if(dt==='Overtime'){
-    const wm=Math.max(toMin(r.timeOut)-toMin(r.timeIn)-brk,0);
+    const wm=Math.max(workedMin(r.timeIn,r.timeOut)-brk,0);  // handles past midnight
     const wh=wm/60;
     r.otH=+wh.toFixed(2); r.totH=r.otH;
     r.rate=rOT; r.pay=+(wh*rOT*hr).toFixed(2);
@@ -440,10 +442,12 @@ function calcRow(r){
     return;
   }
 
-  // Regular
+  // Regular — handles past midnight (e.g. timeIn=20:00 timeOut=01:30 next day)
   const sf=shiftFor(dow);
   const ss=toMin(sf.s), se=toMin(sf.e);
-  const ai=toMin(r.timeIn), ao=toMin(r.timeOut);
+  const ai=toMin(r.timeIn);
+  let ao=toMin(r.timeOut);
+  if(ao<=ai) ao+=1440;  // past midnight: add 24h
   const overlapMin=Math.max(Math.min(ao,se)-Math.max(ai,ss)-brk,0);
   const overlapH=overlapMin/60;
   const beforeH=Math.max(ss-ai,0)/60;
@@ -776,6 +780,7 @@ function fixRow(r){
 
 // ── CLOUD SYNC ─────────────────────────────────────────────────────────────
 // Apps Script URL hardcoded as fallback — works on any browser/device without setup
+// IMPORTANT: Apps Script must be deployed with 'Anyone' access (not 'Anyone with Google account')
 const FALLBACK_URL = 'https://script.google.com/macros/s/AKfycbz-DBM409Puq90_rXajpDs_smKaqzM21qyaqfXQ5PMfAevegrimu4dqBP4nBSbaLt8H/exec';
 
 let saveTimer=null;
