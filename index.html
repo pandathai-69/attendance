@@ -676,11 +676,17 @@ function fixRow(r){
 // Payload is compressed and sent as a URL param — Apps Script reads e.parameter.d
 // Large payloads are chunked: if > 1800 chars, data is split into multiple GET calls.
 
+// ── CLOUD SYNC ─────────────────────────────────────────────────────────────
+// Paste your Apps Script URL between the quotes below as a permanent fallback:
+const FALLBACK_URL = 'https://script.google.com/macros/s/AKfycbz-DBM409Puq90_rXajpDs_smKaqzM21qyaqfXQ5PMfAevegrimu4dqBP4nBSbaLt8H/exec';
+
 let saveTimer=null;
 function scheduleSave(){
-  if(!CLOUD_URL) return;
+  if(!CLOUD_URL) CLOUD_URL=FALLBACK_URL;  // use fallback if URL not in localStorage
+  if(!CLOUD_URL){ setStat('','⚪ No cloud URL — data saved locally only'); return; }
   clearTimeout(saveTimer);
   setStat('saving','🔄 Saving…');
+  console.log('[SAVE] scheduleSave triggered, CLOUD_URL='+CLOUD_URL.slice(0,40)+'...');
   saveTimer=setTimeout(doSave,2000);
 }
 function setStat(state,msg){
@@ -830,11 +836,16 @@ function setUrl(url){
 function clearUrl(){ CLOUD_URL=''; localStorage.removeItem('ta_url'); setStat('','⚪ Local only'); }
 async function manualLoad(){ await doLoad(); }
 (async function init(){
-  const savedUrl=localStorage.getItem('ta_url')||'';
-  if(savedUrl){ CLOUD_URL=savedUrl; document.getElementById('urlIn').value=savedUrl; }
+  // Load saved URL from localStorage, or use the hardcoded fallback
+  const savedUrl=localStorage.getItem('ta_url')||FALLBACK_URL;
+  if(savedUrl){
+    CLOUD_URL=savedUrl;
+    const el=document.getElementById('urlIn');
+    if(el) el.value=savedUrl;
+  }
   buildYearSel(); loadLocal(); syncSels();
   if(CLOUD_URL){
-    await doLoad(); // doLoad handles recalc + render internally
+    await doLoad();
   } else {
     rows.forEach(r=>calcRow(r));
     renderTable(); calcSummary();
