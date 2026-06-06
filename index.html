@@ -33,10 +33,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:10
 
 /* PANELS */
 .panel{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
-  padding:14px 18px;box-shadow:var(--sh);margin-bottom:12px;}
+  padding:14px 18px;box-shadow:var(--sh);margin-bottom:12px;overflow:hidden;}
 .ptitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
   color:var(--txt3);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--brd);}
-.row-f{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+.row-f{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.srow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
 .sf{display:flex;flex-direction:column;gap:4px;}
 .sf label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);}
 .sf input,.sf select{font-family:var(--sans);font-size:13px;padding:6px 9px;border:1px solid var(--brd);
@@ -44,22 +45,21 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:10
 .sf input:focus,.sf select:focus{border-color:var(--acc);}
 .sf .hint{font-size:10px;color:var(--txt3);font-style:italic;margin-top:2px;}
 .vdiv{width:1px;background:var(--brd);align-self:stretch;margin:0 2px;}
+.sgroup-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--acc);margin-bottom:8px;margin-top:2px;padding-left:2px;
+  border-left:3px solid var(--acc);padding-left:6px;}
 .note{font-size:11px;color:#1E40AF;background:var(--acc2);border:1px solid #bfdbfe;
   border-radius:7px;padding:8px 13px;margin-top:10px;line-height:1.65;}
 
-/* RATE TABLE */
-.rtbl{width:100%;border-collapse:collapse;}
-.rtbl th{background:var(--head);color:#fff;font-size:10px;font-weight:700;
-  text-transform:uppercase;letter-spacing:.5px;padding:8px 12px;text-align:left;}
-.rtbl td{padding:0;border-bottom:1px solid var(--brd);vertical-align:middle;}
-.rtbl tr:last-child td{border-bottom:none;}
-.rcat{font-size:12px;font-weight:600;padding:9px 12px;background:var(--sur2);
-  border-right:1px solid var(--brd);width:190px;}
-.rin{border-right:1px solid var(--brd);width:120px;}
-.rin input{font-family:var(--mono);font-size:14px;font-weight:700;width:100%;
-  border:none;outline:none;padding:9px 10px;text-align:center;background:transparent;}
-.rin input:focus{background:var(--acc2);}
-.rdesc{font-size:11px;color:var(--txt3);padding:8px 12px;font-style:italic;}
+/* RATE CARDS GRID */
+.rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.rate-card{border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;}
+.rate-name{font-size:12px;font-weight:700;padding:9px 12px;border-bottom:1px solid rgba(0,0,0,.06);}
+.rate-inp{font-family:var(--mono);font-size:22px;font-weight:700;width:100%;
+  border:none;border-bottom:1px solid rgba(0,0,0,.06);outline:none;
+  padding:10px 12px;background:transparent;}
+.rate-inp:focus{background:rgba(255,255,255,.6);}
+.rate-desc{font-size:10px;color:var(--txt2);padding:7px 12px;line-height:1.4;flex:1;}
 
 /* CARDS */
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:9px;margin-bottom:12px;}
@@ -73,7 +73,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:10
 .cr{border-color:#fecaca;background:var(--red2);} .cr .cval{color:var(--red);}
 .cp{border-color:#ddd6fe;background:var(--pur2);} .cp .cval{color:var(--pur);}
 
-/* TABLE */
+/* TABLE — desktop */
 .tw{width:100%;overflow-x:auto;margin-bottom:12px;
   background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);box-shadow:var(--sh);}
 table{border-collapse:collapse;width:100%;min-width:900px;font-size:12px;}
@@ -114,7 +114,7 @@ tr.unp{background:#fff1f2!important;}
 tr.off{background:#f0fff4!important;}
 
 /* SYNC BAR */
-.xbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+.xbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
   padding:12px 16px;box-shadow:var(--sh);margin-bottom:10px;}
 .xbar-url{flex:1;min-width:220px;font-family:var(--mono);font-size:11px;padding:6px 9px;
@@ -122,11 +122,76 @@ tr.off{background:#f0fff4!important;}
 .xbar-url:focus{border-color:var(--acc);}
 .sstat{font-family:var(--mono);font-size:11px;color:var(--txt3);}
 
-@media(max-width:640px){
-  body{padding:10px;}
+/* RESPONSIVE — mobile first */
+@media(max-width:768px){
+  body{padding:8px;}
+  .hd{flex-direction:column;align-items:flex-start;}
+  .hd-r{width:100%;justify-content:flex-start;}
   .cards{grid-template-columns:repeat(2,1fr);}
+  .xbar{flex-direction:column;align-items:stretch;}
+  .xbar-url{min-width:0;width:100%;}
+  .sstat{text-align:center;}
+  .panel{padding:12px 14px;}
+  .row-f{gap:8px;}
+  .sf input,.sf select{font-size:12px;}
+  .srow{flex-direction:column;gap:8px;}
+  .srow .sf{width:100%;}
+  .srow .sf input{width:100%!important;}
+  .vdiv{display:none;}
+  /* rate table handled by card CSS below */
+  .name-bar{flex-direction:column;gap:8px;}
+  .name-bar input{max-width:100%!important;width:100%!important;}
+
+  /* PAY RATE TABLE — 2-col flex grid on mobile */
+  .rtbl{width:100%;max-width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;display:block;}
+  .rtbl thead{display:none;}
+  .rtbl tbody{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:100%;overflow:hidden;}
+  .rtbl tbody tr{
+    display:flex;flex-direction:column;
+    border:1px solid var(--brd);border-radius:var(--r);
+    overflow:hidden;min-width:0;
+  }
+  .rtbl td{
+    display:block;width:100%;box-sizing:border-box;
+    border:none!important;
+  }
+  .rcat{
+    font-size:12px;font-weight:700;padding:8px 10px;
+    width:100%!important;box-sizing:border-box;
+  }
+  .rin{width:100%!important;box-sizing:border-box;}
+  .rin input{
+    width:100%!important;font-size:18px;font-weight:700;
+    padding:6px 10px;text-align:left;box-sizing:border-box;
+    border-top:1px solid var(--brd)!important;
+  }
+  .rdesc{
+    display:block!important;width:100%;box-sizing:border-box;
+    font-size:10px;padding:6px 10px;color:var(--txt2);
+    font-style:normal;line-height:1.4;background:var(--sur2);
+    white-space:normal;word-break:break-word;
+    border-top:1px solid var(--brd);
+  }
+
+  /* TABLE — keep as horizontal scroll table on mobile, just tighter */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{min-width:700px;font-size:10px;}
+  thead th{padding:7px 5px;font-size:9px;letter-spacing:.2px;}
+  tbody td{padding:4px 5px;}
+  tbody td input,tbody td select{font-size:10px;padding:2px 3px;}
+  tbody td input[type="date"]{width:88px;}
+  tbody td input[type="time"]{width:62px;}
+  tbody td.n{font-size:10px;}
+  tfoot td{padding:6px 5px;font-size:10px;}
+}
+@media(max-width:480px){
+  .hd h1{font-size:16px;}
+  .btn{padding:6px 10px;font-size:11px;}
+  .cards{grid-template-columns:repeat(2,1fr);gap:7px;}
+  .cval{font-size:14px;}
 }
 @media print{.noprint{display:none!important;}.tw{box-shadow:none;}}
+
 </style>
 </head>
 <body>
@@ -168,26 +233,36 @@ tr.off{background:#f0fff4!important;}
 <!-- SETTINGS -->
 <div class="panel noprint">
   <div class="ptitle">Basic Settings</div>
-  <div class="row-f">
+
+  <!-- Row 1: Shift & Rates -->
+  <div class="sgroup-label">Shift & Pay Rates</div>
+  <div class="row-f" style="margin-bottom:14px;">
     <div class="sf"><label>Weekday Start</label><input type="time" id="wdS" value="09:00" oninput="recalcAll()"></div>
     <div class="sf"><label>Weekday End</label><input type="time" id="wdE" value="18:00" oninput="recalcAll()"></div>
     <div class="sf"><label>Sat Start</label><input type="time" id="saS" value="09:00" oninput="recalcAll()"></div>
     <div class="sf"><label>Sat End</label><input type="time" id="saE" value="18:00" oninput="recalcAll()"></div>
-    <div class="sf"><label>Break (min)</label><input type="text" id="brk" value="60" style="width:62px" oninput="recalcAll()"></div>
+    <div class="sf"><label>Break (min)</label><input type="text" id="brk" value="60" style="width:64px" oninput="recalcAll()"></div>
     <div class="vdiv"></div>
-    <div class="sf"><label>Hourly Rate (RM)</label><input type="text" id="hrR" placeholder="e.g. 25.00" style="width:105px" oninput="recalcAll()"></div>
-    <div class="sf"><label>Per Day Rate (RM)</label><input type="text" id="drR" placeholder="e.g. 200.00" style="width:105px" oninput="recalcAll()"></div>
-    <div class="vdiv"></div>
-    <div class="sf"><label>Basic Salary (RM)</label><input type="text" id="bas" placeholder="e.g. 3000" style="width:105px" oninput="calcSummary()"></div>
-    <div class="sf"><label>Allowance (RM)</label><input type="text" id="alw" placeholder="e.g. 300" style="width:105px" oninput="calcSummary()"></div>
-    <div class="sf"><label>Others (RM)</label><input type="text" id="oth" placeholder="e.g. 50" style="width:105px" oninput="calcSummary()"></div>
-    <div class="vdiv"></div>
-    <div class="sf"><label>Meal Allow (RM)</label><input type="text" id="mAmt" value="20" style="width:85px" oninput="recalcAll()"><div class="hint">Per OT ≥ 2h</div></div>
-    <div class="sf"><label>Att. Allow (RM)</label><input type="text" id="aAmt" value="20" style="width:85px" oninput="recalcAll()"><div class="hint">Per check-in</div></div>
-    <div class="vdiv"></div>
-    <div class="sf"><label>Annual Leave (days)</label><input type="text" id="lvA" placeholder="e.g. 14" style="width:85px" oninput="calcSummary()"></div>
-    <div class="sf"><label>Medical Leave (days)</label><input type="text" id="lvM" placeholder="e.g. 14" style="width:85px" oninput="calcSummary()"></div>
-    <div class="sf"><label>Unpaid Leave (days)</label><input type="text" id="lvU" placeholder="opt." style="width:85px" oninput="calcSummary()"></div>
+    <div class="sf"><label>Hourly Rate (RM)</label><input type="text" id="hrR" placeholder="0.00" style="width:100px" oninput="recalcAll()"></div>
+    <div class="sf"><label>Per Day Rate (RM)</label><input type="text" id="drR" placeholder="0.00" style="width:100px" oninput="recalcAll()"></div>
+  </div>
+
+  <!-- Row 2: Salary & Allowances — all 5 inline parallel -->
+  <div class="sgroup-label">Salary &amp; Allowances</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px;">
+    <div class="sf"><label>Basic Salary (RM)</label><input type="text" id="bas" placeholder="0.00" style="width:100%" oninput="calcSummary()"></div>
+    <div class="sf"><label>Allowance (RM)</label><input type="text" id="alw" placeholder="0.00" style="width:100%" oninput="calcSummary()"></div>
+    <div class="sf"><label>Others (RM)</label><input type="text" id="oth" placeholder="0.00" style="width:100%" oninput="calcSummary()"></div>
+    <div class="sf"><label>Meal Allow (RM)</label><input type="text" id="mAmt" value="20" style="width:100%" oninput="recalcAll()"><div class="hint">Per OT ≥ 2h</div></div>
+    <div class="sf"><label>Att. Allow (RM)</label><input type="text" id="aAmt" value="20" style="width:100%" oninput="recalcAll()"><div class="hint">Per check-in</div></div>
+  </div>
+
+  <!-- Row 3: Leave Entitlement — 3 inline parallel -->
+  <div class="sgroup-label">Leave Entitlement (days)</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
+    <div class="sf"><label>Annual Leave</label><input type="text" id="lvA" placeholder="e.g. 14" style="width:100%" oninput="calcSummary()"></div>
+    <div class="sf"><label>Medical Leave</label><input type="text" id="lvM" placeholder="e.g. 14" style="width:100%" oninput="calcSummary()"></div>
+    <div class="sf"><label>Unpaid Leave</label><input type="text" id="lvU" placeholder="opt." style="width:100%" oninput="calcSummary()"></div>
   </div>
   <div class="note">
     📌 Mon–Fri & Sat: 8h regular (break deducted). Hours outside shift = OT. &nbsp;|&nbsp;
@@ -199,23 +274,28 @@ tr.off{background:#f0fff4!important;}
 <!-- PAY RATES -->
 <div class="panel noprint">
   <div class="ptitle">Pay Rate Multipliers — enter (×) for each type</div>
-  <table class="rtbl">
-    <thead><tr><th style="width:190px">Type</th><th style="width:120px;text-align:center">Rate (×)</th><th>When Applied</th></tr></thead>
-    <tbody>
-      <tr><td class="rcat" style="background:var(--amb2);color:#92400E;">Overtime</td>
-          <td class="rin" style="background:var(--amb2);"><input type="text" id="rOT" placeholder="e.g. 1.50" oninput="recalcAll()" style="color:#92400E;"></td>
-          <td class="rdesc" style="background:var(--amb2);">Mon–Fri & Sat hours outside normal shift; Sun/Holiday OT</td></tr>
-      <tr><td class="rcat" style="background:var(--pur2);color:#5b21b6;">Rest Day (Sunday)</td>
-          <td class="rin" style="background:var(--pur2);"><input type="text" id="rSun" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#5b21b6;"></td>
-          <td class="rdesc" style="background:var(--pur2);">All hours on Sunday — no break deducted</td></tr>
-      <tr><td class="rcat" style="background:var(--red2);color:#991b1b;">Public Holiday</td>
-          <td class="rin" style="background:var(--red2);"><input type="text" id="rHol" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#991b1b;"></td>
-          <td class="rdesc" style="background:var(--red2);">All hours on Public Holidays — no break deducted</td></tr>
-      <tr><td class="rcat" style="background:var(--grn2);color:#065f46;">Off Day</td>
-          <td class="rin" style="background:var(--grn2);"><input type="text" id="rOff" placeholder="e.g. 0.00" oninput="recalcAll()" style="color:#065f46;"></td>
-          <td class="rdesc" style="background:var(--grn2);">Scheduled off / leave</td></tr>
-    </tbody>
-  </table>
+  <div class="rate-grid">
+    <div class="rate-card" style="border-color:#FDE68A;background:var(--amb2);">
+      <div class="rate-name" style="color:#92400E;">Overtime</div>
+      <input class="rate-inp" type="text" id="rOT" placeholder="e.g. 1.50" oninput="recalcAll()" style="color:#92400E;">
+      <div class="rate-desc">Mon–Fri &amp; Sat hours outside normal shift; Sun/Holiday OT</div>
+    </div>
+    <div class="rate-card" style="border-color:#DDD6FE;background:var(--pur2);">
+      <div class="rate-name" style="color:#5b21b6;">Rest Day (Sunday)</div>
+      <input class="rate-inp" type="text" id="rSun" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#5b21b6;">
+      <div class="rate-desc">All hours on Sunday — no break deducted</div>
+    </div>
+    <div class="rate-card" style="border-color:#FECACA;background:var(--red2);">
+      <div class="rate-name" style="color:#991b1b;">Public Holiday</div>
+      <input class="rate-inp" type="text" id="rHol" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#991b1b;">
+      <div class="rate-desc">All hours on Public Holidays — no break deducted</div>
+    </div>
+    <div class="rate-card" style="border-color:#A7F3D0;background:var(--grn2);">
+      <div class="rate-name" style="color:#065f46;">Off Day</div>
+      <input class="rate-inp" type="text" id="rOff" placeholder="e.g. 0.00" oninput="recalcAll()" style="color:#065f46;">
+      <div class="rate-desc">Scheduled off / leave</div>
+    </div>
+  </div>
 </div>
 
 <!-- CARDS -->
@@ -235,25 +315,48 @@ tr.off{background:#f0fff4!important;}
   <div class="card cr"><div class="clbl">Unpaid</div><div class="cval" id="cLU">0</div><div class="csub">days taken</div></div>
 </div>
 
+<!-- NAME FIELD -->
+<div class="name-bar" style="background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
+  padding:12px 18px;box-shadow:var(--sh);margin-bottom:12px;display:flex;align-items:center;gap:16px;">
+  <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--txt3);white-space:nowrap;">Employee Name</label>
+  <input type="text" id="empName" placeholder="Enter employee name…"
+    style="flex:1;max-width:320px;font-family:var(--sans);font-size:14px;font-weight:500;
+    padding:7px 12px;border:1px solid var(--brd);border-radius:7px;
+    background:var(--sur);color:var(--txt);outline:none;"
+    onfocus="this.style.borderColor='var(--acc)'"
+    onblur="this.style.borderColor='var(--brd)'"
+    oninput="saveLocal();saveSettings_()">
+  <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--txt3);white-space:nowrap;">Position / Dept.</label>
+  <input type="text" id="empPos" placeholder="e.g. Engineer, Operations…"
+    style="flex:1;max-width:260px;font-family:var(--sans);font-size:14px;
+    padding:7px 12px;border:1px solid var(--brd);border-radius:7px;
+    background:var(--sur);color:var(--txt);outline:none;"
+    onfocus="this.style.borderColor='var(--acc)'"
+    onblur="this.style.borderColor='var(--brd)'"
+    oninput="saveLocal();saveSettings_()">
+</div>
+
 <!-- TABLE -->
 <div class="tw">
 <table id="mainTbl">
   <thead><tr>
-    <th style="width:26px">#</th>
-    <th style="width:108px">Date</th>
-    <th style="width:34px">Day</th>
-    <th style="width:140px">Day Type</th>
-    <th style="width:78px">Time In</th>
-    <th style="width:78px">Time Out</th>
-    <th style="width:60px;text-align:right">Reg Hrs</th>
-    <th style="width:60px;text-align:right">OT Hrs</th>
-    <th style="width:60px;text-align:right">Tot Hrs</th>
-    <th style="width:52px;text-align:right">Rate</th>
-    <th style="width:90px;text-align:right">OT Pay(RM)</th>
-    <th style="width:78px;text-align:right">Meal</th>
-    <th style="width:78px;text-align:right">Att.</th>
-    <th style="width:90px">Remarks</th>
-    <th style="width:36px" class="noprint"></th>
+    <th style="width:22px">#</th>
+    <th style="width:90px">Date</th>
+    <th style="width:30px">Day</th>
+    <th style="width:110px">Day Type</th>
+    <th style="width:68px">Time In</th>
+    <th style="width:68px">Time Out</th>
+    <th style="width:52px;text-align:right">Reg Hrs</th>
+    <th style="width:52px;text-align:right">OT Hrs</th>
+    <th style="width:52px;text-align:right">Tot Hrs</th>
+    <th style="width:42px;text-align:right">Rate</th>
+    <th style="width:80px;text-align:right">OT Pay(RM)</th>
+    <th style="width:52px;text-align:right">Meal</th>
+    <th style="width:52px;text-align:right">Att.</th>
+    <th style="width:70px">Remarks</th>
+    <th style="width:28px" class="noprint"></th>
   </tr></thead>
   <tbody id="tbody"></tbody>
   <tfoot id="tfoot"></tfoot>
@@ -265,7 +368,7 @@ tr.off{background:#f0fff4!important;}
 const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const TYPES=['— Select —','Regular','Overtime','Rest Day (Sunday)','Public Holiday','Annual Leave','Medical Leave','Unpaid Leave','Off Day'];
-const SIDS=['wdS','wdE','saS','saE','brk','hrR','drR','bas','alw','oth','mAmt','aAmt','lvA','lvM','lvU','rOT','rSun','rHol','rOff'];
+const SIDS=['wdS','wdE','saS','saE','brk','hrR','drR','bas','alw','oth','mAmt','aAmt','lvA','lvM','lvU','rOT','rSun','rHol','rOff','empName','empPos'];
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 let year=new Date().getFullYear(), mon=new Date().getMonth(), rows=[], rid=0;
@@ -701,13 +804,26 @@ function setStat(state,msg){
 }
 
 // JSONP helper — injects a <script> tag and waits for callback
-function jsonp(url, cbName, timeoutMs){
+// Retries once on script error (transient network issues)
+function jsonp(url, cbName, timeoutMs, retry){
   return new Promise((res,rej)=>{
     const s=document.createElement('script');
     window[cbName]=function(d){ delete window[cbName]; s.remove(); res(d); };
-    s.src=url; s.onerror=()=>{ delete window[cbName]; s.remove(); rej(new Error('script error')); };
+    s.src=url;
+    s.onerror=function(){
+      delete window[cbName]; s.remove();
+      if(!retry){
+        // Retry once after 1s
+        console.log('[JSONP] script error on '+cbName+' — retrying in 1s...');
+        setTimeout(()=>{
+          jsonp(url, cbName, timeoutMs, true).then(res).catch(rej);
+        }, 1000);
+      } else {
+        rej(new Error('script error after retry — Apps Script may have rejected the request'));
+      }
+    };
     document.head.appendChild(s);
-    setTimeout(()=>{ delete window[cbName]; s.remove(); rej(new Error('timeout')); }, timeoutMs||10000);
+    setTimeout(()=>{ delete window[cbName]; s.remove(); rej(new Error('timeout after '+(timeoutMs||10000)+'ms')); }, timeoutMs||10000);
   });
 }
 
@@ -726,17 +842,18 @@ async function doSave(){
       const encChunk=encodeURIComponent(rawChunk);
       const cbName='__taSave_'+ts+'_'+i;
       const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
-      console.log('[SAVE] chunk '+i+'/'+total+' url_len='+url.length);
-      const result=await jsonp(url, cbName, 20000);
-      console.log('[SAVE] chunk '+i+' response='+JSON.stringify(result));
+      console.log('[SAVE] chunk '+i+'/'+total+' raw='+rawChunk.length+' enc='+encChunk.length+' url='+url.length);
+      setStat('saving','🔄 Saving part '+(i+1)+'/'+total+'…');
+      const result=await jsonp(url, cbName, 25000);
+      console.log('[SAVE] chunk '+i+' ok:', JSON.stringify(result).slice(0,80));
     }
     setStat('ok','🟢 Saved to Google Sheets ✓');
     console.log('[SAVE] all done');
   }catch(e){
     setStat('err','🔴 Save failed: '+e.message);
-    console.error('[SAVE] error:',e);
+    console.error('[SAVE] failed at chunk, error:', e.message);
   } finally {
-    isSaving=false;  // always clear flag when done
+    isSaving=false;
   }
 }
 
@@ -746,7 +863,7 @@ async function doLoad(){
   try{
     const cbName='__taLoad_'+Date.now();
     const url=CLOUD_URL+'?action=load&cb='+cbName+'&ts='+Date.now();
-    const data=await jsonp(url, cbName, 12000);
+    const data=await jsonp(url, cbName, 15000);
     if(data&&data.rows){
       rows=data.rows; rid=data.rid||0;
       year=data.year||new Date().getFullYear();
@@ -756,13 +873,21 @@ async function doLoad(){
       saveLocal(); syncSels();
       setStat('ok','🟢 Loaded from Google Sheets ✓');
     } else {
-      setStat('ok','🟡 Cloud empty — showing local');
+      loadLocal();
+      setStat('ok','🟡 Cloud empty — loaded local data');
     }
   }catch(e){
-    setStat('err','🔴 Load failed — using local backup');
+    console.warn('[LOAD] failed:',e.message,'— using localStorage');
     loadLocal();
+    // Show actionable error
+    if(e.message.includes('script error')){
+      setStat('err','🔴 Apps Script URL rejected — check deployment access (must be "Anyone")');
+    } else if(e.message.includes('timeout')){
+      setStat('err','🔴 Load timed out — check internet connection');
+    } else {
+      setStat('err','🔴 Load failed: '+e.message);
+    }
   }
-  // Always recalc and render after load — regardless of success or failure
   rows.forEach(r=>calcRow(r));
   renderTable();
   calcSummary();
