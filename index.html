@@ -676,13 +676,23 @@ function fixRow(r){
 const FALLBACK_URL = 'https://script.google.com/macros/s/AKfycbz-DBM409Puq90_rXajpDs_smKaqzM21qyaqfXQ5PMfAevegrimu4dqBP4nBSbaLt8H/exec';
 
 let saveTimer=null;
+let isSaving=false;
+
+// Warn user if they try to close while a cloud save is in progress
+window.addEventListener('beforeunload',function(e){
+  if(isSaving){
+    e.preventDefault();
+    e.returnValue='Data is still syncing to Google Sheets. Are you sure you want to leave?';
+    return e.returnValue;
+  }
+});
+
 function scheduleSave(){
-  if(!CLOUD_URL) CLOUD_URL=FALLBACK_URL;  // use fallback if URL not in localStorage
+  if(!CLOUD_URL) CLOUD_URL=FALLBACK_URL;
   if(!CLOUD_URL){ setStat('','⚪ No cloud URL — data saved locally only'); return; }
   clearTimeout(saveTimer);
   setStat('saving','🔄 Saving…');
-  console.log('[SAVE] scheduleSave triggered, CLOUD_URL='+CLOUD_URL.slice(0,40)+'...');
-  saveTimer=setTimeout(doSave,2000);
+  saveTimer=setTimeout(doSave,800); // 800ms delay — fast enough to complete before tab close
 }
 function setStat(state,msg){
   const el=document.getElementById('sstat'); if(!el) return;
@@ -707,7 +717,8 @@ async function doSave(){
   const CHUNK=300;
   const total=Math.ceil(payload.length/CHUNK);
   const ts=Date.now();
-  setStat('saving','🔄 Saving ('+total+' parts, '+payload.length+' chars)…');
+  isSaving=true;
+  setStat('saving','🔄 Saving ('+total+' parts)…');
   console.log('[SAVE] payload='+payload.length+' chars, total chunks='+total);
   try{
     for(let i=0;i<total;i++){
@@ -724,6 +735,8 @@ async function doSave(){
   }catch(e){
     setStat('err','🔴 Save failed: '+e.message);
     console.error('[SAVE] error:',e);
+  } finally {
+    isSaving=false;  // always clear flag when done
   }
 }
 
