@@ -504,19 +504,65 @@ function renderFooter(vis){
     `<td colspan="2"></td>`;
   tf.appendChild(lc);
 
-  [['ann','🟡 Annual Leave', annEnt||'—', allAnnTk, annEnt?annBal+' day(s)':'—'],
-   ['med','🟢 Medical Leave', medEnt||'—', allMedTk, medEnt?medBal+' day(s)':'—'],
-   ['unp','🔴 Unpaid Leave', '—', allUnpTk, '−RM '+(allUnpTk*n('drR')).toFixed(2)]
-  ].forEach(([cls2,label,ent,tk,bal])=>{
+  // Carry-forward leave display
+  const cf2=getLeaveCarryForward(year,mon);
+  const dr2=n('drR');
+
+  // Updated column headers for carry-forward
+  lc.innerHTML=`<td colspan="4" style="padding:6px 8px;">Leave Type</td>`+
+    `<td colspan="2" style="text-align:center;padding:6px 4px;font-size:10px;">Entitled</td>`+
+    `<td colspan="2" style="text-align:center;padding:6px 4px;font-size:10px;">Opening Bal</td>`+
+    `<td colspan="2" style="text-align:center;padding:6px 4px;font-size:10px;">This Month</td>`+
+    `<td colspan="3" style="text-align:center;padding:6px 4px;font-size:10px;">Closing Bal</td>`+
+    `<td colspan="2"></td>`;
+
+  [
+    {cls:'ann', label:'🟡 Annual Leave',
+     ent: cf2.annEnt||'—', open: cf2.annOpen, thisMon: cf2.annThisMon,
+     close: cf2.annEnt ? cf2.annClose+' day(s)' : '—', closeColor:'#10b981'},
+    {cls:'med', label:'🟢 Medical Leave',
+     ent: cf2.medEnt||'—', open: cf2.medOpen, thisMon: cf2.medThisMon,
+     close: cf2.medEnt ? cf2.medClose+' day(s)' : '—', closeColor:'#10b981'},
+    {cls:'unp', label:'🔴 Unpaid Leave',
+     ent: '—', open: '—', thisMon: allUnpTk,
+     close: allUnpTk>0 ? '−RM '+(allUnpTk*dr2).toFixed(2) : 'RM 0.00', closeColor:'#ef4444'},
+  ].forEach(row=>{
     const lr=document.createElement('tr');
-    lr.className='fleave-'+cls2;
-    lr.innerHTML=`<td colspan="5" style="padding:7px 8px;font-family:var(--sans);font-size:12px;">${label}</td>`+
-      `<td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;color:#1e40af;">${ent}</td>`+
-      `<td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;color:#ef4444;">${tk}</td>`+
-      `<td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;color:${cls2==='unp'?'#ef4444':'#10b981'};">${bal}</td>`+
+    lr.className='fleave-'+row.cls;
+    lr.innerHTML=
+      `<td colspan="4" style="padding:7px 8px;font-family:var(--sans);font-size:12px;">${row.label}</td>`+
+      `<td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;color:#1e40af;">${row.ent}</td>`+
+      `<td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;color:#6b7280;">${row.open}</td>`+
+      `<td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;color:#ef4444;">${row.thisMon}</td>`+
+      `<td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;color:${row.closeColor};">${row.close}</td>`+
       `<td colspan="2"></td>`;
     tf.appendChild(lr);
   });
+}
+
+// ── LEAVE CARRY-FORWARD ────────────────────────────────────────────────────
+// Returns leave taken BEFORE the given year/month (for carry-forward display)
+function getLeaveCarryForward(targetYear, targetMon){
+  const isBefore = r => r.year < targetYear || (r.year===targetYear && r.month < targetMon);
+  const annBefore = rows.filter(r=>isBefore(r)&&r.dayType==='Annual Leave').length;
+  const medBefore = rows.filter(r=>isBefore(r)&&r.dayType==='Medical Leave').length;
+  const annThisMon= rows.filter(r=>r.year===targetYear&&r.month===targetMon&&r.dayType==='Annual Leave').length;
+  const medThisMon= rows.filter(r=>r.year===targetYear&&r.month===targetMon&&r.dayType==='Medical Leave').length;
+  const annEnt=n('lvA'), medEnt=n('lvM');
+  return {
+    // Opening balance at start of this month
+    annOpen: Math.max(annEnt - annBefore, 0),
+    medOpen: Math.max(medEnt - medBefore, 0),
+    // Taken this month only
+    annThisMon, medThisMon,
+    // Closing balance after this month
+    annClose: Math.max(annEnt - annBefore - annThisMon, 0),
+    medClose: Math.max(medEnt - medBefore - medThisMon, 0),
+    // Cumulative taken all time
+    annTotalTk: annBefore + annThisMon,
+    medTotalTk: medBefore + medThisMon,
+    annEnt, medEnt
+  };
 }
 
 // ── SUMMARY CARDS ──────────────────────────────────────────────────────────
@@ -543,8 +589,10 @@ function calcSummary(){
   s('cMeal',tMeal.toFixed(2)); s('cAtt',tAtt.toFixed(2));
   s('cPay',tPay.toLocaleString('en-MY',{minimumFractionDigits:2}));
   s('cGrand',grand.toLocaleString('en-MY',{minimumFractionDigits:2}));
-  s('cLA', annEnt?Math.max(annEnt-annTk,0)+' / '+annEnt:'—');
-  s('cLM', medEnt?Math.max(medEnt-medTk,0)+' / '+medEnt:'—');
+  // Use carry-forward balances for cards
+  const cf=getLeaveCarryForward(year,mon);
+  s('cLA', cf.annEnt?cf.annClose+' / '+cf.annEnt:'—');
+  s('cLM', cf.medEnt?cf.medClose+' / '+cf.medEnt:'—');
   s('cLU', unpTk);
   document.getElementById('sub').textContent=MN[mon]+' '+year+' · '+v.length+' entries';
 }
@@ -807,9 +855,21 @@ function showPayslip(){
   s('psBas',rm2(bas)); s('psAlw',rm2(alw)); s('psOth',rm2(oth));
   s('psPay',rm2(tPay)); s('psMeal',rm2(tMeal)); s('psAtt',rm2(tAtt));
   s('psGrand',rm2(grand));
-  s('psLA',annEnt?Math.max(annEnt-annTk,0)+' / '+annEnt:'—');
-  s('psLM',medEnt?Math.max(medEnt-medTk,0)+' / '+medEnt:'—');
+  const cfPs=getLeaveCarryForward(year,mon);
+  s('psLA',cfPs.annEnt?cfPs.annClose+' day(s)':'—');
+  s('psLM',cfPs.medEnt?cfPs.medClose+' day(s)':'—');
   s('psLU',unDays);
+  // Show carry-forward detail in payslip leave cards
+  const laEl=document.getElementById('psLA');
+  const lmEl=document.getElementById('psLM');
+  if(laEl&&cfPs.annEnt){
+    laEl.innerHTML=cfPs.annClose+'<div style="font-size:10px;font-weight:400;color:#60A5FA;margin-top:2px;">'+
+      'Open: '+cfPs.annOpen+' − This month: '+cfPs.annThisMon+'</div>';
+  }
+  if(lmEl&&cfPs.medEnt){
+    lmEl.innerHTML=cfPs.medClose+'<div style="font-size:10px;font-weight:400;color:#6EE7B7;margin-top:2px;">'+
+      'Open: '+cfPs.medOpen+' − This month: '+cfPs.medThisMon+'</div>';
+  }
   s('psGenDate',new Date().toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'}));
   const ded=document.getElementById('psDeductSec');
   if(ded) ded.style.display=unDays>0?'block':'none';
