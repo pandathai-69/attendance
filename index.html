@@ -7,194 +7,13 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{
-  --bg:#F0F4F8;--sur:#fff;--sur2:#F8FAFC;--brd:#E2E8F0;
-  --acc:#2563EB;--acc2:#EFF6FF;--grn:#10B981;--grn2:#ECFDF5;
-  --amb:#F59E0B;--amb2:#FFFBEB;--red:#EF4444;--red2:#FEF2F2;
-  --pur:#8B5CF6;--pur2:#F5F3FF;--txt:#111827;--txt2:#4B5563;--txt3:#9CA3AF;
-  --head:#1E40AF;--dark:#1E293B;
-  --mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;
-  --r:10px;--sh:0 1px 4px rgba(0,0,0,.07),0 4px 14px rgba(0,0,0,.04);
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;padding:16px;}
-
-/* HEADER */
-.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
-.hd h1{font-size:19px;font-weight:700;}
-.hd p{font-size:11px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}
-.hd-r{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
-.btn{font-family:var(--sans);font-size:12px;font-weight:600;padding:7px 13px;border-radius:7px;
-  border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s;}
-.b-blue{background:var(--acc);color:#fff;} .b-blue:hover{background:#1D4ED8;}
-.b-gray{background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);} .b-gray:hover{background:var(--brd);}
-.b-red{background:var(--red2);color:var(--red);border:1px solid #fecaca;} .b-red:hover{background:#fee2e2;}
-.b-grn{background:#166534;color:#fff;} .b-grn:hover{background:#14532d;}
-
-/* PANELS */
-.panel{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
-  padding:14px 18px;box-shadow:var(--sh);margin-bottom:12px;overflow:hidden;}
-.ptitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
-  color:var(--txt3);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--brd);}
-.row-f{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
-.srow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
-.sf{display:flex;flex-direction:column;gap:4px;}
-.sf label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);}
-.sf input,.sf select{font-family:var(--sans);font-size:13px;padding:6px 9px;border:1px solid var(--brd);
-  border-radius:6px;background:var(--sur);color:var(--txt);outline:none;}
-.sf input:focus,.sf select:focus{border-color:var(--acc);}
-.sf .hint{font-size:10px;color:var(--txt3);font-style:italic;margin-top:2px;}
-.vdiv{width:1px;background:var(--brd);align-self:stretch;margin:0 2px;}
-.sgroup-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
-  color:var(--acc);margin-bottom:8px;margin-top:2px;padding-left:2px;
-  border-left:3px solid var(--acc);padding-left:6px;}
-.note{font-size:11px;color:#1E40AF;background:var(--acc2);border:1px solid #bfdbfe;
-  border-radius:7px;padding:8px 13px;margin-top:10px;line-height:1.65;}
-
-/* RATE CARDS GRID */
-.rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
-.rate-card{border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;}
-.rate-name{font-size:12px;font-weight:700;padding:9px 12px;border-bottom:1px solid rgba(0,0,0,.06);}
-.rate-inp{font-family:var(--mono);font-size:22px;font-weight:700;width:100%;
-  border:none;border-bottom:1px solid rgba(0,0,0,.06);outline:none;
-  padding:10px 12px;background:transparent;}
-.rate-inp:focus{background:rgba(255,255,255,.6);}
-.rate-desc{font-size:10px;color:var(--txt2);padding:7px 12px;line-height:1.4;flex:1;}
-
-/* CARDS */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:9px;margin-bottom:12px;}
-.card{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:11px 13px;box-shadow:var(--sh);}
-.clbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);margin-bottom:4px;}
-.cval{font-family:var(--mono);font-size:17px;font-weight:500;}
-.csub{font-size:10px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}
-.ca{border-color:#bfdbfe;background:var(--acc2);} .ca .cval{color:var(--acc);}
-.cg{border-color:#a7f3d0;background:var(--grn2);} .cg .cval{color:var(--grn);}
-.cm{border-color:#fde68a;background:var(--amb2);} .cm .cval{color:var(--amb);}
-.cr{border-color:#fecaca;background:var(--red2);} .cr .cval{color:var(--red);}
-.cp{border-color:#ddd6fe;background:var(--pur2);} .cp .cval{color:var(--pur);}
-
-/* TABLE — desktop */
-.tw{width:100%;overflow-x:auto;margin-bottom:12px;
-  background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);box-shadow:var(--sh);}
-table{border-collapse:collapse;width:100%;min-width:900px;font-size:12px;}
-thead th{background:var(--head);color:#fff;padding:9px 8px;text-align:left;
-  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;
-  white-space:nowrap;position:sticky;top:0;z-index:2;}
-tbody tr{border-bottom:1px solid #f1f5f9;}
-tbody tr:hover{background:#f8fafc;}
-tbody td{padding:5px 7px;color:var(--txt2);vertical-align:middle;}
-tbody td.n{font-family:var(--mono);font-size:11px;text-align:right;color:var(--txt);}
-tbody td input,tbody td select{
-  width:100%;border:1px solid transparent;background:transparent;
-  padding:3px 4px;border-radius:4px;font-size:11.5px;font-family:var(--sans);
-  color:var(--txt);outline:none;}
-tbody td input:focus,tbody td select:focus{border-color:var(--acc);background:var(--acc2);}
-tbody td input[type="date"],tbody td input[type="time"]{font-family:var(--mono);font-size:11px;}
-
-/* TFOOT */
-tfoot td{padding:8px;font-family:var(--mono);font-size:11.5px;font-weight:700;}
-.ftot td{background:#1E40AF;color:#fff;}
-.fearns td{background:#dbeafe;color:#1e3a8a;}
-.fsubt td{background:#1e3a8a;color:#fff;}
-.fded td{background:#fef2f2;color:#991b1b;}
-.fgrand td{background:#0f2354;color:#fff;font-size:13px;}
-.fleave-hdr td{background:#1e3a8a;color:#93c5fd;font-family:var(--sans);font-size:10px;text-transform:uppercase;letter-spacing:.6px;}
-.fleave-col td{background:#dbeafe;color:#1e40af;font-family:var(--sans);font-size:10px;font-weight:700;}
-.fleave-ann td{background:#fefce8;}
-.fleave-med td{background:#f0fff4;}
-.fleave-unp td{background:#fff1f2;}
-
-/* ROW COLORS */
-tr.sat{background:#f5f3ff!important;}
-tr.sun{background:#fff5f5!important;}
-tr.hol{background:#fef2f2!important;}
-tr.ann{background:#fefce8!important;}
-tr.med{background:#f0fff4!important;}
-tr.unp{background:#fff1f2!important;}
-tr.off{background:#f0fff4!important;}
-
-/* SYNC BAR */
-.xbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
-  padding:12px 16px;box-shadow:var(--sh);margin-bottom:10px;}
-.xbar-url{flex:1;min-width:220px;font-family:var(--mono);font-size:11px;padding:6px 9px;
-  border:1px solid var(--brd);border-radius:6px;outline:none;color:var(--txt);}
-.xbar-url:focus{border-color:var(--acc);}
-.sstat{font-family:var(--mono);font-size:11px;color:var(--txt3);}
-
-/* RESPONSIVE — mobile first */
-@media(max-width:768px){
-  body{padding:8px;}
-  .hd{flex-direction:column;align-items:flex-start;}
-  .hd-r{width:100%;justify-content:flex-start;}
-  .cards{grid-template-columns:repeat(2,1fr);}
-  .xbar{flex-direction:column;align-items:stretch;}
-  .xbar-url{min-width:0;width:100%;}
-  .sstat{text-align:center;}
-  .panel{padding:12px 14px;}
-  .row-f{gap:8px;}
-  .sf input,.sf select{font-size:12px;}
-  .srow{flex-direction:column;gap:8px;}
-  .srow .sf{width:100%;}
-  .srow .sf input{width:100%!important;}
-  .vdiv{display:none;}
-  /* rate table handled by card CSS below */
-  .name-bar{flex-direction:column;gap:8px;}
-  .name-bar input{max-width:100%!important;width:100%!important;}
-
-  /* PAY RATE TABLE — 2-col flex grid on mobile */
-  .rtbl{width:100%;max-width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;display:block;}
-  .rtbl thead{display:none;}
-  .rtbl tbody{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:100%;overflow:hidden;}
-  .rtbl tbody tr{
-    display:flex;flex-direction:column;
-    border:1px solid var(--brd);border-radius:var(--r);
-    overflow:hidden;min-width:0;
-  }
-  .rtbl td{
-    display:block;width:100%;box-sizing:border-box;
-    border:none!important;
-  }
-  .rcat{
-    font-size:12px;font-weight:700;padding:8px 10px;
-    width:100%!important;box-sizing:border-box;
-  }
-  .rin{width:100%!important;box-sizing:border-box;}
-  .rin input{
-    width:100%!important;font-size:18px;font-weight:700;
-    padding:6px 10px;text-align:left;box-sizing:border-box;
-    border-top:1px solid var(--brd)!important;
-  }
-  .rdesc{
-    display:block!important;width:100%;box-sizing:border-box;
-    font-size:10px;padding:6px 10px;color:var(--txt2);
-    font-style:normal;line-height:1.4;background:var(--sur2);
-    white-space:normal;word-break:break-word;
-    border-top:1px solid var(--brd);
-  }
-
-  /* TABLE — keep as horizontal scroll table on mobile, just tighter */
-  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  table{min-width:700px;font-size:10px;}
-  thead th{padding:7px 5px;font-size:9px;letter-spacing:.2px;}
-  tbody td{padding:4px 5px;}
-  tbody td input,tbody td select{font-size:10px;padding:2px 3px;}
-  tbody td input[type="date"]{width:88px;}
-  tbody td input[type="time"]{width:62px;}
-  tbody td.n{font-size:10px;}
-  tfoot td{padding:6px 5px;font-size:10px;}
-}
-@media(max-width:480px){
-  .hd h1{font-size:16px;}
-  .btn{padding:6px 10px;font-size:11px;}
-  .cards{grid-template-columns:repeat(2,1fr);gap:7px;}
-  .cval{font-size:14px;}
-}
-@media print{.noprint{display:none!important;}.tw{box-shadow:none;}}
-
+:root{--bg:#F0F4F8;--sur:#fff;--sur2:#F8FAFC;--brd:#E2E8F0;--acc:#2563EB;--acc2:#EFF6FF;--grn:#10B981;--grn2:#ECFDF5;--amb:#F59E0B;--amb2:#FFFBEB;--red:#EF4444;--red2:#FEF2F2;--pur:#8B5CF6;--pur2:#F5F3FF;--txt:#111827;--txt2:#4B5563;--txt3:#9CA3AF;--head:#1E40AF;--dark:#1E293B;--mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;--r:10px;--sh:0 1px 4px rgba(0,0,0,.07),0 4px 14px rgba(0,0,0,.04);}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;padding:16px;}.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}.hd h1{font-size:19px;font-weight:700;}.hd p{font-size:11px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}.hd-r{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}.btn{font-family:var(--sans);font-size:12px;font-weight:600;padding:7px 13px;border-radius:7px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s;}.b-blue{background:var(--acc);color:#fff;}.b-blue:hover{background:#1D4ED8;}.b-gray{background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);}.b-gray:hover{background:var(--brd);}.b-red{background:var(--red2);color:var(--red);border:1px solid #fecaca;}.b-red:hover{background:#fee2e2;}.b-grn{background:#166534;color:#fff;}.b-grn:hover{background:#14532d;}.panel{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:14px 18px;box-shadow:var(--sh);margin-bottom:12px;overflow:hidden;}.ptitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--brd);}.row-f{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}.srow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}.sf{display:flex;flex-direction:column;gap:4px;}.sf label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);}.sf input,.sf select{font-family:var(--sans);font-size:13px;padding:6px 9px;border:1px solid var(--brd);border-radius:6px;background:var(--sur);color:var(--txt);outline:none;}.sf input:focus,.sf select:focus{border-color:var(--acc);}.sf .hint{font-size:10px;color:var(--txt3);font-style:italic;margin-top:2px;}.vdiv{width:1px;background:var(--brd);align-self:stretch;margin:0 2px;}.sgroup-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--acc);margin-bottom:8px;margin-top:2px;padding-left:2px;border-left:3px solid var(--acc);padding-left:6px;}.note{font-size:11px;color:#1E40AF;background:var(--acc2);border:1px solid #bfdbfe;border-radius:7px;padding:8px 13px;margin-top:10px;line-height:1.65;}.rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}.rate-card{border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;}.rate-name{font-size:12px;font-weight:700;padding:9px 12px;border-bottom:1px solid rgba(0,0,0,.06);}.rate-inp{font-family:var(--mono);font-size:22px;font-weight:700;width:100%;border:none;border-bottom:1px solid rgba(0,0,0,.06);outline:none;padding:10px 12px;background:transparent;}.rate-inp:focus{background:rgba(255,255,255,.6);}.rate-desc{font-size:10px;color:var(--txt2);padding:7px 12px;line-height:1.4;flex:1;}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:9px;margin-bottom:12px;}.card{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:11px 13px;box-shadow:var(--sh);}.clbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);margin-bottom:4px;}.cval{font-family:var(--mono);font-size:17px;font-weight:500;}.csub{font-size:10px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}.ca{border-color:#bfdbfe;background:var(--acc2);}.ca .cval{color:var(--acc);}.cg{border-color:#a7f3d0;background:var(--grn2);}.cg .cval{color:var(--grn);}.cm{border-color:#fde68a;background:var(--amb2);}.cm .cval{color:var(--amb);}.cr{border-color:#fecaca;background:var(--red2);}.cr .cval{color:var(--red);}.cp{border-color:#ddd6fe;background:var(--pur2);}.cp .cval{color:var(--pur);}.tw{width:100%;overflow-x:auto;margin-bottom:12px;background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);box-shadow:var(--sh);}table{border-collapse:collapse;width:100%;min-width:900px;font-size:12px;}thead th{background:var(--head);color:#fff;padding:9px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;position:sticky;top:0;z-index:2;}tbody tr{border-bottom:1px solid #f1f5f9;}tbody tr:hover{background:#f8fafc;}tbody td{padding:5px 7px;color:var(--txt2);vertical-align:middle;}tbody td.n{font-family:var(--mono);font-size:11px;text-align:right;color:var(--txt);}tbody td input,tbody td select{width:100%;border:1px solid transparent;background:transparent;padding:3px 4px;border-radius:4px;font-size:11.5px;font-family:var(--sans);color:var(--txt);outline:none;}tbody td input:focus,tbody td select:focus{border-color:var(--acc);background:var(--acc2);}tbody td input[type="date"],tbody td input[type="time"]{font-family:var(--mono);font-size:11px;}tfoot td{padding:8px;font-family:var(--mono);font-size:11.5px;font-weight:700;}.ftot td{background:#1E40AF;color:#fff;}.fearns td{background:#dbeafe;color:#1e3a8a;}.fsubt td{background:#1e3a8a;color:#fff;}.fded td{background:#fef2f2;color:#991b1b;}.fgrand td{background:#0f2354;color:#fff;font-size:13px;}.fleave-hdr td{background:#1e3a8a;color:#93c5fd;font-family:var(--sans);font-size:10px;text-transform:uppercase;letter-spacing:.6px;}.fleave-col td{background:#dbeafe;color:#1e40af;font-family:var(--sans);font-size:10px;font-weight:700;}.fleave-ann td{background:#fefce8;}.fleave-med td{background:#f0fff4;}.fleave-unp td{background:#fff1f2;}tr.sat{background:#f5f3ff!important;}tr.sun{background:#fff5f5!important;}tr.hol{background:#fef2f2!important;}tr.ann{background:#fefce8!important;}tr.med{background:#f0fff4!important;}tr.unp{background:#fff1f2!important;}tr.off{background:#f0fff4!important;}.xbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:12px 16px;box-shadow:var(--sh);margin-bottom:10px;}.xbar-url{flex:1;min-width:220px;font-family:var(--mono);font-size:11px;padding:6px 9px;border:1px solid var(--brd);border-radius:6px;outline:none;color:var(--txt);}.xbar-url:focus{border-color:var(--acc);}.sstat{font-family:var(--mono);font-size:11px;color:var(--txt3);}@media(max-width:768px){body{padding:8px;}.hd{flex-direction:column;align-items:flex-start;}.hd-r{width:100%;justify-content:flex-start;}.cards{grid-template-columns:repeat(2,1fr);}.xbar{flex-direction:column;align-items:stretch;}.xbar-url{min-width:0;width:100%;}.sstat{text-align:center;}.panel{padding:12px 14px;}.row-f{gap:8px;}.sf input,.sf select{font-size:12px;}.srow{flex-direction:column;gap:8px;}.srow .sf{width:100%;}.srow .sf input{width:100%!important;}.vdiv{display:none;}.name-bar{flex-direction:column;gap:8px;}.name-bar input{max-width:100%!important;width:100%!important;}.rtbl{width:100%;max-width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;display:block;}.rtbl thead{display:none;}.rtbl tbody{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:100%;overflow:hidden;}.rtbl tbody tr{display:flex;flex-direction:column;border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;min-width:0;}.rtbl td{display:block;width:100%;box-sizing:border-box;border:none!important;}.rcat{font-size:12px;font-weight:700;padding:8px 10px;width:100%!important;box-sizing:border-box;}.rin{width:100%!important;box-sizing:border-box;}.rin input{width:100%!important;font-size:18px;font-weight:700;padding:6px 10px;text-align:left;box-sizing:border-box;border-top:1px solid var(--brd)!important;}.rdesc{display:block!important;width:100%;box-sizing:border-box;font-size:10px;padding:6px 10px;color:var(--txt2);font-style:normal;line-height:1.4;background:var(--sur2);white-space:normal;word-break:break-word;border-top:1px solid var(--brd);}.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;}table{min-width:700px;font-size:10px;}thead th{padding:7px 5px;font-size:9px;letter-spacing:.2px;}tbody td{padding:4px 5px;}tbody td input,tbody td select{font-size:10px;padding:2px 3px;}tbody td input[type="date"]{width:88px;}tbody td input[type="time"]{width:62px;}tbody td.n{font-size:10px;}tfoot td{padding:6px 5px;font-size:10px;}}@media(max-width:480px){.hd h1{font-size:16px;}.btn{padding:6px 10px;font-size:11px;}.cards{grid-template-columns:repeat(2,1fr);gap:7px;}.cval{font-size:14px;}}@media print{.noprint{display:none!important;}.tw{box-shadow:none;}body{background:#fff;padding:0;}body.printing-payslip>*:not(#payslipModal){display:none!important;}body.printing-payslip #payslipModal{display:block!important;position:static;background:#fff;}}#offlineBar{display:none;background:#DC2626;color:#fff;text-align:center;font-size:12px;font-weight:600;padding:6px;letter-spacing:.3px;}body.offline #offlineBar{display:block;}#payslipModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;overflow-y:auto;padding:20px;}#payslipInner{background:#fff;max-width:600px;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.25);}.ps-head{background:#1E293B;color:#fff;padding:24px 28px;}.ps-head h2{font-size:20px;font-weight:700;margin-bottom:4px;}.ps-head p{font-size:12px;opacity:.7;font-family:var(--mono);}.ps-section{padding:16px 28px;border-bottom:1px solid #F1F5F9;}.ps-section:last-child{border-bottom:none;}.ps-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);margin-bottom:10px;}.ps-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;}.ps-row span:first-child{color:var(--txt2);}.ps-row span:last-child{font-family:var(--mono);font-weight:600;}.ps-total{background:#0F2354;color:#fff;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;}.ps-total span:first-child{font-size:14px;font-weight:700;letter-spacing:.3px;}.ps-total span:last-child{font-family:var(--mono);font-size:20px;font-weight:700;}.ps-leave{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 28px;}.ps-lcard{background:#F8FAFC;border:1px solid var(--brd);border-radius:8px;padding:10px 12px;text-align:center;}.ps-lcard .lname{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);margin-bottom:4px;}.ps-lcard .lbal{font-size:18px;font-weight:700;font-family:var(--mono);}.ps-lcard .lsub{font-size:10px;color:var(--txt3);margin-top:2px;}.ps-actions{display:flex;gap:10px;padding:16px 28px;background:#F8FAFC;}.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:10px;}.ph-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--red2);border:1px solid #FECACA;border-radius:7px;font-size:12px;}.ph-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--red);}.ph-item label{cursor:pointer;flex:1;color:#991B1B;font-weight:500;}.ph-item .ph-date{font-family:var(--mono);font-size:10px;color:#EF4444;white-space:nowrap;}
 </style>
 </head>
 <body>
+
+<!-- OFFLINE BAR -->
+<div id="offlineBar">📡 You are offline — changes saved locally, will sync when reconnected</div>
 
 <!-- HEADER -->
 <div class="hd">
@@ -212,6 +31,7 @@ tr.off{background:#f0fff4!important;}
     <button class="btn b-blue" onclick="addRow()">+ Row</button>
     <button class="btn b-gray" onclick="fillMonth()">📅 Fill</button>
     <button class="btn b-gray" onclick="window.print()">🖨</button>
+    <button class="btn b-gray" onclick="showPayslip()">🧾 Payslip</button>
     <button class="btn b-red" onclick="clearAll()">🗑 Clear</button>
   </div>
 </div>
@@ -298,6 +118,17 @@ tr.off{background:#f0fff4!important;}
   </div>
 </div>
 
+<!-- PUBLIC HOLIDAYS -->
+<div class="panel noprint">
+  <div class="ptitle">Public Holidays — Malaysia <span style="font-weight:400;font-size:10px;color:var(--txt3);">(tick to auto-mark rows as Public Holiday)</span>
+    <span style="float:right;display:flex;gap:8px;">
+      <button class="btn b-gray" onclick="applyPH()" style="font-size:10px;padding:4px 10px;">✅ Apply to Table</button>
+      <button class="btn b-gray" onclick="togglePHYear()" id="phYearBtn" style="font-size:10px;padding:4px 10px;">2026 ▾</button>
+    </span>
+  </div>
+  <div class="ph-grid" id="phGrid"></div>
+</div>
+
 <!-- CARDS -->
 <div class="cards">
   <div class="card ca"><div class="clbl">Days</div><div class="cval" id="cDays">0</div><div class="csub">entries</div></div>
@@ -326,7 +157,7 @@ tr.off{background:#f0fff4!important;}
     background:var(--sur);color:var(--txt);outline:none;"
     onfocus="this.style.borderColor='var(--acc)'"
     onblur="this.style.borderColor='var(--brd)'"
-    oninput="saveLocal();saveSettings_()">
+    oninput="saveLocal()">
   <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
     color:var(--txt3);white-space:nowrap;">Position / Dept.</label>
   <input type="text" id="empPos" placeholder="e.g. Engineer, Operations…"
@@ -335,7 +166,7 @@ tr.off{background:#f0fff4!important;}
     background:var(--sur);color:var(--txt);outline:none;"
     onfocus="this.style.borderColor='var(--acc)'"
     onblur="this.style.borderColor='var(--brd)'"
-    oninput="saveLocal();saveSettings_()">
+    oninput="saveLocal()">
 </div>
 
 <!-- TABLE -->
@@ -727,7 +558,6 @@ function calcSummary(){
   s('cLM', medEnt?Math.max(medEnt-medTk,0)+' / '+medEnt:'—');
   s('cLU', unpTk);
   document.getElementById('sub').textContent=MN[mon]+' '+year+' · '+v.length+' entries';
-  saveSettings_();
 }
 
 // ── MONTH / YEAR SELECTION ─────────────────────────────────────────────────
@@ -754,9 +584,6 @@ function goMon(){
 // ── LOCAL STORAGE ──────────────────────────────────────────────────────────
 function saveLocal(){
   try{ localStorage.setItem('ta_rows',JSON.stringify({rows,rid,year,mon})); }catch(e){}
-}
-function saveSettings_(){
-  try{ localStorage.setItem('ta_sett',JSON.stringify(getSettings())); }catch(e){}
 }
 function loadLocal(){
   try{
@@ -800,7 +627,7 @@ function scheduleSave(){
   if(!CLOUD_URL){ setStat('','⚪ No cloud URL — data saved locally only'); return; }
   clearTimeout(saveTimer);
   setStat('saving','🔄 Saving…');
-  saveTimer=setTimeout(doSave,800); // 800ms delay — fast enough to complete before tab close
+  saveTimer=setTimeout(doSave,600); // 800ms delay — fast enough to complete before tab close
 }
 function setStat(state,msg){
   const el=document.getElementById('sstat'); if(!el) return;
@@ -819,7 +646,6 @@ function jsonp(url, cbName, timeoutMs, retry){
       delete window[cbName]; s.remove();
       if(!retry){
         // Retry once after 1s
-        console.log('[JSONP] script error on '+cbName+' — retrying in 1s...');
         setTimeout(()=>{
           jsonp(url, cbName, timeoutMs, true).then(res).catch(rej);
         }, 1000);
@@ -834,29 +660,24 @@ function jsonp(url, cbName, timeoutMs, retry){
 
 async function doSave(){
   if(!CLOUD_URL) return;
-  const payload=JSON.stringify({rows,rid,year,mon,settings:getSettings()});
-  const CHUNK=300;
+  const payload=JSON.stringify({rows,rid,year,mon,settings:getSettings()},null,0);
+  const CHUNK=700;
   const total=Math.ceil(payload.length/CHUNK);
   const ts=Date.now();
   isSaving=true;
   setStat('saving','🔄 Saving ('+total+' parts)…');
-  console.log('[SAVE] payload='+payload.length+' chars, total chunks='+total);
   try{
     for(let i=0;i<total;i++){
       const rawChunk=payload.slice(i*CHUNK,(i+1)*CHUNK);
       const encChunk=encodeURIComponent(rawChunk);
       const cbName='__taSave_'+ts+'_'+i;
       const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
-      console.log('[SAVE] chunk '+i+'/'+total+' raw='+rawChunk.length+' enc='+encChunk.length+' url='+url.length);
       setStat('saving','🔄 Saving part '+(i+1)+'/'+total+'…');
       const result=await jsonp(url, cbName, 25000);
-      console.log('[SAVE] chunk '+i+' ok:', JSON.stringify(result).slice(0,80));
     }
     setStat('ok','🟢 Saved to Google Sheets ✓');
-    console.log('[SAVE] all done');
   }catch(e){
     setStat('err','🔴 Save failed: '+e.message);
-    console.error('[SAVE] failed at chunk, error:', e.message);
   } finally {
     isSaving=false;
   }
@@ -882,7 +703,6 @@ async function doLoad(){
       setStat('ok','🟡 Cloud empty — loaded local data');
     }
   }catch(e){
-    console.warn('[LOAD] failed:',e.message,'— using localStorage');
     loadLocal();
     // Show actionable error
     if(e.message.includes('script error')){
@@ -957,6 +777,160 @@ function setUrl(url){
 }
 function clearUrl(){ CLOUD_URL=''; localStorage.removeItem('ta_url'); setStat('','⚪ Local only'); }
 async function manualLoad(){ await doLoad(); }
+// ═══════════════════════════════════════════════════════════════════════
+// OFFLINE INDICATOR
+// ═══════════════════════════════════════════════════════════════════════
+function updateOnlineStatus(){
+  document.body.classList.toggle('offline',!navigator.onLine);
+}
+window.addEventListener('online',()=>{ updateOnlineStatus(); if(CLOUD_URL) scheduleSave(); });
+window.addEventListener('offline',updateOnlineStatus);
+
+// ═══════════════════════════════════════════════════════════════════════
+// PUBLIC HOLIDAYS — Malaysia
+// ═══════════════════════════════════════════════════════════════════════
+const MY_PH={
+  2025:[
+    {d:'2025-01-01',n:"New Year's Day"},{d:'2025-01-29',n:"Chinese New Year"},
+    {d:'2025-01-30',n:"Chinese New Year Holiday"},{d:'2025-02-01',n:"Federal Territory Day"},
+    {d:'2025-03-31',n:"Hari Raya Aidilfitri"},{d:'2025-04-01',n:"Hari Raya Holiday"},
+    {d:'2025-05-01',n:"Labour Day"},{d:'2025-05-12',n:"Wesak Day"},
+    {d:'2025-06-02',n:"Agong Birthday"},{d:'2025-06-07',n:"Hari Raya Aidiladha"},
+    {d:'2025-06-27',n:"Awal Muharram"},{d:'2025-08-31',n:"National Day"},
+    {d:'2025-09-05',n:"Prophet Muhammad Birthday"},{d:'2025-09-16',n:"Malaysia Day"},
+    {d:'2025-10-20',n:"Deepavali"},{d:'2025-12-25',n:"Christmas Day"},
+  ],
+  2026:[
+    {d:'2026-01-01',n:"New Year's Day"},{d:'2026-01-17',n:"Thaipusam"},
+    {d:'2026-02-17',n:"Chinese New Year"},{d:'2026-02-18',n:"Chinese New Year Holiday"},
+    {d:'2026-03-20',n:"Hari Raya Aidilfitri"},{d:'2026-03-21',n:"Hari Raya Holiday"},
+    {d:'2026-05-01',n:"Labour Day"},{d:'2026-05-27',n:"Hari Raya Aidiladha"},
+    {d:'2026-05-31',n:"Wesak Day"},{d:'2026-06-01',n:"Agong Birthday"},
+    {d:'2026-06-16',n:"Awal Muharram"},{d:'2026-08-31',n:"National Day"},
+    {d:'2026-09-16',n:"Malaysia Day"},{d:'2026-09-24',n:"Prophet Muhammad Birthday"},
+    {d:'2026-11-08',n:"Deepavali"},{d:'2026-12-25',n:"Christmas Day"},
+  ]
+};
+let phYear=new Date().getFullYear();
+let customPH=[];
+
+function buildPHGrid(){
+  const grid=document.getElementById('phGrid'); if(!grid) return;
+  const list=(MY_PH[phYear]||[]).concat(customPH.filter(p=>p.d.startsWith(phYear)));
+  list.sort((a,b)=>a.d.localeCompare(b.d));
+  grid.innerHTML=list.map(p=>{
+    const[y,m,d]=p.d.split('-').map(Number);
+    const dow=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(y,m-1,d).getDay()];
+    return '<div class="ph-item"><input type="checkbox" id="ph_'+p.d+'" value="'+p.d+'" checked>'+
+      '<label for="ph_'+p.d+'">'+p.n+'</label>'+
+      '<span class="ph-date">'+pad2(d)+'/'+pad2(m)+'/'+String(y).slice(-2)+' ('+dow+')</span></div>';
+  }).join('')+
+  '<div class="ph-item" style="background:var(--acc2);border-color:#BFDBFE;">'+
+  '<input type="date" id="phCustomDate" style="font-size:11px;border:none;background:transparent;outline:none;">'+
+  '<input type="text" id="phCustomName" placeholder="Custom holiday name..." style="flex:1;font-size:11px;border:none;background:transparent;outline:none;">'+
+  '<button class="btn b-blue" onclick="addCustomPH()" style="font-size:10px;padding:3px 8px;">+ Add</button></div>';
+}
+function addCustomPH(){
+  const d=g('phCustomDate'),nm=g('phCustomName');
+  if(!d||!nm){alert('Enter date and name');return;}
+  customPH.push({d,n:nm}); buildPHGrid(); saveLocal();
+}
+function togglePHYear(){
+  phYear=phYear===2026?2025:2026;
+  document.getElementById('phYearBtn').textContent=phYear+' ▾';
+  buildPHGrid();
+}
+function applyPH(){
+  const checked=[];
+  document.querySelectorAll('#phGrid input[type=checkbox]:checked').forEach(cb=>checked.push(cb.value));
+  if(!checked.length){alert('No public holidays selected.');return;}
+  let applied=0;
+  rows.forEach(r=>{
+    if(!r.date) return;
+    const iso=r.year+'-'+pad2(r.month+1)+'-'+pad2(r.date);
+    if(checked.includes(iso)){r.dayType='Public Holiday';r.timeIn='';r.timeOut='';calcRow(r);applied++;}
+  });
+  renderTable(); calcSummary(); saveLocal(); scheduleSave();
+  alert(applied?'Applied Public Holiday to '+applied+' row(s).':'No matching rows found. Fill month first.');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// PAYSLIP
+// ═══════════════════════════════════════════════════════════════════════
+function showPayslip(){
+  const v=rows.filter(r=>r.year===year&&r.month===mon);
+  const tPay=v.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
+  const tMeal=v.reduce((a,r)=>a+r.meal,0);
+  const tAtt=v.reduce((a,r)=>a+r.att,0);
+  const tReg=v.reduce((a,r)=>a+r.regH,0);
+  const tOT=v.reduce((a,r)=>a+r.otH,0);
+  const tTot=v.reduce((a,r)=>a+r.totH,0);
+  const bas=n('bas'),alw=n('alw'),oth=n('oth'),dr=n('drR');
+  const unDays=v.filter(r=>r.dayType==='Unpaid Leave').length;
+  const unDed=unDays*dr;
+  const grand=tPay+tMeal+tAtt+bas+alw+oth-unDed;
+  const annTk=rows.filter(r=>r.dayType==='Annual Leave').length;
+  const medTk=rows.filter(r=>r.dayType==='Medical Leave').length;
+  const annEnt=n('lvA'),medEnt=n('lvM');
+  const MNfull=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const empName=g('empName')||'—', empPos=g('empPos')||'';
+  const rm2=v=>'RM '+Math.abs(v).toLocaleString('en-MY',{minimumFractionDigits:2});
+  const s=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  s('psPeriod',MNfull[mon]+' '+year);
+  s('psEmployee',empName+(empPos?' · '+empPos:''));
+  s('psDays',v.filter(r=>r.totH>0||['Annual Leave','Medical Leave'].includes(r.dayType)).length+' days');
+  s('psReg',tReg.toFixed(2)+' hrs'); s('psOT',tOT.toFixed(2)+' hrs'); s('psTot',tTot.toFixed(2)+' hrs');
+  s('psBas',rm2(bas)); s('psAlw',rm2(alw)); s('psOth',rm2(oth));
+  s('psPay',rm2(tPay)); s('psMeal',rm2(tMeal)); s('psAtt',rm2(tAtt));
+  s('psGrand',rm2(grand));
+  s('psLA',annEnt?Math.max(annEnt-annTk,0)+' / '+annEnt:'—');
+  s('psLM',medEnt?Math.max(medEnt-medTk,0)+' / '+medEnt:'—');
+  s('psLU',unDays);
+  s('psGenDate',new Date().toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'}));
+  const ded=document.getElementById('psDeductSec');
+  if(ded) ded.style.display=unDays>0?'block':'none';
+  s('psUnpaidLabel','Unpaid Leave ('+unDays+' day x RM'+dr.toFixed(2)+')');
+  s('psUnpaid','- '+rm2(unDed));
+  document.getElementById('payslipModal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+function closePayslip(){
+  document.getElementById('payslipModal').style.display='none';
+  document.body.style.overflow='';
+}
+function printPayslip(){
+  closePayslip();
+  setTimeout(()=>{
+    document.body.classList.add('printing-payslip');
+    window.print();
+    setTimeout(()=>document.body.classList.remove('printing-payslip'),800);
+  },100);
+}
+function exportPayslipPDF(){
+  const inner=document.getElementById('payslipInner');
+  const MNfull=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const empName=g('empName')||'Employee';
+  const win=window.open('','_blank');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip '+empName+' '+MNfull[mon]+' '+year+'</title>'+
+    '<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;background:#fff;}'+
+    '.ps-head{background:#1E293B;color:#fff;padding:24px 28px;}.ps-head h2{font-size:20px;font-weight:700;margin-bottom:4px;}'+
+    '.ps-head p{font-size:12px;opacity:.75;}.ps-section{padding:14px 28px;border-bottom:1px solid #E2E8F0;}'+
+    '.ps-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#9CA3AF;margin-bottom:8px;}'+
+    '.ps-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;}'+
+    '.ps-row span:last-child{font-weight:600;font-family:monospace;}'+
+    '.ps-total{background:#0F2354;color:#fff;padding:18px 28px;display:flex;justify-content:space-between;}'+
+    '.ps-total span:first-child{font-size:14px;font-weight:700;}.ps-total span:last-child{font-size:20px;font-weight:700;font-family:monospace;}'+
+    '.ps-leave{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 28px;}'+
+    '.ps-lcard{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px;text-align:center;}'+
+    '.ps-lcard .lname{font-size:10px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:4px;}'+
+    '.ps-lcard .lbal{font-size:18px;font-weight:700;font-family:monospace;}'+
+    '.footer{padding:10px 28px;font-size:10px;color:#9CA3AF;text-align:center;}'+
+    '.noprint,.ps-actions{display:none!important;}</style></head><body>'+
+    inner.innerHTML+'</body></html>');
+  win.document.close();
+  setTimeout(()=>{win.focus();win.print();},600);
+}
+
 (async function init(){
   // Load saved URL from localStorage, or use the hardcoded fallback
   const savedUrl=localStorage.getItem('ta_url')||FALLBACK_URL;
@@ -966,6 +940,8 @@ async function manualLoad(){ await doLoad(); }
     if(el) el.value=savedUrl;
   }
   buildYearSel(); loadLocal(); syncSels();
+  buildPHGrid();
+  updateOnlineStatus();
   if(CLOUD_URL){
     await doLoad();
   } else {
@@ -974,5 +950,67 @@ async function manualLoad(){ await doLoad(); }
   }
 })();
 </script>
+<!-- PAYSLIP MODAL -->
+<div id="payslipModal" onclick="if(event.target===this)closePayslip()">
+  <div id="payslipInner">
+    <div class="ps-head">
+      <h2>📋 Payslip</h2>
+      <p id="psPeriod">—</p>
+      <p id="psEmployee" style="margin-top:4px;font-size:13px;opacity:.9;">—</p>
+    </div>
+    <div class="ps-section">
+      <div class="ps-title">Attendance Summary</div>
+      <div class="ps-row"><span>Working Days</span><span id="psDays">—</span></div>
+      <div class="ps-row"><span>Regular Hours</span><span id="psReg">—</span></div>
+      <div class="ps-row"><span>Overtime Hours</span><span id="psOT">—</span></div>
+      <div class="ps-row"><span>Total Hours</span><span id="psTot">—</span></div>
+    </div>
+    <div class="ps-section">
+      <div class="ps-title">Earnings</div>
+      <div class="ps-row"><span>Basic Salary</span><span id="psBas">—</span></div>
+      <div class="ps-row"><span>Allowance</span><span id="psAlw">—</span></div>
+      <div class="ps-row"><span>Others</span><span id="psOth">—</span></div>
+      <div class="ps-row"><span>OT Pay</span><span id="psPay">—</span></div>
+      <div class="ps-row"><span>Meal Allowance</span><span id="psMeal">—</span></div>
+      <div class="ps-row"><span>Attendance Allowance</span><span id="psAtt">—</span></div>
+    </div>
+    <div class="ps-section" id="psDeductSec" style="display:none;">
+      <div class="ps-title" style="color:var(--red);">Deductions</div>
+      <div class="ps-row" style="color:var(--red);"><span id="psUnpaidLabel">Unpaid Leave</span><span id="psUnpaid">—</span></div>
+    </div>
+    <div class="ps-total">
+      <span>NET PAY</span><span id="psGrand">RM 0.00</span>
+    </div>
+    <div>
+      <div class="ps-section"><div class="ps-title">Leave Balance (Cumulative)</div></div>
+      <div class="ps-leave">
+        <div class="ps-lcard">
+          <div class="lname">Annual</div>
+          <div class="lbal" id="psLA" style="color:var(--acc);">—</div>
+          <div class="lsub">days remaining</div>
+        </div>
+        <div class="ps-lcard">
+          <div class="lname">Medical</div>
+          <div class="lbal" id="psLM" style="color:var(--grn);">—</div>
+          <div class="lsub">days remaining</div>
+        </div>
+        <div class="ps-lcard">
+          <div class="lname">Unpaid Taken</div>
+          <div class="lbal" id="psLU" style="color:var(--red);">0</div>
+          <div class="lsub">days this month</div>
+        </div>
+      </div>
+    </div>
+    <div class="ps-actions noprint">
+      <button class="btn b-blue" onclick="printPayslip()">🖨 Print / Save PDF</button>
+      <button class="btn b-grn" onclick="exportPayslipPDF()">📄 Export PDF</button>
+      <button class="btn b-gray" onclick="closePayslip()">✕ Close</button>
+    </div>
+    <div style="padding:10px 28px;font-size:10px;color:var(--txt3);text-align:center;">
+      Generated by Time Attendance App · <span id="psGenDate"></span>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
