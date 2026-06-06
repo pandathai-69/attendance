@@ -14,1328 +14,768 @@
   --pur:#8B5CF6;--pur2:#F5F3FF;--txt:#111827;--txt2:#4B5563;--txt3:#9CA3AF;
   --head:#1E40AF;--dark:#1E293B;
   --mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;
-  --r:10px;--sh:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
+  --r:10px;--sh:0 1px 4px rgba(0,0,0,.07),0 4px 14px rgba(0,0,0,.04);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;padding:20px;}
- 
-.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
-.hd h1{font-size:20px;font-weight:700;letter-spacing:-.3px;}
-.hd p{font-size:12px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}
-.hd-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.mnav{display:flex;align-items:center;gap:8px;}
-.mnav span{font-family:var(--mono);font-size:14px;font-weight:600;min-width:120px;text-align:center;}
-.ico{width:30px;height:30px;border-radius:7px;border:1px solid var(--brd);background:var(--sur);
-  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--txt2);transition:all .15s;}
-.ico:hover{background:var(--acc);color:#fff;border-color:var(--acc);}
- 
-.btn{font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 14px;border-radius:7px;
-  border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;padding:16px;}
+
+/* HEADER */
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.hd h1{font-size:19px;font-weight:700;}
+.hd p{font-size:11px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}
+.hd-r{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.btn{font-family:var(--sans);font-size:12px;font-weight:600;padding:7px 13px;border-radius:7px;
+  border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s;}
 .b-blue{background:var(--acc);color:#fff;} .b-blue:hover{background:#1D4ED8;}
 .b-gray{background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);} .b-gray:hover{background:var(--brd);}
-.b-red{background:var(--red2);color:var(--red);border:1px solid #FECACA;} .b-red:hover{background:#FEE2E2;}
-.b-green{background:#166534;color:#fff;} .b-green:hover{background:#14532d;}
- 
+.b-red{background:var(--red2);color:var(--red);border:1px solid #fecaca;} .b-red:hover{background:#fee2e2;}
+.b-grn{background:#166534;color:#fff;} .b-grn:hover{background:#14532d;}
+
+/* PANELS */
 .panel{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
-  padding:16px 20px;box-shadow:var(--sh);margin-bottom:14px;}
+  padding:14px 18px;box-shadow:var(--sh);margin-bottom:12px;}
 .ptitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
-  color:var(--txt3);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--brd);}
-.settings-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
-.sf{display:flex;flex-direction:column;gap:5px;}
+  color:var(--txt3);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--brd);}
+.row-f{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+.sf{display:flex;flex-direction:column;gap:4px;}
 .sf label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);}
-.sf input{font-family:var(--sans);font-size:13px;padding:7px 10px;border:1px solid var(--brd);
-  border-radius:6px;background:var(--sur);color:var(--txt);outline:none;transition:border .15s;}
-.sf input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+.sf input,.sf select{font-family:var(--sans);font-size:13px;padding:6px 9px;border:1px solid var(--brd);
+  border-radius:6px;background:var(--sur);color:var(--txt);outline:none;}
+.sf input:focus,.sf select:focus{border-color:var(--acc);}
 .sf .hint{font-size:10px;color:var(--txt3);font-style:italic;margin-top:2px;}
-.divider{width:1px;background:var(--brd);align-self:stretch;margin:0 2px;}
-.note{font-size:11px;color:#1E40AF;background:var(--acc2);border:1px solid #BFDBFE;
-  border-radius:7px;padding:8px 14px;margin-top:12px;line-height:1.7;}
- 
-/* Pay Rate table */
-.rate-table{width:100%;border-collapse:collapse;}
-.rate-table th{background:var(--head);color:#fff;font-size:10px;font-weight:700;
-  text-transform:uppercase;letter-spacing:.5px;padding:9px 12px;text-align:left;}
-.rate-table td{padding:0;border-bottom:1px solid var(--brd);vertical-align:middle;}
-.rate-table tr:last-child td{border-bottom:none;}
-.rate-cat{font-size:12px;font-weight:600;color:var(--txt2);padding:10px 14px;
-  background:var(--sur2);border-right:1px solid var(--brd);width:200px;}
-.rate-in{border-right:1px solid var(--brd);width:130px;}
-.rate-in input{font-family:var(--mono);font-size:14px;font-weight:700;
-  width:100%;border:none;outline:none;padding:10px 12px;text-align:center;
-  background:transparent;transition:background .15s;}
-.rate-in input:focus{background:var(--acc2);}
-.rate-desc{font-size:11px;color:var(--txt3);padding:8px 14px;font-style:italic;}
- 
-/* Cards */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px;}
+.vdiv{width:1px;background:var(--brd);align-self:stretch;margin:0 2px;}
+.note{font-size:11px;color:#1E40AF;background:var(--acc2);border:1px solid #bfdbfe;
+  border-radius:7px;padding:8px 13px;margin-top:10px;line-height:1.65;}
+
+/* RATE TABLE */
+.rtbl{width:100%;border-collapse:collapse;}
+.rtbl th{background:var(--head);color:#fff;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;padding:8px 12px;text-align:left;}
+.rtbl td{padding:0;border-bottom:1px solid var(--brd);vertical-align:middle;}
+.rtbl tr:last-child td{border-bottom:none;}
+.rcat{font-size:12px;font-weight:600;padding:9px 12px;background:var(--sur2);
+  border-right:1px solid var(--brd);width:190px;}
+.rin{border-right:1px solid var(--brd);width:120px;}
+.rin input{font-family:var(--mono);font-size:14px;font-weight:700;width:100%;
+  border:none;outline:none;padding:9px 10px;text-align:center;background:transparent;}
+.rin input:focus{background:var(--acc2);}
+.rdesc{font-size:11px;color:var(--txt3);padding:8px 12px;font-style:italic;}
+
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:9px;margin-bottom:12px;}
 .card{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:11px 13px;box-shadow:var(--sh);}
-.card-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);margin-bottom:5px;}
-.card-val{font-family:var(--mono);font-size:18px;font-weight:500;}
-.card-sub{font-size:10px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}
-.ca{border-color:#BFDBFE;background:var(--acc2);} .ca .card-val{color:var(--acc);}
-.cg{border-color:#A7F3D0;background:var(--grn2);} .cg .card-val{color:var(--grn);}
-.cm{border-color:#FDE68A;background:var(--amb2);} .cm .card-val{color:var(--amb);}
-.cr2{border-color:#FECACA;background:var(--red2);} .cr2 .card-val{color:var(--red);}
-.cp{border-color:#DDD6FE;background:var(--pur2);} .cp .card-val{color:var(--pur);}
- 
-/* Main table */
-.tw{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
-  box-shadow:var(--sh);overflow-x:auto;overflow-y:visible;margin-bottom:14px;width:100%;}
-table.main{width:100%;border-collapse:collapse;font-size:12px;min-width:1080px;}
-table.main thead th{background:var(--head);color:#fff;padding:10px;text-align:left;
-  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+.clbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);margin-bottom:4px;}
+.cval{font-family:var(--mono);font-size:17px;font-weight:500;}
+.csub{font-size:10px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}
+.ca{border-color:#bfdbfe;background:var(--acc2);} .ca .cval{color:var(--acc);}
+.cg{border-color:#a7f3d0;background:var(--grn2);} .cg .cval{color:var(--grn);}
+.cm{border-color:#fde68a;background:var(--amb2);} .cm .cval{color:var(--amb);}
+.cr{border-color:#fecaca;background:var(--red2);} .cr .cval{color:var(--red);}
+.cp{border-color:#ddd6fe;background:var(--pur2);} .cp .cval{color:var(--pur);}
+
+/* TABLE */
+.tw{width:100%;overflow-x:auto;margin-bottom:12px;
+  background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);box-shadow:var(--sh);}
+table{border-collapse:collapse;width:100%;min-width:900px;font-size:12px;}
+thead th{background:var(--head);color:#fff;padding:9px 8px;text-align:left;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;
   white-space:nowrap;position:sticky;top:0;z-index:2;}
-table.main tbody tr{border-bottom:1px solid #F1F5F9;transition:background .1s;}
-table.main tbody tr:hover{background:#F8FAFC;}
-table.main td{padding:6px 9px;color:var(--txt2);vertical-align:middle;}
-table.main td.n{font-family:var(--mono);font-size:11.5px;color:var(--txt);text-align:right;}
-table.main td input,table.main td select{
+tbody tr{border-bottom:1px solid #f1f5f9;}
+tbody tr:hover{background:#f8fafc;}
+tbody td{padding:5px 7px;color:var(--txt2);vertical-align:middle;}
+tbody td.n{font-family:var(--mono);font-size:11px;text-align:right;color:var(--txt);}
+tbody td input,tbody td select{
   width:100%;border:1px solid transparent;background:transparent;
-  padding:3px 4px;border-radius:5px;font-size:12px;font-family:var(--sans);color:var(--txt);
-  outline:none;transition:border .15s,background .15s;}
-table.main td input:focus,table.main td select:focus{border-color:var(--acc);background:var(--acc2);}
-table.main td input[type="time"]{font-family:var(--mono);font-size:11.5px;}
-table.main td input.date-inp{font-family:var(--mono);font-size:11.5px;text-align:center;width:76px;}
- 
-/* ── FOOTER ROWS ── */
-.tfoot-row td{padding:9px 10px;font-weight:700;font-family:var(--mono);font-size:12px;}
- 
-/* Totals row: solid blue, white text */
-.tfoot-tot{background:#1E40AF;}
-.tfoot-tot td{color:#FFFFFF !important;}
- 
-/* Sub rows (Basic, Allowance, Meal, Attendance, Others): light bg, dark readable text */
-.tfoot-sub{background:#DBEAFE;border-top:1px solid #BFDBFE;}
-.tfoot-sub td{color:#1E3A8A !important;}
- 
-/* Grand Total: dark navy, white text */
-.tfoot-grand{background:#0F2354;}
-.tfoot-grand td{color:#FFFFFF !important;}
- 
-.tfoot-lbl{font-family:var(--sans) !important;font-size:11px;font-weight:600;letter-spacing:.3px;}
- 
-tr.sat{background:#F5F3FF!important;}
-tr.sun{background:#FFF5F5!important;}
-tr.offday{background:#F0FFF4!important;}
-tr.annual{background:#FEFCE8!important;}
-tr.medical{background:#F0FFF4!important;}
-tr.other{background:#F5F3FF!important;}
-tr.hol{background:#FEF2F2!important;}
- 
-.xbar{display:flex;align-items:center;gap:10px;background:var(--sur);border:1px solid var(--brd);
-  border-radius:var(--r);padding:14px 20px;box-shadow:var(--sh);}
-.xbar span{flex:1;font-size:12px;color:var(--txt3);}
- 
-@media(max-width:700px){body{padding:10px;}.cards{grid-template-columns:repeat(2,1fr);}}
+  padding:3px 4px;border-radius:4px;font-size:11.5px;font-family:var(--sans);
+  color:var(--txt);outline:none;}
+tbody td input:focus,tbody td select:focus{border-color:var(--acc);background:var(--acc2);}
+tbody td input[type="date"],tbody td input[type="time"]{font-family:var(--mono);font-size:11px;}
+
+/* TFOOT */
+tfoot td{padding:8px;font-family:var(--mono);font-size:11.5px;font-weight:700;}
+.ftot td{background:#1E40AF;color:#fff;}
+.fearns td{background:#dbeafe;color:#1e3a8a;}
+.fsubt td{background:#1e3a8a;color:#fff;}
+.fded td{background:#fef2f2;color:#991b1b;}
+.fgrand td{background:#0f2354;color:#fff;font-size:13px;}
+.fleave-hdr td{background:#1e3a8a;color:#93c5fd;font-family:var(--sans);font-size:10px;text-transform:uppercase;letter-spacing:.6px;}
+.fleave-col td{background:#dbeafe;color:#1e40af;font-family:var(--sans);font-size:10px;font-weight:700;}
+.fleave-ann td{background:#fefce8;}
+.fleave-med td{background:#f0fff4;}
+.fleave-unp td{background:#fff1f2;}
+
+/* ROW COLORS */
+tr.sat{background:#f5f3ff!important;}
+tr.sun{background:#fff5f5!important;}
+tr.hol{background:#fef2f2!important;}
+tr.ann{background:#fefce8!important;}
+tr.med{background:#f0fff4!important;}
+tr.unp{background:#fff1f2!important;}
+tr.off{background:#f0fff4!important;}
+
+/* SYNC BAR */
+.xbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
+  padding:12px 16px;box-shadow:var(--sh);margin-bottom:10px;}
+.xbar-url{flex:1;min-width:220px;font-family:var(--mono);font-size:11px;padding:6px 9px;
+  border:1px solid var(--brd);border-radius:6px;outline:none;color:var(--txt);}
+.xbar-url:focus{border-color:var(--acc);}
+.sstat{font-family:var(--mono);font-size:11px;color:var(--txt3);}
+
+@media(max-width:640px){
+  body{padding:10px;}
+  .cards{grid-template-columns:repeat(2,1fr);}
+}
 @media print{.noprint{display:none!important;}.tw{box-shadow:none;}}
 </style>
 </head>
 <body>
- 
+
 <!-- HEADER -->
 <div class="hd">
   <div><h1>⏱ Time Attendance</h1><p id="sub">Loading…</p></div>
   <div class="hd-r noprint">
-    <div class="mnav" style="display:flex;align-items:center;gap:6px;">
-      <select id="selMon" onchange="setMonYear()" style="font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--brd);border-radius:7px;background:var(--sur);color:var(--txt);outline:none;cursor:pointer;">
-        <option value="0">January</option><option value="1">February</option>
-        <option value="2">March</option><option value="3">April</option>
-        <option value="4">May</option><option value="5">June</option>
-        <option value="6">July</option><option value="7">August</option>
-        <option value="8">September</option><option value="9">October</option>
-        <option value="10">November</option><option value="11">December</option>
-      </select>
-      <select id="selYear" onchange="setMonYear()" style="font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--brd);border-radius:7px;background:var(--sur);color:var(--txt);outline:none;cursor:pointer;width:84px;">
-      </select>
-    </div>
-    <button class="btn b-blue" onclick="addRow()">+ Add Row</button>
-    <button class="btn b-gray" onclick="fillMonth()">📅 Fill Month</button>
-    <button class="btn b-gray" onclick="window.print()">🖨 Print</button>
-    <button class="btn b-red" onclick="if(confirm('Clear ALL saved data?')){localStorage.removeItem('ta_data_v2');localStorage.removeItem('ta_settings_v2');location.reload();}">🗑 Clear</button>
+    <select id="selMon" onchange="goMon()" style="font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--brd);border-radius:7px;background:var(--sur);color:var(--txt);outline:none;cursor:pointer;">
+      <option value="0">January</option><option value="1">February</option>
+      <option value="2">March</option><option value="3">April</option>
+      <option value="4">May</option><option value="5">June</option>
+      <option value="6">July</option><option value="7">August</option>
+      <option value="8">September</option><option value="9">October</option>
+      <option value="10">November</option><option value="11">December</option>
+    </select>
+    <select id="selYear" onchange="goMon()" style="font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--brd);border-radius:7px;background:var(--sur);color:var(--txt);outline:none;cursor:pointer;width:82px;"></select>
+    <button class="btn b-blue" onclick="addRow()">+ Row</button>
+    <button class="btn b-gray" onclick="fillMonth()">📅 Fill</button>
+    <button class="btn b-gray" onclick="window.print()">🖨</button>
+    <button class="btn b-red" onclick="clearAll()">🗑 Clear</button>
   </div>
 </div>
- 
-<!-- BASIC SETTINGS -->
+
+<!-- CLOUD SYNC -->
+<div class="xbar noprint">
+  <span style="font-size:11px;font-weight:700;color:var(--txt3);white-space:nowrap;">☁ Cloud</span>
+  <input id="urlIn" class="xbar-url" type="text" placeholder="Paste Google Apps Script Web App URL here…"
+    onchange="setUrl(this.value.trim())">
+  <button class="btn b-blue" onclick="setUrl(document.getElementById('urlIn').value.trim())" style="font-size:11px;padding:6px 12px;">Connect</button>
+  <button class="btn b-gray" onclick="manualLoad()" style="font-size:11px;padding:6px 12px;">↺ Reload</button>
+  <span class="sstat" id="sstat">⚪ Local only</span>
+  <button class="btn b-grn" onclick="exportXLSX()" style="font-size:11px;padding:6px 12px;">📥 Export Excel</button>
+</div>
+
+<!-- SETTINGS -->
 <div class="panel noprint">
   <div class="ptitle">Basic Settings</div>
-  <div class="settings-row">
-    <!-- Shift times -->
-    <div class="sf"><label>Weekday Start</label>
-      <input type="time" id="wdStart" value="09:00" onchange="recalcAll()"></div>
-    <div class="sf"><label>Weekday End</label>
-      <input type="time" id="wdEnd" value="18:00" onchange="recalcAll()"></div>
-    <div class="sf"><label>Saturday Start</label>
-      <input type="time" id="satStart" value="09:00" onchange="recalcAll()"></div>
-    <div class="sf"><label>Saturday End</label>
-      <input type="time" id="satEnd" value="18:00" onchange="recalcAll()"></div>
-    <div class="sf"><label>Break (min)</label>
-      <input type="text" id="brkM" value="60" style="width:64px" oninput="recalcAll()"></div>
-    <div class="divider"></div>
-    <!-- Pay rates -->
-    <div class="sf"><label>Hourly Rate (RM)</label>
-      <input type="text" id="hrRate" value="" placeholder="e.g. 25.00" style="width:110px" oninput="recalcAll()"></div>
-    <div class="sf"><label>Per Day Rate (RM)</label>
-      <input type="text" id="dayRate" value="" placeholder="e.g. 200.00" style="width:110px" oninput="recalcAll()"></div>
-    <div class="divider"></div>
-    <!-- Salary & extras -->
-    <div class="sf"><label>Basic Salary (RM)</label>
-      <input type="text" id="basicSal" value="" placeholder="e.g. 2000.00" style="width:110px" oninput="summary();saveSettings()"></div>
-    <div class="sf"><label>Allowance (RM)</label>
-      <input type="text" id="allowance" value="" placeholder="e.g. 300.00" style="width:110px" oninput="summary();saveSettings()"></div>
-    <div class="sf"><label>Others (RM)</label>
-      <input type="text" id="others" value="" placeholder="e.g. 50.00" style="width:110px" oninput="summary();saveSettings()"></div>
-    <div class="divider"></div>
-    <!-- Meal allowance -->
-    <div class="sf">
-      <label>Meal Allowance (RM)</label>
-      <input type="text" id="mealAmt" value="20" placeholder="e.g. 20.00" style="width:110px" oninput="recalcAll()">
-      <div class="hint">per OT session ≥ 2 hours</div>
-    </div>
-    <!-- Attendance allowance -->
-    <div class="sf">
-      <label>Attendance Allowance (RM)</label>
-      <input type="text" id="attAmt" value="20" placeholder="e.g. 20.00" style="width:110px" oninput="recalcAll()">
-      <div class="hint">per day checked-in on time</div>
-    </div>
-    <div class="divider"></div>
-    <!-- Leave Entitlements -->
-    <div style="display:flex;flex-direction:column;gap:5px;min-width:100%;">
-      <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);">Leave Entitlement (days)</span>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-        <div class="sf">
-          <label>Annual Leave</label>
-          <input type="text" id="leaveAnnual" value="" placeholder="e.g. 14" style="width:90px" oninput="summary();saveSettings()">
-          <div class="hint">days entitled</div>
-        </div>
-        <div class="sf">
-          <label>Medical Leave</label>
-          <input type="text" id="leaveMedical" value="" placeholder="e.g. 14" style="width:90px" oninput="summary();saveSettings()">
-          <div class="hint">days entitled</div>
-        </div>
-        <div class="sf">
-          <label>Unpaid Leave</label>
-          <input type="text" id="leaveOther" value="" placeholder="days" style="width:90px" oninput="summary();saveSettings()">
-          <div class="hint">days entitlement (optional)</div>
-        </div>
-      </div>
-    </div>
+  <div class="row-f">
+    <div class="sf"><label>Weekday Start</label><input type="time" id="wdS" value="09:00" oninput="recalcAll()"></div>
+    <div class="sf"><label>Weekday End</label><input type="time" id="wdE" value="18:00" oninput="recalcAll()"></div>
+    <div class="sf"><label>Sat Start</label><input type="time" id="saS" value="09:00" oninput="recalcAll()"></div>
+    <div class="sf"><label>Sat End</label><input type="time" id="saE" value="18:00" oninput="recalcAll()"></div>
+    <div class="sf"><label>Break (min)</label><input type="text" id="brk" value="60" style="width:62px" oninput="recalcAll()"></div>
+    <div class="vdiv"></div>
+    <div class="sf"><label>Hourly Rate (RM)</label><input type="text" id="hrR" placeholder="e.g. 25.00" style="width:105px" oninput="recalcAll()"></div>
+    <div class="sf"><label>Per Day Rate (RM)</label><input type="text" id="drR" placeholder="e.g. 200.00" style="width:105px" oninput="recalcAll()"></div>
+    <div class="vdiv"></div>
+    <div class="sf"><label>Basic Salary (RM)</label><input type="text" id="bas" placeholder="e.g. 3000" style="width:105px" oninput="calcSummary()"></div>
+    <div class="sf"><label>Allowance (RM)</label><input type="text" id="alw" placeholder="e.g. 300" style="width:105px" oninput="calcSummary()"></div>
+    <div class="sf"><label>Others (RM)</label><input type="text" id="oth" placeholder="e.g. 50" style="width:105px" oninput="calcSummary()"></div>
+    <div class="vdiv"></div>
+    <div class="sf"><label>Meal Allow (RM)</label><input type="text" id="mAmt" value="20" style="width:85px" oninput="recalcAll()"><div class="hint">Per OT ≥ 2h</div></div>
+    <div class="sf"><label>Att. Allow (RM)</label><input type="text" id="aAmt" value="20" style="width:85px" oninput="recalcAll()"><div class="hint">Per check-in</div></div>
+    <div class="vdiv"></div>
+    <div class="sf"><label>Annual Leave (days)</label><input type="text" id="lvA" placeholder="e.g. 14" style="width:85px" oninput="calcSummary()"></div>
+    <div class="sf"><label>Medical Leave (days)</label><input type="text" id="lvM" placeholder="e.g. 14" style="width:85px" oninput="calcSummary()"></div>
+    <div class="sf"><label>Unpaid Leave (days)</label><input type="text" id="lvU" placeholder="opt." style="width:85px" oninput="calcSummary()"></div>
   </div>
   <div class="note">
-    📌 <strong>Mon–Fri &amp; Saturday</strong>: 8h regular (with break). Hours outside shift = Overtime.
-    &nbsp;|&nbsp; <strong>Sunday, Public Holiday</strong>: all hours = OT rate, no break.
-    &nbsp;|&nbsp; <strong>Meal Allowance</strong>: auto-added when OT ≥ 2h.
-    &nbsp;|&nbsp; <strong>Attendance Allowance</strong>: auto-added when Time In is recorded (non Off-Day).
-    &nbsp;|&nbsp; <strong>Unpaid Leave</strong>: deducts 1 × Per Day Rate from Grand Total per day selected.
+    📌 Mon–Fri & Sat: 8h regular (break deducted). Hours outside shift = OT. &nbsp;|&nbsp;
+    Sun & Public Holiday: all hours = OT rate, no break. &nbsp;|&nbsp;
+    Unpaid Leave: deducts 1 × Per Day Rate per day.
   </div>
 </div>
- 
-<!-- PAY RATE REFERENCE -->
+
+<!-- PAY RATES -->
 <div class="panel noprint">
-  <div class="ptitle">Pay Rate Reference — enter multiplier (×) for each type</div>
-  <table class="rate-table">
-    <thead><tr>
-      <th style="width:200px">Category</th>
-      <th style="width:130px;text-align:center">Rate (×)</th>
-      <th>Applies To</th>
-    </tr></thead>
+  <div class="ptitle">Pay Rate Multipliers — enter (×) for each type</div>
+  <table class="rtbl">
+    <thead><tr><th style="width:190px">Type</th><th style="width:120px;text-align:center">Rate (×)</th><th>When Applied</th></tr></thead>
     <tbody>
-      <tr>
-        <td class="rate-cat" style="background:var(--amb2);color:#92400E;">Overtime</td>
-        <td class="rate-in" style="background:var(--amb2);">
-          <input type="text" id="rOT" placeholder="e.g. 1.50" oninput="recalcAll()" style="color:#92400E;"></td>
-        <td class="rate-desc" style="background:var(--amb2);">Mon–Fri &amp; Saturday hours outside normal shift window</td>
-      </tr>
-      <tr>
-        <td class="rate-cat" style="background:var(--pur2);color:#5B21B6;">Rest Day (Sunday)</td>
-        <td class="rate-in" style="background:var(--pur2);">
-          <input type="text" id="rSun" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#5B21B6;"></td>
-        <td class="rate-desc" style="background:var(--pur2);">All hours worked on Sunday — no break deducted</td>
-      </tr>
-      <tr>
-        <td class="rate-cat" style="background:var(--red2);color:#991B1B;">Public Holiday</td>
-        <td class="rate-in" style="background:var(--red2);">
-          <input type="text" id="rHol" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#991B1B;"></td>
-        <td class="rate-desc" style="background:var(--red2);">All hours worked on Public Holidays — no break deducted</td>
-      </tr>
-      <tr>
-        <td class="rate-cat" style="background:var(--grn2);color:#065F46;">Off Day</td>
-        <td class="rate-in" style="background:var(--grn2);">
-          <input type="text" id="rOff" placeholder="e.g. 0.00" oninput="recalcAll()" style="color:#065F46;"></td>
-        <td class="rate-desc" style="background:var(--grn2);">Scheduled off / leave — set 0 for unpaid</td>
-      </tr>
+      <tr><td class="rcat" style="background:var(--amb2);color:#92400E;">Overtime</td>
+          <td class="rin" style="background:var(--amb2);"><input type="text" id="rOT" placeholder="e.g. 1.50" oninput="recalcAll()" style="color:#92400E;"></td>
+          <td class="rdesc" style="background:var(--amb2);">Mon–Fri & Sat hours outside normal shift; Sun/Holiday OT</td></tr>
+      <tr><td class="rcat" style="background:var(--pur2);color:#5b21b6;">Rest Day (Sunday)</td>
+          <td class="rin" style="background:var(--pur2);"><input type="text" id="rSun" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#5b21b6;"></td>
+          <td class="rdesc" style="background:var(--pur2);">All hours on Sunday — no break deducted</td></tr>
+      <tr><td class="rcat" style="background:var(--red2);color:#991b1b;">Public Holiday</td>
+          <td class="rin" style="background:var(--red2);"><input type="text" id="rHol" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#991b1b;"></td>
+          <td class="rdesc" style="background:var(--red2);">All hours on Public Holidays — no break deducted</td></tr>
+      <tr><td class="rcat" style="background:var(--grn2);color:#065f46;">Off Day</td>
+          <td class="rin" style="background:var(--grn2);"><input type="text" id="rOff" placeholder="e.g. 0.00" oninput="recalcAll()" style="color:#065f46;"></td>
+          <td class="rdesc" style="background:var(--grn2);">Scheduled off / leave</td></tr>
     </tbody>
   </table>
 </div>
- 
-<!-- SUMMARY CARDS -->
+
+<!-- CARDS -->
 <div class="cards">
-  <div class="card ca"><div class="card-lbl">Total Days</div><div class="card-val" id="sDays">0</div><div class="card-sub">entries</div></div>
-  <div class="card ca"><div class="card-lbl">Regular Hrs</div><div class="card-val" id="sReg">0.00</div><div class="card-sub">Mon–Fri &amp; Sat</div></div>
-  <div class="card cm"><div class="card-lbl">OT Hrs</div><div class="card-val" id="sOT">0.00</div><div class="card-sub">overtime</div></div>
-  <div class="card cp"><div class="card-lbl">Rest Day Hrs</div><div class="card-val" id="sSun">0.00</div><div class="card-sub">Sunday</div></div>
-  <div class="card cr2"><div class="card-lbl">Public Hol</div><div class="card-val" id="sHol">0.00</div><div class="card-sub">hours</div></div>
-  <div class="card cg"><div class="card-lbl">Total Hrs</div><div class="card-val" id="sTotal">0.00</div><div class="card-sub">all entries</div></div>
-  <div class="card cm"><div class="card-lbl">Meal Allow</div><div class="card-val" id="sMeal">0.00</div><div class="card-sub">RM</div></div>
-  <div class="card cm"><div class="card-lbl">Att. Allow</div><div class="card-val" id="sAtt">0.00</div><div class="card-sub">RM</div></div>
-  <div class="card cg"><div class="card-lbl">OT Pay (RM)</div><div class="card-val" id="sPay">0.00</div><div class="card-sub">excl. basic</div></div>
-  <div class="card cg"><div class="card-lbl">Grand Total (RM)</div><div class="card-val" id="sGrand">0.00</div><div class="card-sub">all included</div></div>
+  <div class="card ca"><div class="clbl">Days</div><div class="cval" id="cDays">0</div><div class="csub">entries</div></div>
+  <div class="card ca"><div class="clbl">Reg Hrs</div><div class="cval" id="cReg">0.00</div><div class="csub">hours</div></div>
+  <div class="card cm"><div class="clbl">OT Hrs</div><div class="cval" id="cOT">0.00</div><div class="csub">hours</div></div>
+  <div class="card cp"><div class="clbl">Rest Day</div><div class="cval" id="cSun">0.00</div><div class="csub">hours</div></div>
+  <div class="card cr"><div class="clbl">Holiday</div><div class="cval" id="cHol">0.00</div><div class="csub">hours</div></div>
+  <div class="card cg"><div class="clbl">Total Hrs</div><div class="cval" id="cTot">0.00</div><div class="csub">hours</div></div>
+  <div class="card cm"><div class="clbl">Meal Allow</div><div class="cval" id="cMeal">0.00</div><div class="csub">RM</div></div>
+  <div class="card cm"><div class="clbl">Att. Allow</div><div class="cval" id="cAtt">0.00</div><div class="csub">RM</div></div>
+  <div class="card cg"><div class="clbl">OT Pay</div><div class="cval" id="cPay">0.00</div><div class="csub">RM</div></div>
+  <div class="card cg"><div class="clbl">Grand Total</div><div class="cval" id="cGrand">0.00</div><div class="csub">RM</div></div>
+  <div class="card ca"><div class="clbl">Annual Bal</div><div class="cval" id="cLA">—</div><div class="csub">days left</div></div>
+  <div class="card cg"><div class="clbl">Medical Bal</div><div class="cval" id="cLM">—</div><div class="csub">days left</div></div>
+  <div class="card cr"><div class="clbl">Unpaid</div><div class="cval" id="cLU">0</div><div class="csub">days taken</div></div>
 </div>
-<!-- LEAVE BALANCE CARDS -->
-<div class="cards" style="margin-bottom:14px;">
-  <div class="card ca"><div class="card-lbl">Annual Leave</div><div class="card-val" id="sLeaveAnnual" style="font-size:16px;">—</div><div class="card-sub">balance / entitled</div></div>
-  <div class="card cg"><div class="card-lbl">Medical Leave</div><div class="card-val" id="sLeaveMed" style="font-size:16px;">—</div><div class="card-sub">balance / entitled</div></div>
-  <div class="card cr2"><div class="card-lbl">Unpaid Leave</div><div class="card-val" id="sLeaveOth" style="font-size:16px;">—</div><div class="card-sub">taken / deduction (RM)</div></div>
-</div>
- 
-<!-- ATTENDANCE TABLE -->
+
+<!-- TABLE -->
 <div class="tw">
-  <table class="main">
-    <thead><tr>
-      <th style="width:28px">#</th>
-      <th style="width:82px">Date</th>
-      <th style="width:36px">Day</th>
-      <th style="width:140px">Day Type</th>
-      <th style="width:80px">Time In</th>
-      <th style="width:80px">Time Out</th>
-      <th style="width:62px;text-align:right">Reg Hrs</th>
-      <th style="width:62px;text-align:right">OT Hrs</th>
-      <th style="width:62px;text-align:right">Total Hrs</th>
-      <th style="width:52px;text-align:right">OT Rate</th>
-      <th style="width:96px;text-align:right">OT Pay (RM)</th>
-      <th style="width:82px;text-align:right">Meal Allow</th>
-      <th style="width:82px;text-align:right">Att. Allow</th>
-      <th style="width:100px">Remarks</th>
-      <th style="width:40px" class="noprint">Del</th>
-    </tr></thead>
-    <tbody id="tbody"></tbody>
-    <tfoot>
- 
-      <!-- ① OT TOTALS — 15 cols: 1-6 label | 7=Reg | 8=OT | 9=Total | 10=Rate | 11=Pay | 12=Meal | 13=Att | 14=Remarks | 15=Del -->
-      <tr class="tfoot-row tfoot-tot">
-        <td colspan="6" style="font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:9px 10px;">OT Totals</td>
-        <td class="n" id="fReg">0.00</td>
-        <td class="n" id="fOT">0.00</td>
-        <td class="n" id="fTotal">0.00</td>
-        <td class="n">—</td>
-        <td class="n" id="fPay">RM 0.00</td>
-        <td class="n" id="fMealTot">RM 0.00</td>
-        <td class="n" id="fAttTot">RM 0.00</td>
-        <td style="padding:0"></td>
-        <td class="noprint" style="padding:0"></td>
-      </tr>
- 
-      <!-- ② EARNINGS HEADER -->
-      <tr style="background:#1E293B;">
-        <td colspan="13" style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94A3B8;">Earnings</td>
-        <td style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94A3B8;text-align:right;">Amount (RM)</td>
-        <td class="noprint"></td>
-      </tr>
- 
-      <!-- OT Pay -->
-      <tr class="tfoot-row tfoot-sub">
-        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;font-weight:600;color:#374151;text-align:right;">OT Pay</td>
-        <td style="text-align:right;font-family:var(--mono);font-size:12px;font-weight:700;color:#F59E0B;padding:8px 10px;" id="fOTPay">RM 0.00</td>
-        <td class="noprint"></td>
-      </tr>
-      <tr class="tfoot-row tfoot-sub">
-        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#374151;text-align:right;">Meal Allowance</td>
-        <td style="text-align:right;font-family:var(--mono);font-size:12px;padding:8px 10px;" id="fMealSum">RM 0.00</td>
-        <td class="noprint"></td>
-      </tr>
-      <tr class="tfoot-row tfoot-sub">
-        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#374151;text-align:right;">Attendance Allowance</td>
-        <td style="text-align:right;font-family:var(--mono);font-size:12px;padding:8px 10px;" id="fAttSum">RM 0.00</td>
-        <td class="noprint"></td>
-      </tr>
-      <tr class="tfoot-row tfoot-sub">
-        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#374151;text-align:right;">Basic Salary</td>
-        <td style="text-align:right;font-family:var(--mono);font-size:12px;padding:8px 10px;" id="fBasic">RM 0.00</td>
-        <td class="noprint"></td>
-      </tr>
-      <tr class="tfoot-row tfoot-sub">
-        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#374151;text-align:right;">Allowance</td>
-        <td style="text-align:right;font-family:var(--mono);font-size:12px;padding:8px 10px;" id="fAllow">RM 0.00</td>
-        <td class="noprint"></td>
-      </tr>
-      <tr class="tfoot-row tfoot-sub">
-        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#374151;text-align:right;">Others</td>
-        <td style="text-align:right;font-family:var(--mono);font-size:12px;padding:8px 10px;" id="fOthers">RM 0.00</td>
-        <td class="noprint"></td>
-      </tr>
-      <!-- Sub Total -->
-      <tr style="background:#1E3A8A;">
-        <td colspan="13" style="padding:9px 10px;font-family:var(--sans);font-size:11px;font-weight:700;color:#BFDBFE;text-align:right;letter-spacing:.3px;">Sub Total</td>
-        <td style="text-align:right;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;padding:9px 10px;" id="fSubTotal">RM 0.00</td>
-        <td class="noprint"></td>
-      </tr>
- 
-      <!-- ③ DEDUCTIONS HEADER -->
-      <tr style="background:#7F1D1D;">
-        <td colspan="13" style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#FCA5A5;">Deductions</td>
-        <td style="padding:5px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#FCA5A5;text-align:right;">Amount (RM)</td>
-        <td class="noprint"></td>
-      </tr>
-      <tr style="background:#FEF2F2;">
-        <td colspan="13" style="padding:8px 10px;font-family:var(--sans);font-size:11px;color:#991B1B;text-align:right;">
-          Unpaid Leave &nbsp;<span style="font-family:var(--mono);font-size:10px;background:#FEE2E2;padding:2px 6px;border-radius:4px;" id="fUnpaidDays">0 day(s)</span>&nbsp;× Per Day Rate
-        </td>
-        <td style="text-align:right;font-family:var(--mono);font-size:12px;font-weight:700;color:#EF4444;padding:8px 10px;" id="fUnpaidDeduct">− RM 0.00</td>
-        <td class="noprint"></td>
-      </tr>
- 
-      <!-- ④ GRAND TOTAL -->
-      <tr class="tfoot-row tfoot-grand">
-        <td colspan="13" style="padding:10px 10px;font-family:var(--sans);font-size:12px;font-weight:700;text-align:right;letter-spacing:.5px;">Grand Total</td>
-        <td style="text-align:right;font-family:var(--mono);font-size:14px;font-weight:700;padding:10px 10px;" id="fGrand">RM 0.00</td>
-        <td class="noprint"></td>
-      </tr>
- 
-      <!-- ⑤ LEAVE BALANCE -->
-      <tr style="background:#1E3A8A;">
-        <td colspan="14" style="padding:6px 10px;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#93C5FD;">
-          Leave Balance Summary &nbsp;<span style="font-weight:400;font-style:italic;color:#60A5FA;">(cumulative — all months)</span>
-        </td>
-        <td class="noprint"></td>
-      </tr>
-      <tr style="background:#DBEAFE;">
-        <td colspan="5" style="padding:7px 10px;font-family:var(--sans);font-size:11px;font-weight:700;color:#1E40AF;">Leave Type</td>
-        <td colspan="3" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#1E40AF;padding:7px 4px;">Entitled (days)</td>
-        <td colspan="2" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#EF4444;padding:7px 4px;">Taken</td>
-        <td colspan="4" style="text-align:center;font-family:var(--sans);font-size:11px;font-weight:700;color:#10B981;padding:7px 4px;">Balance / Deduction</td>
-        <td class="noprint"></td>
-      </tr>
-      <tr style="background:#FEFCE8;">
-        <td colspan="5" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🟡 Annual Leave</td>
-        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#1E40AF;" id="fLeaveAnnualEnt">—</td>
-        <td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveAnnualTaken">0</td>
-        <td colspan="4" style="text-align:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#10B981;" id="fLeaveAnnualBal">—</td>
-        <td class="noprint"></td>
-      </tr>
-      <tr style="background:#F0FFF4;">
-        <td colspan="5" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🟢 Medical Leave</td>
-        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#1E40AF;" id="fLeaveMedEnt">—</td>
-        <td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveMedTaken">0</td>
-        <td colspan="4" style="text-align:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#10B981;" id="fLeaveMedBal">—</td>
-        <td class="noprint"></td>
-      </tr>
-      <tr style="background:#FFF1F2;">
-        <td colspan="5" style="padding:7px 10px;font-family:var(--sans);font-size:12px;color:#374151;">🔴 Unpaid Leave</td>
-        <td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;color:#6B7280;" id="fLeaveOthEnt">—</td>
-        <td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#EF4444;" id="fLeaveOthTaken">0</td>
-        <td colspan="4" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;color:#EF4444;" id="fLeaveOthBal">− RM 0.00</td>
-        <td class="noprint"></td>
-      </tr>
-    </tfoot>
-  </table>
+<table id="mainTbl">
+  <thead><tr>
+    <th style="width:26px">#</th>
+    <th style="width:108px">Date</th>
+    <th style="width:34px">Day</th>
+    <th style="width:140px">Day Type</th>
+    <th style="width:78px">Time In</th>
+    <th style="width:78px">Time Out</th>
+    <th style="width:60px;text-align:right">Reg Hrs</th>
+    <th style="width:60px;text-align:right">OT Hrs</th>
+    <th style="width:60px;text-align:right">Tot Hrs</th>
+    <th style="width:52px;text-align:right">Rate</th>
+    <th style="width:90px;text-align:right">OT Pay(RM)</th>
+    <th style="width:78px;text-align:right">Meal</th>
+    <th style="width:78px;text-align:right">Att.</th>
+    <th style="width:90px">Remarks</th>
+    <th style="width:36px" class="noprint"></th>
+  </tr></thead>
+  <tbody id="tbody"></tbody>
+  <tfoot id="tfoot"></tfoot>
+</table>
 </div>
- 
-<!-- SYNC + EXPORT BAR -->
-<div class="xbar noprint" style="flex-direction:column;align-items:stretch;gap:10px;">
-  <!-- Cloud URL row -->
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--brd);">
-    <span style="font-size:11px;font-weight:700;color:var(--txt3);white-space:nowrap;">☁ Cloud URL</span>
-    <input id="scriptUrlInput" type="text" placeholder="Paste your Google Apps Script Web App URL here…"
-      style="flex:1;min-width:280px;font-family:var(--mono);font-size:11px;padding:7px 10px;
-             border:1px solid var(--brd);border-radius:6px;outline:none;color:var(--txt);"
-      onfocus="this.style.borderColor='var(--acc)'" onblur="this.style.borderColor='var(--brd)'"
-      onchange="setScriptUrl(this.value.trim())">
-    <button class="btn b-blue" onclick="setScriptUrl(document.getElementById('scriptUrlInput').value.trim())"
-      style="font-size:11px;padding:7px 14px;">Connect</button>
-    <button class="btn b-red" onclick="clearScriptUrl()"
-      style="font-size:11px;padding:7px 10px;" title="Disconnect cloud">✕</button>
-  </div>
-  <!-- Status + actions row -->
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span id="syncStatus" style="font-family:var(--mono);font-size:12px;color:var(--txt3);flex:1;">⚪ Initialising…</span>
-    <button class="btn b-gray" onclick="manualSave()" style="font-size:11px;padding:6px 12px;">☁ Save Now</button>
-    <button class="btn b-gray" onclick="manualLoad()" style="font-size:11px;padding:6px 12px;">↺ Reload</button>
-    <button class="btn b-green" onclick="exportXLSX()">📥 Export Excel (.xlsx)</button>
-  </div>
-</div>
- 
+
 <script>
-const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const TYPES=['— Select —','Regular','Overtime','Rest Day (Sunday)','Public Holiday','Off Day','Annual Leave','Medical Leave','Unpaid Leave'];
- 
+// ── CONSTANTS ─────────────────────────────────────────────────────────────
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const TYPES=['— Select —','Regular','Overtime','Rest Day (Sunday)','Public Holiday','Annual Leave','Medical Leave','Unpaid Leave','Off Day'];
+const SIDS=['wdS','wdE','saS','saE','brk','hrR','drR','bas','alw','oth','mAmt','aAmt','lvA','lvM','lvU','rOT','rSun','rHol','rOff'];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
 let year=new Date().getFullYear(), mon=new Date().getMonth(), rows=[], rid=0;
- 
-// ══════════════════════════════════════════════════════════════════════
-// CLOUD STORAGE + LIVE GOOGLE SHEET via Google Apps Script
-//
-// SETUP:
-//  1. Open Google Sheets → create a new blank spreadsheet
-//  2. Click Extensions → Apps Script
-//  3. Delete all code and paste the script below
-//  4. Deploy → New Deployment → Web App
-//     • Execute as: Me  •  Who has access: Anyone
-//  5. Copy the Web App URL → paste into the ☁ Cloud URL field in the app
-//
-// The Google Sheet will auto-update every time you make a change —
-// open the sheet anytime to see the latest formatted attendance data.
-//
-// ── PASTE THIS INTO APPS SCRIPT ──────────────────────────────────────
-// const DATA_SHEET  = 'TAData';
-// const LOG_SHEET   = 'Attendance Log';
-// const SUM_SHEET   = 'Monthly Summary';
-// const MONTHS = ['January','February','March','April','May','June',
-//                 'July','August','September','October','November','December'];
-// const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-//
-// function doGet(e){
-//   const ss = SpreadsheetApp.getActiveSpreadsheet();
-//   let sh = ss.getSheetByName(DATA_SHEET) || ss.insertSheet(DATA_SHEET);
-//   const data = sh.getRange('A1').getValue() || '{}';
-//   const cb = e.parameter.callback;
-//   return ContentService
-//     .createTextOutput(cb ? cb+'('+data+')' : data)
-//     .setMimeType(cb ? ContentService.MimeType.JAVASCRIPT
-//                     : ContentService.MimeType.JSON);
-// }
-//
-// function doPost(e){
-//   const ss  = SpreadsheetApp.getActiveSpreadsheet();
-//   const raw = e.postData.contents;
-//   // Save raw JSON for sync
-//   let dsh = ss.getSheetByName(DATA_SHEET) || ss.insertSheet(DATA_SHEET);
-//   dsh.getRange('A1').setValue(raw);
-//   // Write formatted sheets
-//   try {
-//     const d = JSON.parse(raw);
-//     if(d.rows) writeFormattedSheets(ss, d);
-//   } catch(ex) {}
-//   return ContentService
-//     .createTextOutput(JSON.stringify({status:'ok'}))
-//     .setMimeType(ContentService.MimeType.JSON);
-// }
-//
-// function writeFormattedSheets(ss, d){
-//   const rows     = d.rows || [];
-//   const settings = d.settings || {};
-//   const mon      = d.mon ?? 0;
-//   const yr       = d.year ?? new Date().getFullYear();
-//   const period   = MONTHS[mon] + ' ' + yr;
-//   const vis      = rows.filter(r => r.month === mon && r.year === yr)
-//                        .sort((a,b) => a.date - b.date);
-//   const hr    = parseFloat(settings.hrRate)  || 0;
-//   const dr    = parseFloat(settings.dayRate) || 0;
-//   const brk   = parseFloat(settings.brkM)   || 0;
-//   const basic = parseFloat(settings.basicSal)  || 0;
-//   const allow = parseFloat(settings.allowance) || 0;
-//   const others= parseFloat(settings.others)    || 0;
-//   const mealA = parseFloat(settings.mealAmt)   || 0;
-//   const attA  = parseFloat(settings.attAmt)    || 0;
-//   const tPay  = vis.reduce((a,r)=>a+(r.pay||0),0);
-//   const tReg  = vis.reduce((a,r)=>a+(r.regH||0),0);
-//   const tOT   = vis.reduce((a,r)=>a+(r.otH||0),0);
-//   const tH    = vis.reduce((a,r)=>a+(r.totalH||0),0);
-//   const tMeal = vis.reduce((a,r)=>a+(r.meal||0),0);
-//   const tAtt  = vis.reduce((a,r)=>a+(r.att||0),0);
-//   const grand = tPay+basic+allow+tMeal+tAtt+others;
-//
-//   // ── Attendance Log sheet ──
-//   let ls = ss.getSheetByName(LOG_SHEET);
-//   if(!ls) ls = ss.insertSheet(LOG_SHEET);
-//   ls.clearContents(); ls.clearFormats();
-//
-//   const logData = [];
-//   logData.push(['TIME ATTENDANCE LOG — '+period]);
-//   logData.push(['Hourly Rate (RM)', hr, 'Per Day Rate (RM)', dr, 'Break (min)', brk]);
-//   logData.push(['Basic Salary (RM)', basic, 'Allowance (RM)', allow, 'Others (RM)', others]);
-//   logData.push(['Meal Allowance (RM)', mealA, '(per OT ≥ 2h)', 'Att. Allow (RM)', attA, '(per check-in)']);
-//   logData.push([]);
-//   logData.push(['#','Date','Day','Day Type','Time In','Time Out',
-//                 'Reg Hrs','OT Hrs','Total Hrs','OT Rate','OT Pay (RM)',
-//                 'Meal Allow','Att. Allow']);
-//   vis.forEach((r,i) => {
-//     const dow  = new Date(r.year,r.month,r.date).getDay();
-//     const dd   = String(r.date).padStart(2,'0');
-//     const mm   = String(r.month+1).padStart(2,'0');
-//     const yy   = String(r.year).slice(-2);
-//     const showR= ['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
-//     logData.push([i+1, dd+'/'+mm+'/'+yy, DAYS[dow], r.dayType,
-//                   r.timeIn, r.timeOut,
-//                   r.regH||0, r.otH||0, r.totalH||0,
-//                   showR&&r.rate>0?r.rate:0,
-//                   r.pay||0, r.meal||0, r.att||0]);
-//   });
-//   logData.push([]);
-//   logData.push(['TOTALS','','','','','',tReg,tOT,tH,'',tPay,tMeal,tAtt]);
-//   logData.push(['','','','','','','','','','','Basic Salary','',basic]);
-//   logData.push(['','','','','','','','','','','Allowance','',allow]);
-//   logData.push(['','','','','','','','','','','Meal Allowance','',tMeal]);
-//   logData.push(['','','','','','','','','','','Att. Allowance','',tAtt]);
-//   logData.push(['','','','','','','','','','','Others','',others]);
-//   logData.push(['','','','','','','','','','','GRAND TOTAL','',grand]);
-//
-//   ls.getRange(1,1,logData.length,13).setValues(logData);
-//
-//   // Header row styling
-//   ls.getRange('A1').setFontSize(13).setFontWeight('bold').setBackground('#1E293B').setFontColor('#FFFFFF');
-//   ls.getRange(6,1,1,13).setBackground('#1E40AF').setFontColor('#FFFFFF').setFontWeight('bold');
-//   // Totals row
-//   const totRow = 6+vis.length+2;
-//   ls.getRange(totRow,1,1,13).setBackground('#1E40AF').setFontColor('#FFFFFF').setFontWeight('bold');
-//   // Grand total row
-//   ls.getRange(totRow+6,1,1,13).setBackground('#0F2354').setFontColor('#FFFFFF').setFontWeight('bold');
-//   // Column widths
-//   [40,90,45,160,70,70,70,70,75,70,90,90,90].forEach((w,i)=>
-//     ls.setColumnWidth(i+1, w));
-//   ls.setFrozenRows(6);
-//
-//   // ── Monthly Summary sheet ──
-//   let ms = ss.getSheetByName(SUM_SHEET);
-//   if(!ms) ms = ss.insertSheet(SUM_SHEET);
-//   ms.clearContents(); ms.clearFormats();
-//
-//   const regPay = vis.filter(r=>['Regular','Overtime'].includes(r.dayType)).reduce((a,r)=>a+(r.pay||0),0);
-//   const sunPay = vis.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+(r.pay||0),0);
-//   const holPay = vis.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+(r.pay||0),0);
-//   const sunHrs = vis.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+(r.totalH||0),0);
-//   const holHrs = vis.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+(r.totalH||0),0);
-//   const offDays= vis.filter(r=>r.dayType==='Off Day').length;
-//   const regHrs = vis.filter(r=>['Regular','Overtime'].includes(r.dayType)).reduce((a,r)=>a+(r.regH||0),0);
-//   const otHrs  = vis.filter(r=>['Regular','Overtime'].includes(r.dayType)).reduce((a,r)=>a+(r.otH||0),0);
-//
-//   const sumData = [
-//     ['MONTHLY SUMMARY — '+period],
-//     [],
-//     ['HOURS BREAKDOWN','Hours'],
-//     ['Regular (Mon–Fri & Sat)', regHrs],
-//     ['Overtime (Mon–Fri & Sat)', otHrs],
-//     ['Rest Day — Sunday', sunHrs],
-//     ['Public Holiday', holHrs],
-//     ['Off Days', offDays+' day(s)'],
-//     ['TOTAL HOURS', tH],
-//     [],
-//     ['PAY BREAKDOWN','Amount (RM)'],
-//     ['OT Pay (Weekday/Sat)', regPay],
-//     ['Rest Day Pay', sunPay],
-//     ['Public Holiday Pay', holPay],
-//     ['Meal Allowance', tMeal],
-//     ['Attendance Allowance', tAtt],
-//     [],
-//     ['SALARY & ADDITIONS','Amount (RM)'],
-//     ['Basic Salary', basic],
-//     ['Allowance', allow],
-//     ['Others', others],
-//     [],
-//     ['GRAND TOTAL', grand],
-//   ];
-//   ms.getRange(1,1,sumData.length,2).setValues(sumData);
-//   ms.getRange('A1').setFontSize(13).setFontWeight('bold').setBackground('#1E293B').setFontColor('#FFFFFF');
-//   ms.getRange('A3:B3').setBackground('#1E40AF').setFontColor('#FFFFFF').setFontWeight('bold');
-//   ms.getRange('A11:B11').setBackground('#1E40AF').setFontColor('#FFFFFF').setFontWeight('bold');
-//   ms.getRange('A18:B18').setBackground('#1E40AF').setFontColor('#FFFFFF').setFontWeight('bold');
-//   ms.getRange('A23:B23').setBackground('#0F2354').setFontColor('#FFFFFF').setFontWeight('bold');
-//   ms.setColumnWidth(1,220); ms.setColumnWidth(2,140);
-// }
-// ─────────────────────────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════════
- 
-let SCRIPT_URL = localStorage.getItem('ta_script_url') || '';  // set via UI below
- 
-const LS_DATA  = 'ta_data_v3';
-const LS_SET   = 'ta_settings_v3';
-const SETTING_IDS = ['wdStart','wdEnd','satStart','satEnd','brkM',
-                     'hrRate','dayRate','basicSal','allowance','others',
-                     'mealAmt','attAmt','rOT','rSun','rHol','rOff',
-                     'leaveAnnual','leaveMedical','leaveOther'];
- 
-let syncTimer = null;
-const cloudEnabled = () => SCRIPT_URL.trim().length > 0;
- 
-function setSyncStatus(state, msg){
-  const el = document.getElementById('syncStatus'); if(!el) return;
-  const icon = {idle:'🟢', saving:'🔄', loading:'🔄', error:'🔴', offline:'⚪'}[state]||'⚪';
-  el.textContent = icon + ' ' + msg;
-  el.style.color = state==='error'?'#EF4444':state==='idle'?'#10B981':'#F59E0B';
-}
- 
-// ── Settings helpers ──
+let CLOUD_URL='';
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+const g = id => { const el=document.getElementById(id); return el?el.value:''; };
+const n = id => { const v=parseFloat(g(id)); return isNaN(v)?0:v; };
+const toMin = t => { if(!t) return 0; const [h,m]=(t+'').split(':').map(Number); return h*60+(m||0); };
+const maxDays = (y,m) => new Date(y,m+1,0).getDate();
+const pad2 = x => String(x).padStart(2,'0');
+const isoD = (y,m,d) => d?`${y}-${pad2(m+1)}-${pad2(d)}`:'';
+const rm = v => 'RM '+Math.abs(v).toLocaleString('en-MY',{minimumFractionDigits:2});
+
 function getSettings(){
-  const s={};
-  SETTING_IDS.forEach(id=>{ const el=document.getElementById(id); if(el) s[id]=el.value; });
-  return s;
+  const s={}; SIDS.forEach(id=>{ s[id]=g(id); }); return s;
 }
 function applySettings(s){
   if(!s) return;
-  Object.entries(s).forEach(([id,val])=>{ const el=document.getElementById(id); if(el) el.value=val; });
+  SIDS.forEach(id=>{ const el=document.getElementById(id); if(el&&s[id]!==undefined) el.value=s[id]; });
 }
- 
-// ── Local storage ──
-function saveLocal(){
-  try{
-    localStorage.setItem(LS_DATA, JSON.stringify({year,mon,rows,rid}));
-    localStorage.setItem(LS_SET,  JSON.stringify(getSettings()));
-  }catch(e){}
-}
-function loadLocal(){
-  try{
-    const d = localStorage.getItem(LS_DATA);
-    if(d){
-      const o = JSON.parse(d);
-      year = o.year ?? new Date().getFullYear();
-      mon  = o.mon  ?? new Date().getMonth();
-      rows = o.rows ?? []; rid = o.rid ?? 0;
-      rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; if(!r.dayType)r.dayType='— Select —'; if(!r.remarks)r.remarks=''; if(r.date===undefined)r.date=null; });
-    }
-    const s = localStorage.getItem(LS_SET);
-    if(s) applySettings(JSON.parse(s));
-  }catch(e){ rows=[]; rid=0; }
-}
- 
-// ── Cloud: Google Apps Script ──
-async function saveCloud(){
-  if(!cloudEnabled()){ saveLocal(); return; }
-  saveLocal();
-  const payload = JSON.stringify({ year, mon, rows, rid, settings: getSettings() });
-  try{
-    setSyncStatus('saving','Saving to cloud…');
-    // POST with text/plain + no-cors: browser sends the request, Apps Script
-    // receives it via e.postData.contents — this works reliably regardless of payload size
-    await fetch(SCRIPT_URL, {
-      method : 'POST',
-      mode   : 'no-cors',       // avoids CORS preflight
-      headers: { 'Content-Type': 'text/plain' },
-      body   : payload          // raw JSON — Apps Script reads e.postData.contents
-    });
-    // no-cors returns opaque response — if no exception, request was sent
-    setSyncStatus('idle','Saved to Google Sheets ✓');
-  }catch(e){
-    setSyncStatus('error','Save failed — check Script URL');
-  }
-}
- 
-async function loadCloud(){
-  if(!cloudEnabled()){
-    loadLocal();
-    setSyncStatus('offline','Local only — paste Script URL to enable cloud sync');
-    return;
-  }
-  try{
-    setSyncStatus('loading','Loading from cloud…');
-    // GET with no-cors won't work for reading, so we use a JSONP-style
-    // approach: append callback param so Apps Script wraps response
-    const url = SCRIPT_URL + '?callback=__taLoad&ts=' + Date.now();
-    const data = await new Promise((resolve, reject) => {
-      window.__taLoad = (d) => { delete window.__taLoad; resolve(d); };
-      const s = document.createElement('script');
-      s.src = url;
-      s.onerror = () => { delete window.__taLoad; reject(new Error('script load failed')); };
-      document.head.appendChild(s);
-      setTimeout(() => { delete window.__taLoad; reject(new Error('timeout')); }, 8000);
-    });
-    if(data && data.rows){
-      year = data.year ?? new Date().getFullYear();
-      mon  = data.mon  ?? new Date().getMonth();
-      rows = data.rows ?? []; rid = data.rid ?? 0;
-      rows.forEach(r=>{ if(r.meal===undefined)r.meal=0; if(r.att===undefined)r.att=0; if(!r.dayType)r.dayType='— Select —'; if(!r.remarks)r.remarks=''; if(r.date===undefined)r.date=null; });
-      applySettings(data.settings);
-      saveLocal();
-      // Sync month/year dropdowns to loaded data
-      const _sm=document.getElementById('selMon'); if(_sm) _sm.value=mon;
-      const _sy=document.getElementById('selYear'); if(_sy) _sy.value=year;
-      setSyncStatus('idle','Loaded from Google Sheets ✓');
-    } else {
-      loadLocal();
-      setSyncStatus('idle','Cloud empty — showing local data');
-    }
-  }catch(e){
-    setSyncStatus('error','Load failed — using local backup');
-    loadLocal();
-  }
-}
- 
-// Debounced: waits 2s after last change before writing to cloud
-function saveData(){
-  saveLocal();
-  if(!cloudEnabled()) return;
-  clearTimeout(syncTimer);
-  setSyncStatus('saving','Unsaved changes…');
-  syncTimer = setTimeout(()=>saveCloud(), 2000);
-}
-function saveSettings(){ saveData(); }
- 
-async function manualSave(){ clearTimeout(syncTimer); await saveCloud(); }
-async function manualLoad(){
-  await loadCloud();
-  rows.forEach(r=>calc(r));
-  summary(); render();
-}
- 
-// ── helpers ────────────────────────────────────────────────────────────
-const toMin = t=>{ const[h,m]=(t||'00:00').split(':').map(Number); return h*60+m; };
-const maxDays = (y,m)=>new Date(y,m+1,0).getDate();
-const num = id=>{ const el=document.getElementById(id); const v=parseFloat(el?el.value:''); return isNaN(v)?0:v; };
-const getHrRate  = ()=>num('hrRate');
-const getDayRate = ()=>num('dayRate');
-const getBrk     = ()=>num('brkM');
-const getMealAmt = ()=>num('mealAmt');
-const getAttAmt  = ()=>num('attAmt');
-const getRates   = ()=>({ot:num('rOT'),sun:num('rSun'),hol:num('rHol'),off:num('rOff')});
- 
 function shiftFor(dow){
-  if(dow===6) return {s:document.getElementById('satStart').value||'09:00',
-                      e:document.getElementById('satEnd').value||'18:00',cap:8};
-  return             {s:document.getElementById('wdStart').value||'09:00',
-                      e:document.getElementById('wdEnd').value||'18:00', cap:8};
+  if(dow===6) return {s:g('saS')||'09:00', e:g('saE')||'18:00', cap:8};
+  return             {s:g('wdS')||'09:00', e:g('wdE')||'18:00', cap:8};
 }
-function autoType(dow){ return dow===0?'Rest Day (Sunday)':'Regular'; }
-function defTimes(dow){ const sf=shiftFor(dow); return {ti:sf.s,to:sf.e}; }
- 
-function isoDate(y,m,d){
-  if(!d||!y) return '';
-  return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+function autoType(dow){
+  return '— Select —';
 }
-function fmtDate(y,m,d){
-  return String(d).padStart(2,'0')+'/'+String(m+1).padStart(2,'0')+'/'+String(y).slice(-2);
-}
-function parseDate(str){
-  const p=str.trim().split('/');
-  if(p.length!==3) return null;
-  const[dd,mm,yy]=p.map(Number);
-  if([dd,mm,yy].some(isNaN)) return null;
-  return {year:yy<100?2000+yy:yy, month:mm-1, date:dd};
-}
- 
-// ── month nav ──────────────────────────────────────────────────────────
-function populateYearSelect(){
-  const sel=document.getElementById('selYear'); if(!sel)return;
-  const cur=new Date().getFullYear();
-  sel.innerHTML='';
-  for(let y=cur-5;y<=cur+3;y++){
-    const o=document.createElement('option');
-    o.value=y; o.textContent=y;
-    if(y===year) o.selected=true;
-    sel.appendChild(o);
+
+// ── CALC ROW ───────────────────────────────────────────────────────────────
+function calcRow(r){
+  const hr=n('hrR'), dr=n('drR'), brk=n('brk');
+  const rOT=n('rOT'), rSun=n('rSun'), rHol=n('rHol'), rOff=n('rOff');
+  const mAmt=n('mAmt'), aAmt=n('aAmt');
+  r.regH=0; r.otH=0; r.totH=0; r.pay=0; r.rate=0; r.meal=0; r.att=0;
+
+  const dt=r.dayType||'';
+
+  if(!r.date||dt==='— Select —'||dt==='Annual Leave'||dt==='Medical Leave'){
+    if(dt==='Unpaid Leave'){ r.pay=-(dr); }
+    return;
   }
-}
-function syncDropdowns(){
-  const sm=document.getElementById('selMon');
-  const sy=document.getElementById('selYear');
-  if(sm) sm.value=mon;
-  if(sy) sy.value=year;
-}
-function setMonYear(){
-  const sm=document.getElementById('selMon');
-  const sy=document.getElementById('selYear');
-  if(sm) mon=parseInt(sm.value);
-  if(sy) year=parseInt(sy.value);
-  render(); summary(); saveData();
-}
-function chMon(d){ mon+=d; if(mon<0){mon=11;year--;} if(mon>11){mon=0;year++;} syncDropdowns(); render(); summary(); saveData(); }
- 
-// ── rows ───────────────────────────────────────────────────────────────
-function addRow(y,m,d,type){
-  y=y??year; m=m??mon;
-  // d left null means user will pick from calendar
-  const hasDate = d !== null && d !== undefined;
-  d = hasDate ? d : null;
-  const dow = hasDate ? new Date(y,m,d).getDay() : 0;
-  type = type || '— Select —';
-  const r={id:++rid,year:y,month:m,date:d,timeIn:'',timeOut:'',
-    dayType:type,regH:0,otH:0,totalH:0,pay:0,rate:0,meal:0,att:0,remarks:''};
-  calc(r); rows.push(r); render(); summary(); saveData();
-}
-function delRow(id){ rows=rows.filter(r=>r.id!==id); render(); summary(); saveData(); }
-function fillMonth(){
-  const nd=maxDays(year,mon);
-  for(let d=1;d<=nd;d++){
-    if(!rows.find(r=>r.year===year&&r.month===mon&&r.date===d)){
-      const _dow=new Date(year,mon,d).getDay();
-      const _t=autoType(_dow);
-      const _sf=shiftFor(_dow);
-      const row={id:++rid,year,month:mon,date:d,timeIn:_sf.s,timeOut:_sf.e,
-        dayType:_t,regH:0,otH:0,totalH:0,pay:0,rate:0,meal:0,att:0,remarks:''};
-      calc(row); rows.push(row);
-    }
-  }
-  render(); summary(); saveData();
-}
- 
-// ── calc ───────────────────────────────────────────────────────────────
-function calc(r){
-  const rates=getRates(), hr=getHrRate(), dr=getDayRate(), brk=getBrk();
-  const mealAmt=getMealAmt(), attAmt=getAttAmt();
+  if(dt==='Unpaid Leave'){ r.pay=-(dr); return; }
+  if(dt==='Off Day'){ r.pay=n('drR')*rOff; return; }
+
+  if(!r.timeIn||!r.timeOut) return;
+
+  // Attendance allowance for any day with time in
+  r.att = aAmt;
+
   const dow=new Date(r.year,r.month,r.date).getDay();
- 
-  // Reset allowances
-  r.meal=0; r.att=0;
- 
-  // Leave types — no hours worked, no pay, no allowances
-  // Leave types
-  if(r.dayType==='Annual Leave'||r.dayType==='Medical Leave'){
-    r.regH=0; r.otH=0; r.totalH=0; r.rate=0; r.pay=0; r.meal=0; r.att=0;
-    return;
-  }
-  if(r.dayType==='Unpaid Leave'){
-    // Deduct per day rate from pay (shown as negative)
-    r.regH=0; r.otH=0; r.totalH=0; r.rate=0; r.meal=0; r.att=0;
-    r.pay=-(getDayRate());  // negative = deduction
-    return;
-  }
- 
-  // Off Day — no hours, no attendance allowance
-  if(r.dayType==='Off Day'){
-    r.regH=0; r.otH=0; r.totalH=0;
-    r.rate=rates.off; r.pay=+(dr*rates.off).toFixed(2);
-    return;
-  }
- 
-  if(r.dayType==='— Select —'||!r.timeIn||!r.timeOut){r.regH=r.otH=r.totalH=r.pay=r.rate=0;r.meal=0;r.att=0;return;}
- 
-  // Attendance allowance: any day with a time-in recorded (not Off Day)
-  r.att=+attAmt.toFixed(2);
- 
-  // Rest Day (Sunday) / Public Holiday — raw hours, NO break, all OT
-  if(r.dayType==='Rest Day (Sunday)'||r.dayType==='Public Holiday'){
+
+  if(dt==='Rest Day (Sunday)'||dt==='Public Holiday'){
     const wm=Math.max(toMin(r.timeOut)-toMin(r.timeIn),0);
     const wh=wm/60;
-    r.regH=0; r.otH=+wh.toFixed(2); r.totalH=+wh.toFixed(2);
-    const rt=r.dayType==='Rest Day (Sunday)'?rates.sun:rates.hol;
-    r.rate=rt; r.pay=+(wh*rt*hr).toFixed(2);
-    // Meal: OT >= 2h
-    if(wh>=2) r.meal=+mealAmt.toFixed(2);
+    r.otH=+wh.toFixed(2); r.totH=r.otH;
+    r.rate=dt==='Rest Day (Sunday)'?rSun:rHol;
+    r.pay=+(wh*r.rate*hr).toFixed(2);
+    if(wh>=2) r.meal=mAmt;
     return;
   }
- 
-  // Overtime type (manually selected) — all hours OT with break
-  if(r.dayType==='Overtime'){
+
+  if(dt==='Overtime'){
     const wm=Math.max(toMin(r.timeOut)-toMin(r.timeIn)-brk,0);
     const wh=wm/60;
-    r.regH=0; r.otH=+wh.toFixed(2); r.totalH=+wh.toFixed(2);
-    r.rate=rates.ot; r.pay=+(wh*rates.ot*hr).toFixed(2);
-    if(wh>=2) r.meal=+mealAmt.toFixed(2);
+    r.otH=+wh.toFixed(2); r.totH=r.otH;
+    r.rate=rOT; r.pay=+(wh*rOT*hr).toFixed(2);
+    if(wh>=2) r.meal=mAmt;
     return;
   }
- 
-  // Regular (Mon–Fri & Saturday full 8h with break)
+
+  // Regular
   const sf=shiftFor(dow);
   const ss=toMin(sf.s), se=toMin(sf.e);
   const ai=toMin(r.timeIn), ao=toMin(r.timeOut);
-  const overlapMin=Math.max(Math.min(ao,se)-Math.max(ai,ss),0);
-  const overlapH=Math.max(overlapMin-brk,0)/60;
+  const overlapMin=Math.max(Math.min(ao,se)-Math.max(ai,ss)-brk,0);
+  const overlapH=overlapMin/60;
   const beforeH=Math.max(ss-ai,0)/60;
   const afterH=Math.max(ao-se,0)/60;
-  const regH=Math.min(overlapH,sf.cap);
-  const otH=beforeH+afterH+Math.max(overlapH-sf.cap,0);
- 
-  r.regH=+regH.toFixed(2); r.otH=+otH.toFixed(2); r.totalH=+(regH+otH).toFixed(2);
-  // Only OT pay shown (regular covered by basic salary)
-  r.rate=otH>0?rates.ot:0;
-  r.pay=+(otH*rates.ot*hr).toFixed(2);
-  // Meal allowance: OT portion >= 2h
-  if(otH>=2) r.meal=+mealAmt.toFixed(2);
+  r.regH=+Math.min(overlapH,sf.cap).toFixed(2);
+  r.otH=+(beforeH+afterH+Math.max(overlapH-sf.cap,0)).toFixed(2);
+  r.totH=+(r.regH+r.otH).toFixed(2);
+  r.rate=r.otH>0?rOT:0;
+  r.pay=+(r.otH*rOT*hr).toFixed(2);
+  if(r.otH>=2) r.meal=mAmt;
 }
- 
-function recalcAll(){ rows.forEach(r=>calc(r)); render(); summary(); saveData(); saveSettings(); }
- 
-// ── field updates ──────────────────────────────────────────────────────
-function updDateISO(id,val){
-  const r=rows.find(x=>x.id===id); if(!r||!val)return;
-  const[y,m,d]=val.split('-').map(Number);
-  r.year=y; r.month=m-1; r.date=d;
-  const dow=new Date(r.year,r.month,r.date).getDay();
-  r.dayType='— Select —';
-  r.timeIn=''; r.timeOut='';
-  calc(r); render(); summary(); saveData();
+
+function recalcAll(){ rows.forEach(r=>calcRow(r)); renderTable(); calcSummary(); saveLocal(); scheduleSave(); }
+
+// ── ROW MANAGEMENT ─────────────────────────────────────────────────────────
+function addRow(y,m,d,dt,ti,to){
+  y=y??year; m=m??mon; d=d??null;
+  const dow=d?new Date(y,m,d).getDay():null;
+  const r={id:++rid,year:y,month:m,date:d,
+    dayType:dt||(dow!==null?autoType(dow):'— Select —'),
+    timeIn:ti||'', timeOut:to||'',
+    regH:0,otH:0,totH:0,pay:0,rate:0,meal:0,att:0,remarks:''};
+  if(d&&r.dayType!=='— Select —'&&!r.timeIn){
+    const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e;
+  }
+  calcRow(r); rows.push(r);
+  renderTable(); calcSummary(); saveLocal(); scheduleSave();
 }
-function updDate(id,raw){
-  const r=rows.find(x=>x.id===id); if(!r)return;
-  const p=parseDate(raw); if(!p)return;
-  r.year=p.year; r.month=p.month; r.date=p.date;
-  const dow=new Date(r.year,r.month,r.date).getDay();
-  r.dayType=autoType(dow);
-  const t=defTimes(dow); r.timeIn=t.ti; r.timeOut=t.to;
-  calc(r); render(); summary(); saveData();
+
+function delRow(id){ rows=rows.filter(r=>r.id!==id); renderTable(); calcSummary(); saveLocal(); scheduleSave(); }
+
+function fillMonth(){
+  const nd=maxDays(year,mon);
+  for(let d=1;d<=nd;d++){
+    if(rows.find(r=>r.year===year&&r.month===mon&&r.date===d)) continue;
+    addRow(year,mon,d,'— Select —','','');
+  }
 }
-function updField(id,field,val){ const r=rows.find(x=>x.id===id); if(r){r[field]=val;saveData();} }
+
+function clearAll(){
+  if(!confirm('Clear ALL data?')) return;
+  rows=[]; rid=0; localStorage.clear();
+  renderTable(); calcSummary();
+}
+
+// ── FIELD UPDATES ──────────────────────────────────────────────────────────
+function updDate(id,val){
+  const r=rows.find(x=>x.id===id); if(!r) return;
+  if(!val){ r.date=null; r.dayType='— Select —'; r.timeIn=''; r.timeOut=''; }
+  else{
+    const [y,m,d]=val.split('-').map(Number);
+    r.year=y; r.month=m-1; r.date=d;
+    const dow=new Date(y,m-1,d).getDay();
+    if(r.dayType==='— Select —'||!r.dayType) r.dayType=autoType(dow);
+    if(!r.timeIn){ const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e; }
+  }
+  calcRow(r); renderTable(); calcSummary(); saveLocal(); scheduleSave();
+}
+
 function updDT(id,val){
-  const r=rows.find(x=>x.id===id); if(!r)return;
+  const r=rows.find(x=>x.id===id); if(!r) return;
   r.dayType=val;
-  if(val!=='— Select —'&&!r.timeIn){
-    const dow = (r.date!=null) ? new Date(r.year,r.month,r.date).getDay() : -1;
-    if(['Regular','Overtime','Rest Day (Sunday)','Public Holiday'].includes(val)){
-      const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e;
-    }
+  if(val==='— Select —'){ r.timeIn=''; r.timeOut=''; }
+  else if(!r.timeIn&&['Regular','Overtime','Rest Day (Sunday)','Public Holiday'].includes(val)){
+    const dow=r.date?new Date(r.year,r.month,r.date).getDay():0;
+    const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e;
   }
-  calc(r); render(); summary(); saveData();
+  calcRow(r); renderRow(r); calcSummary(); saveLocal(); scheduleSave();
 }
-function updTime(id,f,val){ const r=rows.find(x=>x.id===id); if(r){r[f]=val;calc(r);patch(r);summary();saveData();} }
- 
-function patch(r){
-  const tr=document.querySelector(`tr[data-id="${r.id}"]`); if(!tr)return;
-  tr.querySelector('.cr').textContent=r.regH.toFixed(2);
-  const oe=tr.querySelector('.co');
-  oe.textContent=r.otH>0?r.otH.toFixed(2):'—';
-  oe.style.color=r.otH>0?'var(--amb)':'var(--txt3)';
-  tr.querySelector('.ct').textContent=r.totalH.toFixed(2);
-  const showRate=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
-  const ck=tr.querySelector('.ck');
-  ck.textContent=showRate&&r.rate>0?r.rate.toFixed(2)+'×':'—';
-  ck.style.color=showRate?'var(--amb)':'var(--txt3)';
-  const cp=tr.querySelector('.cp2');
-  cp.textContent=r.pay>0?'RM '+r.pay.toLocaleString('en-MY',{minimumFractionDigits:2}):'—';
-  cp.style.color=r.pay>0?'var(--grn)':'var(--txt3)';
-  const cm=tr.querySelector('.cmeal');
-  cm.textContent=r.meal>0?'RM '+r.meal.toFixed(2):'—';
-  cm.style.color=r.meal>0?'var(--amb)':'var(--txt3)';
-  const ca=tr.querySelector('.catt');
-  ca.textContent=r.att>0?'RM '+r.att.toFixed(2):'—';
-  ca.style.color=r.att>0?'var(--grn)':'var(--txt3)';
+
+function updTime(id,f,v){
+  const r=rows.find(x=>x.id===id); if(!r) return;
+  r[f]=v; calcRow(r); renderRow(r); calcSummary(); saveLocal(); scheduleSave();
 }
- 
-// ── summary ────────────────────────────────────────────────────────────
-function summary(){
-  const v   = rows.filter(r=>r.year===year&&r.month===mon);
-  const all = rows;  // all rows across all months for cumulative leave
- 
-  // ── Hours ──
-  const tReg  = v.reduce((a,r)=>a+r.regH,0);
-  const tOT   = v.reduce((a,r)=>a+r.otH,0);
-  const tH    = v.reduce((a,r)=>a+r.totalH,0);
-  const tSun  = v.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+r.totalH,0);
-  const tHol  = v.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+r.totalH,0);
- 
-  // ── OT Pay (from table rows) ──
-  const tOTPay = v.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
- 
-  // ── Allowances ──
-  const tMeal = v.reduce((a,r)=>a+r.meal,0);
-  const tAtt  = v.reduce((a,r)=>a+r.att,0);
- 
-  // ── Settings inputs ──
-  const basic  = num('basicSal');
-  const allow  = num('allowance');
-  const others = num('others');
-  const dr     = getDayRate();
- 
-  // ── Unpaid Leave (current month deduction) ──
-  const unpaidDaysMon  = v.filter(r=>r.dayType==='Unpaid Leave').length;
-  const unpaidDeductMon = unpaidDaysMon * dr;
- 
-  // ── Sub Total = OT Pay + Meal + Att + Basic + Allowance + Others ──
-  const subTotal = tOTPay + tMeal + tAtt + basic + allow + others;
- 
-  // ── Grand Total = Sub Total − Unpaid Deductions ──
-  const grand = subTotal - unpaidDeductMon;
- 
-  // ── Cumulative leave (ALL months) ──
-  const annualTaken  = all.filter(r=>r.dayType==='Annual Leave').length;
-  const medicalTaken = all.filter(r=>r.dayType==='Medical Leave').length;
-  const unpaidTakenAll= all.filter(r=>r.dayType==='Unpaid Leave').length;
-  const unpaidDeductAll= unpaidTakenAll * dr;
- 
-  const annualEnt  = num('leaveAnnual');
-  const medicalEnt = num('leaveMedical');
-  const otherEnt   = num('leaveOther');  // optional for unpaid
- 
-  const annualBal  = Math.max(annualEnt - annualTaken, 0);
-  const medicalBal = Math.max(medicalEnt - medicalTaken, 0);
- 
-  // ── Helper ──
-  const rm  = x  => 'RM ' + Math.abs(x).toLocaleString('en-MY',{minimumFractionDigits:2});
-  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
- 
-  // ── Cards ──
-  set('sDays',    v.length);
-  set('sReg',     tReg.toFixed(2));
-  set('sOT',      tOT.toFixed(2));
-  set('sSun',     tSun.toFixed(2));
-  set('sHol',     tHol.toFixed(2));
-  set('sTotal',   tH.toFixed(2));
-  set('sMeal',    tMeal.toFixed(2));
-  set('sAtt',     tAtt.toFixed(2));
-  set('sPay',     tOTPay.toLocaleString('en-MY',{minimumFractionDigits:2}));
-  set('sGrand',   grand.toLocaleString('en-MY',{minimumFractionDigits:2}));
-  set('sLeaveAnnual', annualEnt ? annualBal+' / '+annualEnt : '—');
-  set('sLeaveMed',    medicalEnt ? medicalBal+' / '+medicalEnt : '—');
-  set('sLeaveOth',    unpaidTakenAll+'d / −RM '+unpaidDeductAll.toFixed(2));
- 
-  // ── OT Totals row ──
-  set('fReg',   tReg.toFixed(2));
-  set('fOT',    tOT.toFixed(2));
-  set('fTotal', tH.toFixed(2));
-  set('fPay',   rm(tOTPay));
-  set('fMealTot', rm(tMeal));
-  set('fAttTot',  rm(tAtt));
- 
-  // ── Earnings rows ──
-  set('fOTPay',   rm(tOTPay));
-  set('fMealSum', rm(tMeal));
-  set('fAttSum',  rm(tAtt));
-  set('fBasic',   rm(basic));
-  set('fAllow',   rm(allow));
-  set('fOthers',  rm(others));
-  set('fSubTotal',rm(subTotal));
- 
-  // ── Deductions ──
-  set('fUnpaidDays', unpaidDaysMon+' day(s)');
-  const ud = document.getElementById('fUnpaidDeduct');
-  if(ud) ud.textContent = unpaidDeductMon > 0 ? '− RM '+unpaidDeductMon.toFixed(2) : '− RM 0.00';
- 
-  // ── Grand Total ──
-  set('fGrand', rm(grand));
- 
-  // ── Leave balance table ──
-  set('fLeaveAnnualEnt',   annualEnt  || '—');
-  set('fLeaveAnnualTaken', annualTaken);
-  set('fLeaveAnnualBal',   annualEnt  ? annualBal+' day(s)' : '—');
- 
-  set('fLeaveMedEnt',      medicalEnt || '—');
-  set('fLeaveMedTaken',    medicalTaken);
-  set('fLeaveMedBal',      medicalEnt ? medicalBal+' day(s)' : '—');
- 
-  // Unpaid: show days taken (cumulative) + RM deduction
-  set('fLeaveOthEnt',      otherEnt || '—');
-  set('fLeaveOthTaken',    unpaidTakenAll+' day(s)');
-  set('fLeaveOthBal',      '−RM '+unpaidDeductAll.toFixed(2));
- 
-  // ── Nav ──
-  document.getElementById('monLbl').textContent = MONTHS[mon].slice(0,3)+' '+year;
-  document.getElementById('sub').textContent = MONTHS[mon]+' '+year+' · '+v.length+' entries';
-  saveSettings();
+
+function updField(id,f,v){
+  const r=rows.find(x=>x.id===id); if(!r) return;
+  r[f]=v; saveLocal(); scheduleSave();
 }
- 
-function render(){
-  // Include rows matching month OR rows with null date (unsaved new rows)
-  const vis=rows
-    .filter(r=>r.year===year&&r.month===mon)
-    .sort((a,b)=>{
-      if(a.date==null) return 1;   // null dates sink to bottom
-      if(b.date==null) return -1;
-      return a.date-b.date;
-    });
-  const tb=document.getElementById('tbody'); tb.innerHTML='';
+
+// ── RENDER TABLE ───────────────────────────────────────────────────────────
+function renderTable(){
+  const tb=document.getElementById('tbody');
+  if(!tb) return;
+  tb.innerHTML='';
+  const vis=rows.filter(r=>r.year===year&&r.month===mon)
+    .sort((a,b)=>(a.date||99)-(b.date||99));
+
   if(!vis.length){
-    tb.innerHTML=`<tr><td colspan="14" style="text-align:center;padding:32px;color:var(--txt3);font-size:13px">
-      No entries for ${MONTHS[mon]} ${year}.<br>Click <strong>+ Add Row</strong> or <strong>Fill Month</strong>.
-    </td></tr>`; summary(); return;
+    tb.innerHTML=`<tr><td colspan="15" style="text-align:center;padding:28px;color:var(--txt3);font-size:13px">
+      No entries for ${MN[mon]} ${year} — click <strong>+ Row</strong> or <strong>📅 Fill</strong></td></tr>`;
+    renderFooter([]); return;
   }
-  vis.forEach((r,i)=>{
-    const dow = (r.date!=null) ? new Date(r.year,r.month,r.date).getDay() : -1;
-    const isSat=dow===6, isSun=dow===0;
-    const isHol=r.dayType==='Public Holiday', isOff=r.dayType==='Off Day';
-    const isAL=r.dayType==='Annual Leave', isML=r.dayType==='Medical Leave', isOL=r.dayType==='Unpaid Leave';
-    const cls=isAL?'annual':isML?'medical':isOL?'other':isOff?'offday':isHol?'hol':isSun?'sun':isSat?'sat':'';
-    const dc=isSun?'color:var(--red);font-weight:700':isSat?'color:var(--pur);font-weight:600':'color:var(--txt3)';
-    const showRate=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
-    const opts=TYPES.map(t=>`<option value="${t}"${r.dayType===t?' selected':''}>${t}</option>`).join('');
-    const tr=document.createElement('tr');
-    tr.dataset.id=r.id; if(cls)tr.className=cls;
-    tr.innerHTML=`
-      <td style="color:var(--txt3);font-family:var(--mono);font-size:11px;text-align:center">${i+1}</td>
-      <td><input type="date" value="${isoDate(r.year,r.month,r.date)}"
-          style="font-family:var(--mono);font-size:11.5px;border:1px solid transparent;background:transparent;
-          outline:none;width:110px;padding:2px 4px;border-radius:5px;cursor:pointer;"
-          onfocus="this.style.borderColor='var(--acc)';this.style.background='var(--acc2)'"
-          onblur="this.style.borderColor='transparent';this.style.background='transparent'"
-          onchange="updDateISO(${r.id},this.value)"></td>
-      <td style="text-align:center;font-family:var(--mono);font-size:11px;${dc}">${dow>=0?DAYS[dow]:""}</td>
-      <td><select onchange="updDT(${r.id},this.value)">${opts}</select></td>
-      <td><input type="time" value="${r.timeIn}" onchange="updTime(${r.id},'timeIn',this.value)"></td>
-      <td><input type="time" value="${r.timeOut}" onchange="updTime(${r.id},'timeOut',this.value)"></td>
-      <td class="n cr">${r.regH.toFixed(2)}</td>
-      <td class="n co" style="${r.otH>0?'color:var(--amb)':'color:var(--txt3)'}">${r.otH>0?r.otH.toFixed(2):'—'}</td>
-      <td class="n ct"><strong>${r.totalH.toFixed(2)}</strong></td>
-      <td class="n ck" style="font-size:11px;${showRate?'color:var(--amb)':'color:var(--txt3)'}">${showRate&&r.rate>0?r.rate.toFixed(2)+'×':'—'}</td>
-      <td class="n cp2" style="${r.pay>0?'color:var(--grn);font-weight:600':'color:var(--txt3)'}">${r.pay>0?'RM '+r.pay.toLocaleString('en-MY',{minimumFractionDigits:2}):'—'}</td>
-      <td class="n cmeal" style="${r.meal>0?'color:var(--amb)':'color:var(--txt3)'}">${r.meal>0?'RM '+r.meal.toFixed(2):'—'}</td>
-      <td class="n catt" style="${r.att>0?'color:var(--grn)':'color:var(--txt3)'}">${r.att>0?'RM '+r.att.toFixed(2):'—'}</td>
-      <td><input type="text" value="${r.remarks||''}" placeholder="…" style="font-size:11px;color:var(--txt2);"
-          onchange="updField(${r.id},'remarks',this.value)"></td>
-      <td class="noprint" style="text-align:center">
-        <button class="btn b-red" style="padding:3px 7px;font-size:11px" onclick="delRow(${r.id})">✕</button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-  summary();
+  vis.forEach((r,i)=>{ tb.appendChild(buildRow(r,i)); });
+  renderFooter(vis);
 }
- 
-// ── Export XLSX (SheetJS) ──────────────────────────────────────────────
-function exportXLSX(){
-  if(typeof XLSX === 'undefined'){
-    alert('SheetJS library not loaded. Check your internet connection and try again.');
-    return;
-  }
-  // Include rows matching month OR rows with null date (unsaved new rows)
-  const vis=rows
-    .filter(r=>r.year===year&&r.month===mon)
-    .sort((a,b)=>{
-      if(a.date==null) return 1;   // null dates sink to bottom
-      if(b.date==null) return -1;
-      return a.date-b.date;
-    });
-  if(!vis.length){alert('No entries to export for '+MONTHS[mon]+' '+year);return;}
- 
-  const hr=getHrRate(), dr=getDayRate(), brk=getBrk();
-  const basic=num('basicSal'), allow=num('allowance'), others=num('others');
-  const tPay=vis.reduce((a,r)=>a+r.pay,0);
+
+function buildRow(r,i){
+  const dow=r.date?new Date(r.year,r.month,r.date).getDay():-1;
+  const dn=dow>=0?DN[dow]:'';
+  const cls=r.dayType==='Annual Leave'?'ann':r.dayType==='Medical Leave'?'med':
+    r.dayType==='Unpaid Leave'?'unp':r.dayType==='Off Day'?'off':
+    r.dayType==='Public Holiday'?'hol':dow===0?'sun':dow===6?'sat':'';
+  const dc=dow===0?'color:var(--red);font-weight:700':dow===6?'color:var(--pur);font-weight:600':'color:var(--txt3)';
+  const showR=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
+  const opts=TYPES.map(t=>`<option${r.dayType===t?' selected':''}>${t}</option>`).join('');
+  const tr=document.createElement('tr');
+  tr.dataset.id=r.id; if(cls) tr.className=cls;
+  tr.innerHTML=
+    `<td style="color:var(--txt3);font-family:var(--mono);font-size:10px;text-align:center">${i+1}</td>`+
+    `<td><input type="date" value="${isoD(r.year,r.month,r.date)}" style="font-family:var(--mono);font-size:11px;width:108px;" onchange="updDate(${r.id},this.value)"></td>`+
+    `<td style="text-align:center;font-family:var(--mono);font-size:10px;${dc}">${dn}</td>`+
+    `<td><select onchange="updDT(${r.id},this.value)">${opts}</select></td>`+
+    `<td><input type="time" value="${r.timeIn||''}" onchange="updTime(${r.id},'timeIn',this.value)"></td>`+
+    `<td><input type="time" value="${r.timeOut||''}" onchange="updTime(${r.id},'timeOut',this.value)"></td>`+
+    `<td class="n">${r.regH.toFixed(2)}</td>`+
+    `<td class="n" style="${r.otH>0?'color:var(--amb)':'color:var(--txt3)'}">${r.otH>0?r.otH.toFixed(2):'—'}</td>`+
+    `<td class="n"><b>${r.totH.toFixed(2)}</b></td>`+
+    `<td class="n" style="font-size:10px;${showR?'color:var(--amb)':'color:var(--txt3)'}">${showR&&r.rate>0?r.rate.toFixed(2)+'×':'—'}</td>`+
+    `<td class="n" style="${r.pay>0?'color:var(--grn);font-weight:600':'color:var(--txt3)'}">${r.pay>0?'RM '+r.pay.toLocaleString('en-MY',{minimumFractionDigits:2}):'—'}</td>`+
+    `<td class="n" style="${r.meal>0?'color:var(--amb)':'color:var(--txt3)'}">${r.meal>0?'RM '+r.meal.toFixed(2):'—'}</td>`+
+    `<td class="n" style="${r.att>0?'color:var(--grn)':'color:var(--txt3)'}">${r.att>0?'RM '+r.att.toFixed(2):'—'}</td>`+
+    `<td><input type="text" value="${r.remarks||''}" placeholder="…" style="font-size:10px;" onchange="updField(${r.id},'remarks',this.value)"></td>`+
+    `<td class="noprint" style="text-align:center"><button class="btn b-red" style="padding:2px 7px;font-size:10px" onclick="delRow(${r.id})">✕</button></td>`;
+  return tr;
+}
+
+function renderRow(r){
+  const tr=document.querySelector(`tr[data-id="${r.id}"]`);
+  if(!tr) return;
+  const i=Array.from(tr.parentNode.children).indexOf(tr);
+  const newTr=buildRow(r,i);
+  tr.parentNode.replaceChild(newTr,tr);
+}
+
+function renderFooter(vis){
+  const tf=document.getElementById('tfoot');
+  if(!tf) return;
+  tf.innerHTML='';
   const tReg=vis.reduce((a,r)=>a+r.regH,0);
-  const tOT=vis.reduce((a,r)=>a+r.otH,0);
-  const tH=vis.reduce((a,r)=>a+r.totalH,0);
+  const tOT =vis.reduce((a,r)=>a+r.otH,0);
+  const tTot=vis.reduce((a,r)=>a+r.totH,0);
+  const tPay=vis.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
   const tMeal=vis.reduce((a,r)=>a+r.meal,0);
-  const tAtt=vis.reduce((a,r)=>a+r.att,0);
-  const unpaidDed=vis.filter(r=>r.dayType==='Unpaid Leave').length*getDayRate();
-  const grand=tPay+basic+allow+tMeal+tAtt+others-unpaidDed;
-  const period=MONTHS[mon]+' '+year;
- 
-  const wb = XLSX.utils.book_new();
- 
-  // ── Helper: style cell ──
-  // SheetJS community edition doesn't support cell styles,
-  // but we build clean structured data with merged header rows.
- 
-  // ── SHEET 1: Attendance Log ──────────────────────────────────────────
-  const aoa = []; // array of arrays
- 
-  // Title
-  aoa.push(['TIME ATTENDANCE LOG — '+period]);
-  aoa.push([]);
- 
-  // Settings block
-  aoa.push(['Hourly Rate (RM)', hr, 'Per Day Rate (RM)', dr, 'Break (min)', brk]);
-  aoa.push(['Meal Allow (RM)', getMealAmt(), '(per OT session ≥ 2h)',
-            'Att. Allow (RM)', getAttAmt(), '(per check-in)']);
-  aoa.push(['Basic Salary (RM)', basic, 'Allowance (RM)', allow, 'Others (RM)', others]);
-  aoa.push([]);
- 
-  // Column headers
-  aoa.push(['#','Date','Day','Day Type','Time In','Time Out',
-            'Reg Hrs','OT Hrs','Total Hrs','OT Rate (×)','OT Pay (RM)',
-            'Meal Allow (RM)','Att. Allow (RM)','Leave Type']);
- 
-  // Data rows
-  vis.forEach((r,i)=>{
-    const dow = (r.date!=null) ? new Date(r.year,r.month,r.date).getDay() : -1;
-    const showRate=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
-    aoa.push([
-      i+1,
-      fmtDate(r.year,r.month,r.date),
-      DAYS[dow],
-      r.dayType,
-      r.timeIn,
-      r.timeOut,
-      r.regH,
-      r.otH>0?r.otH:0,
-      r.totalH,
-      showRate&&r.rate>0?r.rate:0,
-      r.pay,
-      r.meal,
-      r.att,
-      ['Annual Leave','Medical Leave','Other Leave'].includes(r.dayType)?r.dayType:''
-    ]);
+  const tAtt =vis.reduce((a,r)=>a+r.att,0);
+  const basic=n('bas'), alw=n('alw'), oth=n('oth');
+  const unDays=vis.filter(r=>r.dayType==='Unpaid Leave').length;
+  const unDed=unDays*n('drR');
+  const subT=tPay+tMeal+tAtt+basic+alw+oth;
+  const grand=subT-unDed;
+
+  const R=(label,val,cls='fearns',right=true)=>{
+    const tr=document.createElement('tr');
+    tr.className=cls;
+    tr.innerHTML=`<td colspan="10" style="text-align:right;font-family:var(--sans);font-size:11px;padding:7px 8px;">${label}</td>`+
+      `<td colspan="3" style="text-align:right;padding:7px 8px;font-family:var(--mono);">${val}</td>`+
+      `<td></td><td class="noprint"></td>`;
+    tf.appendChild(tr); return tr;
+  };
+  const totTr=document.createElement('tr');
+  totTr.className='ftot';
+  totTr.innerHTML=
+    `<td colspan="6" style="font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:8px;">OT Totals</td>`+
+    `<td class="n">${tReg.toFixed(2)}</td>`+
+    `<td class="n">${tOT.toFixed(2)}</td>`+
+    `<td class="n">${tTot.toFixed(2)}</td>`+
+    `<td class="n">—</td>`+
+    `<td class="n">${rm(tPay)}</td>`+
+    `<td class="n">${rm(tMeal)}</td>`+
+    `<td class="n">${rm(tAtt)}</td>`+
+    `<td></td><td class="noprint"></td>`;
+  tf.appendChild(totTr);
+
+  // Earnings section header
+  const eh=document.createElement('tr');
+  eh.innerHTML=`<td colspan="15" style="background:#1e293b;color:#94a3b8;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;padding:5px 8px;">Earnings</td>`;
+  tf.appendChild(eh);
+
+  R('OT Pay', rm(tPay));
+  R('Meal Allowance', rm(tMeal));
+  R('Attendance Allowance', rm(tAtt));
+  R('Basic Salary', rm(basic));
+  R('Allowance', rm(alw));
+  R('Others', rm(oth));
+
+  const st=document.createElement('tr');
+  st.className='fsubt';
+  st.innerHTML=`<td colspan="10" style="text-align:right;font-family:var(--sans);font-size:11px;font-weight:700;padding:8px;">Sub Total</td>`+
+    `<td colspan="3" style="text-align:right;font-family:var(--mono);font-size:13px;padding:8px;">${rm(subT)}</td>`+
+    `<td></td><td class="noprint"></td>`;
+  tf.appendChild(st);
+
+  if(unDays>0){
+    const dh=document.createElement('tr');
+    dh.innerHTML=`<td colspan="15" style="background:#7f1d1d;color:#fca5a5;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;padding:5px 8px;">Deductions</td>`;
+    tf.appendChild(dh);
+    const dr2=document.createElement('tr');
+    dr2.className='fded';
+    dr2.innerHTML=`<td colspan="10" style="text-align:right;font-family:var(--sans);font-size:11px;padding:7px 8px;">Unpaid Leave (${unDays} day × RM${n('drR').toFixed(2)})</td>`+
+      `<td colspan="3" style="text-align:right;font-family:var(--mono);color:#ef4444;padding:7px 8px;">−${rm(unDed)}</td>`+
+      `<td></td><td class="noprint"></td>`;
+    tf.appendChild(dr2);
+  }
+
+  const gt=document.createElement('tr');
+  gt.className='fgrand';
+  gt.innerHTML=`<td colspan="10" style="text-align:right;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.4px;padding:9px 8px;">Grand Total</td>`+
+    `<td colspan="3" style="text-align:right;font-family:var(--mono);font-size:14px;padding:9px 8px;">${rm(grand)}</td>`+
+    `<td></td><td class="noprint"></td>`;
+  tf.appendChild(gt);
+
+  // Leave balance
+  const allAnnTk=rows.filter(r=>r.dayType==='Annual Leave').length;
+  const allMedTk=rows.filter(r=>r.dayType==='Medical Leave').length;
+  const allUnpTk=rows.filter(r=>r.dayType==='Unpaid Leave').length;
+  const annEnt=n('lvA'), medEnt=n('lvM');
+  const annBal=Math.max(annEnt-allAnnTk,0), medBal=Math.max(medEnt-allMedTk,0);
+
+  const lh=document.createElement('tr');
+  lh.className='fleave-hdr';
+  lh.innerHTML=`<td colspan="15" style="padding:6px 8px;">Leave Balance Summary — Cumulative (All Months)</td>`;
+  tf.appendChild(lh);
+
+  const lc=document.createElement('tr');
+  lc.className='fleave-col';
+  lc.innerHTML=`<td colspan="5" style="padding:6px 8px;">Leave Type</td>`+
+    `<td colspan="3" style="text-align:center;padding:6px 4px;">Entitled</td>`+
+    `<td colspan="2" style="text-align:center;padding:6px 4px;">Taken</td>`+
+    `<td colspan="3" style="text-align:center;padding:6px 4px;">Balance / Deduction</td>`+
+    `<td colspan="2"></td>`;
+  tf.appendChild(lc);
+
+  [['ann','🟡 Annual Leave', annEnt||'—', allAnnTk, annEnt?annBal+' day(s)':'—'],
+   ['med','🟢 Medical Leave', medEnt||'—', allMedTk, medEnt?medBal+' day(s)':'—'],
+   ['unp','🔴 Unpaid Leave', '—', allUnpTk, '−RM '+(allUnpTk*n('drR')).toFixed(2)]
+  ].forEach(([cls2,label,ent,tk,bal])=>{
+    const lr=document.createElement('tr');
+    lr.className='fleave-'+cls2;
+    lr.innerHTML=`<td colspan="5" style="padding:7px 8px;font-family:var(--sans);font-size:12px;">${label}</td>`+
+      `<td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;color:#1e40af;">${ent}</td>`+
+      `<td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;color:#ef4444;">${tk}</td>`+
+      `<td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;color:${cls2==='unp'?'#ef4444':'#10b981'};">${bal}</td>`+
+      `<td colspan="2"></td>`;
+    tf.appendChild(lr);
   });
- 
-  aoa.push([]);
- 
-  // Totals
-  aoa.push(['TOTALS','','','','','',tReg,tOT,tH,'',tPay,tMeal,tAtt]);
-  aoa.push(['','','','','','','','','','','Basic Salary','',basic]);
-  aoa.push(['','','','','','','','','','','Allowance','',allow]);
-  aoa.push(['','','','','','','','','','','Meal Allowance','',tMeal]);
-  aoa.push(['','','','','','','','','','','Attendance Allowance','',tAtt]);
-  aoa.push(['','','','','','','','','','','Others','',others]);
-  aoa.push(['','','','','','','','','','','GRAND TOTAL','',grand]);
- 
-  const ws1 = XLSX.utils.aoa_to_sheet(aoa);
- 
-  // Column widths
-  ws1['!cols'] = [
-    {wch:4},{wch:10},{wch:5},{wch:20},{wch:9},{wch:9},
-    {wch:9},{wch:9},{wch:10},{wch:10},{wch:12},{wch:14},{wch:14}
-  ];
- 
-  XLSX.utils.book_append_sheet(wb, ws1, 'Attendance Log');
- 
-  // ── SHEET 2: Monthly Summary ──────────────────────────────────────────
-  const rates=getRates();
-  const otWkPay  = vis.filter(r=>['Regular','Overtime'].includes(r.dayType)).reduce((a,r)=>a+r.pay,0);
-  const otWkHrs  = vis.filter(r=>['Regular','Overtime'].includes(r.dayType)).reduce((a,r)=>a+r.otH,0);
-  const sunHrs   = vis.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+r.totalH,0);
-  const sunPay   = vis.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+r.pay,0);
-  const holHrs   = vis.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+r.totalH,0);
-  const holPay   = vis.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+r.pay,0);
-  const offDays  = vis.filter(r=>r.dayType==='Off Day').length;
-  const regWkHrs = vis.filter(r=>['Regular','Overtime'].includes(r.dayType)).reduce((a,r)=>a+r.regH,0);
- 
-  // Leave stats (cumulative across all rows)
-  const annualTaken  = rows.filter(r=>r.dayType==='Annual Leave').length;
-  const medicalTaken = rows.filter(r=>r.dayType==='Medical Leave').length;
-  const otherTaken   = rows.filter(r=>r.dayType==='Unpaid Leave').length;
-  const annualEnt    = parseFloat((document.getElementById('leaveAnnual')||{}).value)||0;
-  const medicalEnt   = parseFloat((document.getElementById('leaveMedical')||{}).value)||0;
-  const otherEnt     = parseFloat((document.getElementById('leaveOther')||{}).value)||0;
- 
-  const s2 = [
-    ['MONTHLY SUMMARY — '+period],
-    [],
-    ['HOURS BREAKDOWN','Hours'],
-    ['Regular (Mon–Fri & Sat)', regWkHrs],
-    ['Overtime (Mon–Fri & Sat)', otWkHrs],
-    ['Rest Day — Sunday', sunHrs],
-    ['Public Holiday', holHrs],
-    ['Off Days', offDays+' day(s)'],
-    ['TOTAL HOURS', tH],
-    [],
-    ['PAY BREAKDOWN','Amount (RM)'],
-    ['OT Pay (Weekday/Sat)', otWkPay],
-    ['Rest Day Pay (Sunday)', sunPay],
-    ['Public Holiday Pay', holPay],
-    ['Meal Allowance', tMeal],
-    ['Attendance Allowance', tAtt],
-    [],
-    ['SALARY & ADDITIONS','Amount (RM)'],
-    ['Basic Salary', basic],
-    ['Allowance', allow],
-    ['Others', others],
-    [],
-    ['GRAND TOTAL', grand],
-    [],
-    ['LEAVE BALANCE (Cumulative)','Entitled','Taken','Balance'],
-    ['Annual Leave', annualEnt, annualTaken, Math.max(annualEnt-annualTaken,0)],
-    ['Medical Leave', medicalEnt, medicalTaken, Math.max(medicalEnt-medicalTaken,0)],
-    ['Other Leave', otherEnt, otherTaken, Math.max(otherEnt-otherTaken,0)],
-  ];
- 
-  const ws2 = XLSX.utils.aoa_to_sheet(s2);
-  ws2['!cols'] = [{wch:30},{wch:12},{wch:12},{wch:12}];
-  XLSX.utils.book_append_sheet(wb, ws2, 'Monthly Summary');
- 
-  // Download
-  XLSX.writeFile(wb, 'Attendance_'+MONTHS[mon]+'_'+year+'.xlsx');
 }
- 
-// ── Script URL helpers ────────────────────────────────────────────────
-function setScriptUrl(url){
-  if(!url){ alert('Please paste a valid Google Apps Script Web App URL.'); return; }
-  SCRIPT_URL = url;
-  localStorage.setItem('ta_script_url', url);
-  document.getElementById('scriptUrlInput').value = url;
-  setSyncStatus('loading','Connecting…');
+
+// ── SUMMARY CARDS ──────────────────────────────────────────────────────────
+function calcSummary(){
+  const v=rows.filter(r=>r.year===year&&r.month===mon);
+  const tReg=v.reduce((a,r)=>a+r.regH,0);
+  const tOT =v.reduce((a,r)=>a+r.otH,0);
+  const tTot=v.reduce((a,r)=>a+r.totH,0);
+  const tPay=v.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
+  const tMeal=v.reduce((a,r)=>a+r.meal,0);
+  const tAtt =v.reduce((a,r)=>a+r.att,0);
+  const tSun=v.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+r.totH,0);
+  const tHol=v.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+r.totH,0);
+  const basic=n('bas'), alw=n('alw'), oth=n('oth');
+  const unDays=v.filter(r=>r.dayType==='Unpaid Leave').length;
+  const grand=tPay+tMeal+tAtt+basic+alw+oth-unDays*n('drR');
+  const annTk=rows.filter(r=>r.dayType==='Annual Leave').length;
+  const medTk=rows.filter(r=>r.dayType==='Medical Leave').length;
+  const unpTk=rows.filter(r=>r.dayType==='Unpaid Leave').length;
+  const annEnt=n('lvA'), medEnt=n('lvM');
+  const s=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  s('cDays',v.length); s('cReg',tReg.toFixed(2)); s('cOT',tOT.toFixed(2));
+  s('cSun',tSun.toFixed(2)); s('cHol',tHol.toFixed(2)); s('cTot',tTot.toFixed(2));
+  s('cMeal',tMeal.toFixed(2)); s('cAtt',tAtt.toFixed(2));
+  s('cPay',tPay.toLocaleString('en-MY',{minimumFractionDigits:2}));
+  s('cGrand',grand.toLocaleString('en-MY',{minimumFractionDigits:2}));
+  s('cLA', annEnt?Math.max(annEnt-annTk,0)+' / '+annEnt:'—');
+  s('cLM', medEnt?Math.max(medEnt-medTk,0)+' / '+medEnt:'—');
+  s('cLU', unpTk);
+  document.getElementById('sub').textContent=MN[mon]+' '+year+' · '+v.length+' entries';
+  saveSettings_();
+}
+
+// ── MONTH / YEAR SELECTION ─────────────────────────────────────────────────
+function buildYearSel(){
+  const el=document.getElementById('selYear'); if(!el) return;
+  const cur=new Date().getFullYear();
+  el.innerHTML='';
+  for(let y=cur-5;y<=cur+3;y++){
+    const o=document.createElement('option');
+    o.value=y; o.textContent=y; if(y===year) o.selected=true;
+    el.appendChild(o);
+  }
+}
+function syncSels(){
+  const sm=document.getElementById('selMon'), sy=document.getElementById('selYear');
+  if(sm) sm.value=mon; if(sy) sy.value=year;
+}
+function goMon(){
+  const sm=document.getElementById('selMon'), sy=document.getElementById('selYear');
+  if(sm) mon=parseInt(sm.value); if(sy) year=parseInt(sy.value);
+  renderTable(); calcSummary();
+}
+
+// ── LOCAL STORAGE ──────────────────────────────────────────────────────────
+function saveLocal(){
+  try{ localStorage.setItem('ta_rows',JSON.stringify({rows,rid,year,mon})); }catch(e){}
+}
+function saveSettings_(){
+  try{ localStorage.setItem('ta_sett',JSON.stringify(getSettings())); }catch(e){}
+}
+function loadLocal(){
+  try{
+    const d=JSON.parse(localStorage.getItem('ta_rows')||'{}');
+    if(d.rows){ rows=d.rows; rid=d.rid||0; year=d.year||new Date().getFullYear(); mon=d.mon||new Date().getMonth(); }
+    rows.forEach(fixRow);
+  }catch(e){ rows=[]; rid=0; }
+  try{
+    const s=JSON.parse(localStorage.getItem('ta_sett')||'{}');
+    applySettings(s);
+  }catch(e){}
+}
+function fixRow(r){
+  if(!r.regH) r.regH=0; if(!r.otH) r.otH=0; if(!r.totH) r.totH=0;
+  if(!r.pay) r.pay=0; if(!r.rate) r.rate=0;
+  if(!r.meal) r.meal=0; if(!r.att) r.att=0;
+  if(!r.remarks) r.remarks='';
+  if(!r.dayType) r.dayType='— Select —';
+  if(r.date===undefined) r.date=null;
+}
+
+// ── CLOUD SYNC ─────────────────────────────────────────────────────────────
+let saveTimer=null;
+function scheduleSave(){
+  if(!CLOUD_URL) return;
+  clearTimeout(saveTimer);
+  setStat('saving','🔄 Saving…');
+  saveTimer=setTimeout(doSave,2000);
+}
+function setStat(state,msg){
+  const el=document.getElementById('sstat'); if(!el) return;
+  el.textContent=msg;
+  el.style.color=state==='ok'?'#10b981':state==='err'?'#ef4444':'#f59e0b';
+}
+async function doSave(){
+  if(!CLOUD_URL) return;
+  const payload=JSON.stringify({rows,rid,year,mon,settings:getSettings()});
+  try{
+    await fetch(CLOUD_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:payload
+    });
+    setStat('ok','🟢 Saved ✓');
+  }catch(e){ setStat('err','🔴 Save failed'); }
+}
+async function doLoad(){
+  if(!CLOUD_URL){ setStat('','⚪ Local only'); return; }
+  setStat('saving','🔄 Loading…');
+  try{
+    const url=CLOUD_URL+'?cb=__taLoad&ts='+Date.now();
+    const data=await new Promise((res,rej)=>{
+      window.__taLoad=d=>{ delete window.__taLoad; res(d); };
+      const s=document.createElement('script'); s.src=url;
+      s.onerror=()=>{ delete window.__taLoad; rej(new Error('load fail')); };
+      document.head.appendChild(s);
+      setTimeout(()=>{ delete window.__taLoad; rej(new Error('timeout')); },8000);
+    });
+    if(data&&data.rows){
+      rows=data.rows; rid=data.rid||0;
+      year=data.year||new Date().getFullYear();
+      mon=data.mon||new Date().getMonth();
+      rows.forEach(fixRow);
+      applySettings(data.settings);
+      saveLocal(); syncSels();
+      setStat('ok','🟢 Loaded ✓');
+    } else { setStat('ok','🟢 Cloud empty'); }
+  }catch(e){
+    setStat('err','🔴 Load failed — using local');
+    loadLocal();
+  }
+}
+function setUrl(url){
+  if(!url){ alert('Please paste a valid Apps Script URL.'); return; }
+  CLOUD_URL=url;
+  localStorage.setItem('ta_url',url);
+  document.getElementById('urlIn').value=url;
   manualLoad();
 }
-function clearScriptUrl(){
-  SCRIPT_URL = '';
-  localStorage.removeItem('ta_script_url');
-  document.getElementById('scriptUrlInput').value = '';
-  setSyncStatus('offline','Disconnected — local only');
+function clearUrl(){ CLOUD_URL=''; localStorage.removeItem('ta_url'); setStat('','⚪ Local only'); }
+async function manualLoad(){
+  await doLoad();
+  rows.forEach(r=>calcRow(r));
+  renderTable(); calcSummary();
 }
-function loadUrlInput(){
-  const saved = localStorage.getItem('ta_script_url') || '';
-  const el = document.getElementById('scriptUrlInput');
-  if(el && saved) el.value = saved;
+
+// ── EXPORT XLSX ────────────────────────────────────────────────────────────
+function exportXLSX(){
+  if(typeof XLSX==='undefined'){ alert('SheetJS not loaded — check internet.'); return; }
+  const vis=rows.filter(r=>r.year===year&&r.month===mon).sort((a,b)=>(a.date||99)-(b.date||99));
+  if(!vis.length){ alert('No data to export.'); return; }
+  const basic=n('bas'),alw=n('alw'),oth=n('oth');
+  const tPay=vis.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
+  const tMeal=vis.reduce((a,r)=>a+r.meal,0);
+  const tAtt=vis.reduce((a,r)=>a+r.att,0);
+  const tReg=vis.reduce((a,r)=>a+r.regH,0);
+  const tOT=vis.reduce((a,r)=>a+r.otH,0);
+  const tTot=vis.reduce((a,r)=>a+r.totH,0);
+  const unDed=vis.filter(r=>r.dayType==='Unpaid Leave').length*n('drR');
+  const grand=tPay+tMeal+tAtt+basic+alw+oth-unDed;
+  const wb=XLSX.utils.book_new();
+  const hdr=['#','Date','Day','Day Type','Time In','Time Out','Reg Hrs','OT Hrs','Tot Hrs','Rate','OT Pay','Meal','Att.','Remarks'];
+  const data=[hdr];
+  vis.forEach((r,i)=>{
+    const dow=r.date?new Date(r.year,r.month,r.date).getDay():-1;
+    const dd=r.date?`${pad2(r.date)}/${pad2(r.month+1)}/${String(r.year).slice(-2)}`:'';
+    data.push([i+1,dd,dow>=0?DN[dow]:'',r.dayType||'',r.timeIn||'',r.timeOut||'',
+      r.regH,r.otH,r.totH,r.rate>0?r.rate:0,r.pay>0?r.pay:0,r.meal,r.att,r.remarks||'']);
+  });
+  data.push([]);
+  data.push(['TOTALS','','','','','',tReg,tOT,tTot,'',tPay,tMeal,tAtt,'']);
+  data.push(['','','','OT Pay','','','','','','',tPay,'','','']);
+  data.push(['','','','Meal Allow','','','','','','',tMeal,'','','']);
+  data.push(['','','','Att. Allow','','','','','','',tAtt,'','','']);
+  data.push(['','','','Basic Salary','','','','','','',basic,'','','']);
+  data.push(['','','','Allowance','','','','','','',alw,'','','']);
+  data.push(['','','','Others','','','','','','',oth,'','','']);
+  data.push(['','','','Unpaid Deduction','','','','','','',unDed>0?-unDed:0,'','','']);
+  data.push(['','','','GRAND TOTAL','','','','','','',grand,'','','']);
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:4},{wch:10},{wch:5},{wch:18},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:7},{wch:11},{wch:9},{wch:9},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,ws,MN[mon].slice(0,3)+' '+year);
+  XLSX.writeFile(wb,'Attendance_'+MN[mon]+'_'+year+'.xlsx');
 }
- 
-// ── init ───────────────────────────────────────────────────────────────
-(async ()=>{
-  loadUrlInput();
-  await loadCloud();
-  rows.forEach(r=>calc(r));
-  populateYearSelect();
-  syncDropdowns();
-  summary(); render();
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+(async function init(){
+  const savedUrl=localStorage.getItem('ta_url')||'';
+  if(savedUrl){ CLOUD_URL=savedUrl; document.getElementById('urlIn').value=savedUrl; }
+  buildYearSel(); loadLocal(); syncSels();
+  if(CLOUD_URL){ await doLoad(); rows.forEach(r=>calcRow(r)); }
+  else { rows.forEach(r=>calcRow(r)); }
+  renderTable(); calcSummary();
 })();
 </script>
 </body>
