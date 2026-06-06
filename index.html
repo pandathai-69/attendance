@@ -703,19 +703,23 @@ function jsonp(url, cbName, timeoutMs){
 async function doSave(){
   if(!CLOUD_URL) return;
   const payload=JSON.stringify({rows,rid,year,mon,settings:getSettings()});
-  const CHUNK=1800;
-  const enc=encodeURIComponent(payload);
-  const total=Math.ceil(enc.length/CHUNK);
-  // ONE timestamp for ALL chunks — critical so PropertiesService keys match
-  const ts=Date.now();
+  // Chunk the RAW string, then encode each chunk individually
+  // (slicing an already-encoded string can split %XX sequences → broken URL)
+  const CHUNK=800;  // conservative raw chars per chunk
+  const total=Math.ceil(payload.length/CHUNK);
+  const ts=Date.now();  // ONE timestamp shared across all chunks
   try{
     setStat('saving','🔄 Saving ('+total+' part'+(total>1?'s':'')+')…');
     for(let i=0;i<total;i++){
-      const chunk=enc.slice(i*CHUNK,(i+1)*CHUNK);
+      const rawChunk=payload.slice(i*CHUNK,(i+1)*CHUNK);
+      const encChunk=encodeURIComponent(rawChunk);
       const cbName='__taSave_'+ts+'_'+i;
-      // ts is fixed — same key across all chunks so Apps Script can reassemble
-      const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+chunk+'&cb='+cbName+'&ts='+ts;
-      await jsonp(url, cbName, 15000);
+      const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
+      if(url.length>2000){
+        // Safety: if URL still too long, skip and report
+        throw new Error('URL too long ('+url.length+' chars) at chunk '+i+'. Reduce data.');
+      }
+      await jsonp(url, cbName, 20000);
     }
     setStat('ok','🟢 Saved to Google Sheets ✓');
   }catch(e){
