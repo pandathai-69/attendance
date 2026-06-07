@@ -203,7 +203,8 @@ const workedMin = (ti,to) => { let a=toMin(ti), b=toMin(to); if(b<=a) b+=1440; r
 const maxDays = (y,m) => new Date(y,m+1,0).getDate();
 const pad2 = x => String(x).padStart(2,'0');
 const isoD = (y,m,d) => d?`${y}-${pad2(m+1)}-${pad2(d)}`:'';
-const rm = v => 'RM '+Math.abs(v).toLocaleString('en-MY',{minimumFractionDigits:2});
+const rm  = v => 'RM '+Math.abs(v).toLocaleString('en-MY',{minimumFractionDigits:2});
+const num2= v => Math.abs(v).toLocaleString('en-MY',{minimumFractionDigits:2});  // no RM prefix
 
 function getSettings(){
   const s={}; SIDS.forEach(id=>{ s[id]=g(id); }); return s;
@@ -450,17 +451,17 @@ function renderFooter(vis){
   eh.innerHTML=`<td colspan="15" style="background:#1e293b;color:#94a3b8;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;padding:5px 8px;">Earnings</td>`;
   tf.appendChild(eh);
 
-  R('OT Pay', rm(tPay));
-  R('Meal Allowance', rm(tMeal));
-  R('Attendance Allowance', rm(tAtt));
-  R('Basic Salary', rm(basic));
-  R('Allowance', rm(alw));
-  R('Others', rm(oth));
+  R('OT Pay', num2(tPay));
+  R('Meal Allowance', num2(tMeal));
+  R('Attendance Allowance', num2(tAtt));
+  R('Basic Salary', num2(basic));
+  R('Allowance', num2(alw));
+  R('Others', num2(oth));
 
   const st=document.createElement('tr');
   st.className='fsubt';
   st.innerHTML=`<td colspan="10" style="text-align:right;font-family:var(--sans);font-size:11px;font-weight:700;padding:8px;">Sub Total</td>`+
-    `<td colspan="3" style="text-align:right;font-family:var(--mono);font-size:13px;padding:8px;">${rm(subT)}</td>`+
+    `<td colspan="3" style="text-align:right;font-family:var(--mono);font-size:13px;padding:8px;">${num2(subT)}</td>`+
     `<td></td><td class="noprint"></td>`;
   tf.appendChild(st);
 
@@ -643,9 +644,9 @@ function fixRow(r){
 }
 
 // ── CLOUD SYNC ─────────────────────────────────────────────────────────────
-// Apps Script URL hardcoded as fallback — works on any browser/device without setup
-// IMPORTANT: Apps Script must be deployed with 'Anyone' access (not 'Anyone with Google account')
-const FALLBACK_URL = 'https://script.google.com/macros/s/AKfycbz-DBM409Puq90_rXajpDs_smKaqzM21qyaqfXQ5PMfAevegrimu4dqBP4nBSbaLt8H/exec';
+// Each employee connects their own Google Sheet.
+// Leave FALLBACK_URL empty — employees paste their Apps Script URL in the ☁ Cloud field.
+const FALLBACK_URL = '';  // intentionally blank — each user sets their own
 
 let saveTimer=null;
 let isSaving=false;
@@ -661,7 +662,7 @@ window.addEventListener('beforeunload',function(e){
 
 function scheduleSave(){
   if(!CLOUD_URL) CLOUD_URL=FALLBACK_URL;
-  if(!CLOUD_URL){ setStat('','⚪ No cloud URL — data saved locally only'); return; }
+  if(!CLOUD_URL){ setStat('warn','⚪ Not connected — paste your Apps Script URL above and click Connect'); return; }
   clearTimeout(saveTimer);
   setStat('saving','🔄 Saving…');
   saveTimer=setTimeout(doSave,600); // 800ms delay — fast enough to complete before tab close
@@ -721,7 +722,7 @@ async function doSave(){
 }
 
 async function doLoad(){
-  if(!CLOUD_URL){ setStat('','⚪ Local only'); return; }
+  if(!CLOUD_URL){ setStat('warn','⚪ Not connected — paste your Apps Script URL and click Connect'); return; }
   setStat('saving','🔄 Loading…');
   try{
     const cbName='__taLoad_'+Date.now();
