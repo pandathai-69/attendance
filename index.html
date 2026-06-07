@@ -435,14 +435,14 @@ function renderFooter(vis){
   const totTr=document.createElement('tr');
   totTr.className='ftot';
   totTr.innerHTML=
-    `<td colspan="6" style="font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:8px;">OT Totals</td>`+
-    `<td class="n">${tReg.toFixed(2)}</td>`+
-    `<td class="n">${tOT.toFixed(2)}</td>`+
-    `<td class="n">${tTot.toFixed(2)}</td>`+
-    `<td class="n">—</td>`+
-    `<td class="n">${rm(tPay)}</td>`+
-    `<td class="n">${rm(tMeal)}</td>`+
-    `<td class="n">${rm(tAtt)}</td>`+
+    `<td colspan="6" style="font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:8px;text-align:right;">OT Totals</td>`+
+    `<td class="n" style="padding:8px 7px;">${tReg.toFixed(2)}</td>`+
+    `<td class="n" style="padding:8px 7px;">${tOT.toFixed(2)}</td>`+
+    `<td class="n" style="padding:8px 7px;">${tTot.toFixed(2)}</td>`+
+    `<td class="n" style="padding:8px 7px;">—</td>`+
+    `<td class="n" style="padding:8px 7px;">${rm(tPay)}</td>`+
+    `<td class="n" style="padding:8px 7px;">${rm(tMeal)}</td>`+
+    `<td class="n" style="padding:8px 7px;">${rm(tAtt)}</td>`+
     `<td></td><td class="noprint"></td>`;
   tf.appendChild(totTr);
 
