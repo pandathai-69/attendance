@@ -717,26 +717,41 @@ function jsonp(url, cbName, timeoutMs, retry){
 
 async function doSave(){
   if(!CLOUD_URL) return;
+  isSaving=true;
+  const MAX_RETRIES=3;
+  for(let attempt=1; attempt<=MAX_RETRIES; attempt++){
+    try{
+      await doSaveAttempt(attempt, MAX_RETRIES);
+      setStat('ok','🟢 Saved to Google Sheets ✓');
+      isSaving=false;
+      return; // success — stop retrying
+    }catch(e){
+      if(attempt<MAX_RETRIES){
+        const wait=attempt*2000; // 2s, 4s backoff
+        setStat('saving','⚠️ Retrying ('+attempt+'/'+MAX_RETRIES+')… please wait');
+        await new Promise(r=>setTimeout(r,wait));
+      } else {
+        // All retries exhausted
+        setStat('err','🔴 Save failed after '+MAX_RETRIES+' attempts: '+e.message);
+      }
+    }
+  }
+  isSaving=false;
+}
+
+async function doSaveAttempt(attempt, total_attempts){
   const payload=JSON.stringify({rows,rid,year,mon,settings:getSettings()},null,0);
   const CHUNK=700;
   const total=Math.ceil(payload.length/CHUNK);
   const ts=Date.now();
-  isSaving=true;
-  setStat('saving','🔄 Saving ('+total+' parts)…');
-  try{
-    for(let i=0;i<total;i++){
-      const rawChunk=payload.slice(i*CHUNK,(i+1)*CHUNK);
-      const encChunk=encodeURIComponent(rawChunk);
-      const cbName='__taSave_'+ts+'_'+i;
-      const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
-      setStat('saving','🔄 Saving part '+(i+1)+'/'+total+'…');
-      const result=await jsonp(url, cbName, 25000);
-    }
-    setStat('ok','🟢 Saved to Google Sheets ✓');
-  }catch(e){
-    setStat('err','🔴 Save failed: '+e.message);
-  } finally {
-    isSaving=false;
+  for(let i=0;i<total;i++){
+    const rawChunk=payload.slice(i*CHUNK,(i+1)*CHUNK);
+    const encChunk=encodeURIComponent(rawChunk);
+    const cbName='__taSave_'+ts+'_'+i;
+    const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
+    setStat('saving','🔄 Saving '+(i+1)+'/'+total+
+      (total_attempts>1?' (attempt '+attempt+')':'')+'…');
+    await jsonp(url, cbName, 25000);
   }
 }
 
