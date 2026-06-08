@@ -684,7 +684,7 @@ function scheduleSave(){
   if(!CLOUD_URL){ setStat('warn','⚪ Not connected — paste your Apps Script URL above and click Connect'); return; }
   clearTimeout(saveTimer);
   setStat('saving','🔄 Saving…');
-  saveTimer=setTimeout(doSave,600); // 800ms delay — fast enough to complete before tab close
+  saveTimer=setTimeout(doSave,400); // 800ms delay — fast enough to complete before tab close
 }
 function setStat(state,msg){
   const el=document.getElementById('sstat'); if(!el) return;
@@ -718,7 +718,7 @@ function jsonp(url, cbName, timeoutMs, retry){
 async function doSave(){
   if(!CLOUD_URL) return;
   const payload=JSON.stringify({rows,rid,year,mon,settings:getSettings()},null,0);
-  const CHUNK=700;
+  const CHUNK=1400;
   const total=Math.ceil(payload.length/CHUNK);
   const ts=Date.now();
   isSaving=true;
