@@ -15,15 +15,15 @@
 <meta name="apple-mobile-web-app-title" content="Attendance">
 
 <!-- iOS Touch Icons -->
-<link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152.png">
-<link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="./manifest.json">
+<link rel="manifest" href="manifest.json">
 
 <!-- Favicon -->
-<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-<link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96.png">
 <title>Time Attendance</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -40,7 +40,7 @@
   border-top:3px solid #2563EB;
   padding-bottom:calc(14px + env(safe-area-inset-bottom));">
   <div style="display:flex;align-items:center;gap:12px;max-width:600px;margin:0 auto;">
-    <img src="./icons/icon-96.png" width="44" height="44"
+    <img src="icons/icon-96.png" width="44" height="44"
          style="border-radius:10px;flex-shrink:0;" alt="icon">
     <div style="flex:1;min-width:0;">
       <div style="font-weight:700;font-size:14px;">Install Time Attendance</div>
@@ -618,108 +618,110 @@ function renderFooter(vis){
   });
 }
 
-// ── PWA: SERVICE WORKER + INSTALL PROMPT ──────────────────────────────────
+// ── PWA: SERVICE WORKER + INSTALL ─────────────────────────────────────────
 (function(){
+  'use strict';
+  var _deferredPrompt = null;
+
   // Register service worker
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('./sw.js', {scope: './'})
-        .then(function(reg){
-          console.log('[PWA] SW registered, scope:', reg.scope);
-        })
-        .catch(function(err){
-          console.log('[PWA] SW failed:', err);
-        });
+      navigator.serviceWorker.register('sw.js')
+        .then(function(r){ console.log('[SW] ok scope:',r.scope); })
+        .catch(function(e){ console.warn('[SW] err:',e); });
     });
   }
 
-  var deferredPrompt = null;
-  var installBanner  = null;
-  var iosHint        = null;
-
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           (navigator.standalone===true);
+  }
   function isIOS(){
-    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+    return /iphone|ipad|ipod/i.test(navigator.userAgent||'') &&
+           !/crios|fxios/i.test(navigator.userAgent||'');
   }
-  function isInStandaloneMode(){
-    return ('standalone' in navigator && navigator.standalone) ||
-           window.matchMedia('(display-mode: standalone)').matches;
+  function isAndroid(){
+    return /android/i.test(navigator.userAgent||'');
   }
-  function isAndroidChrome(){
-    return /android/i.test(navigator.userAgent) && /chrome/i.test(navigator.userAgent);
+
+  function getEl(id){ return document.getElementById(id); }
+
+  function hideBanner(){
+    var b=getEl('pwaInstallBanner'); if(b) b.style.display='none';
   }
+  function showBanner(){
+    if(isStandalone()) return;
+    var b=getEl('pwaInstallBanner');
+    if(b && !localStorage.getItem('pwa_dismissed')) b.style.display='block';
+    var hb=getEl('pwaHeaderBtn'); if(hb) hb.style.display='inline-flex';
+  }
+  function showModal(){
+    var m=getEl('pwaInstallModal'); if(m) m.style.display='flex';
+  }
+  function hideModal(){
+    var m=getEl('pwaInstallModal'); if(m) m.style.display='none';
+  }
+
+  function doInstall(){
+    if(_deferredPrompt){
+      _deferredPrompt.prompt();
+      _deferredPrompt.userChoice.then(function(r){
+        _deferredPrompt=null;
+        if(r.outcome==='accepted') hideBanner();
+      });
+    } else {
+      showModal();
+    }
+  }
+
+  // Capture Chrome/Edge install prompt
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    _deferredPrompt = e;
+    showBanner();
+  });
+
+  window.addEventListener('appinstalled', function(){
+    hideBanner();
+    _deferredPrompt = null;
+    var hb=getEl('pwaHeaderBtn'); if(hb) hb.style.display='none';
+  });
 
   window.addEventListener('DOMContentLoaded', function(){
-    installBanner = document.getElementById('pwaInstallBanner');
-    iosHint       = document.getElementById('iosInstallHint');
+    if(isStandalone()) return;
 
-    // Don't show if already installed
-    if(isInStandaloneMode()) return;
+    // Wire buttons
+    var ib=getEl('pwaInstallBtn');     if(ib) ib.onclick=doInstall;
+    var hb=getEl('pwaHeaderBtn');      if(hb) hb.onclick=doInstall;
+    var db=getEl('pwaInstallDismiss'); if(db) db.onclick=function(){
+      hideBanner(); localStorage.setItem('pwa_dismissed','1');
+    };
+    var mc=getEl('pwaModalClose');     if(mc) mc.onclick=hideModal;
 
-    // iOS: show manual install hint after 3 seconds
-    if(isIOS()){
-      var shown = sessionStorage.getItem('ios_hint_shown');
-      if(!shown){
-        setTimeout(function(){
-          if(iosHint) iosHint.style.display = 'block';
-        }, 3000);
-      }
-      var dismiss = document.getElementById('iosHintDismiss');
-      if(dismiss){
-        dismiss.addEventListener('click', function(){
-          iosHint.style.display = 'none';
-          sessionStorage.setItem('ios_hint_shown','1');
-        });
-      }
-      return;
-    }
-
-    // Android/Chrome: listen for beforeinstallprompt
-    window.addEventListener('beforeinstallprompt', function(e){
-      e.preventDefault();
-      deferredPrompt = e;
-      // Show install banner after 2 seconds
+    // iOS Safari: manual instructions
+    if(isIOS() && !sessionStorage.getItem('ios_shown')){
       setTimeout(function(){
-        var dismissed = localStorage.getItem('pwa_install_dismissed');
-        if(!dismissed && installBanner){
-          installBanner.style.display = 'block';
+        var h=getEl('iosInstallHint'); if(h) h.style.display='block';
+      }, 2500);
+      var id=getEl('iosHintDismiss');
+      if(id) id.onclick=function(){
+        var h=getEl('iosInstallHint'); if(h) h.style.display='none';
+        sessionStorage.setItem('ios_shown','1');
+      };
+    }
+
+    // Android: show header install button after 5s as fallback
+    // (in case beforeinstallprompt never fires)
+    if(isAndroid()){
+      setTimeout(function(){
+        var hb=getEl('pwaHeaderBtn');
+        if(hb && !isStandalone() && !localStorage.getItem('pwa_dismissed')){
+          hb.style.display='inline-flex';
         }
-      }, 2000);
-    });
-
-    // Install button clicked
-    var installBtn = document.getElementById('pwaInstallBtn');
-    if(installBtn){
-      installBtn.addEventListener('click', function(){
-        if(!deferredPrompt) return;
-        installBanner.style.display = 'none';
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(function(choice){
-          if(choice.outcome === 'accepted'){
-            console.log('[PWA] User accepted install');
-          }
-          deferredPrompt = null;
-        });
-      });
+      }, 5000);
     }
-
-    // Dismiss button
-    var dismissBtn = document.getElementById('pwaInstallDismiss');
-    if(dismissBtn){
-      dismissBtn.addEventListener('click', function(){
-        installBanner.style.display = 'none';
-        localStorage.setItem('pwa_install_dismissed','1');
-      });
-    }
-
-    // Hide banner once app is installed
-    window.addEventListener('appinstalled', function(){
-      if(installBanner) installBanner.style.display = 'none';
-      deferredPrompt = null;
-      console.log('[PWA] App installed successfully');
-    });
   });
 })();
-
 // ── LEAVE CARRY-FORWARD ────────────────────────────────────────────────────
 // Returns leave taken BEFORE the given year/month (for carry-forward display)
 function getLeaveCarryForward(targetYear, targetMon){
