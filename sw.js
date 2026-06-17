@@ -1,7 +1,7 @@
 // Time Attendance App — Service Worker v1.1
 const CACHE = 'ta-v1';
 const ASSETS = [
-  'time-attendance.html',
+  'index.html',
   'manifest.json',
   'icons/icon-192.png',
   'icons/icon-512.png',
