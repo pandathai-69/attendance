@@ -2,7 +2,28 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<!-- PWA Meta Tags -->
+<meta name="theme-color" content="#1E293B">
+<meta name="description" content="Track daily attendance, overtime, leave and generate payslips">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS PWA Support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Attendance">
+
+<!-- iOS Touch Icons -->
+<link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="./manifest.json">
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-96.png">
 <title>Time Attendance</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -11,6 +32,55 @@
 </style>
 </head>
 <body>
+
+<!-- PWA INSTALL BANNER -->
+<div id="pwaInstallBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:2000;
+  background:#0F2354;color:#fff;padding:14px 16px 14px 16px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.4);font-family:Arial,sans-serif;
+  border-top:3px solid #2563EB;
+  padding-bottom:calc(14px + env(safe-area-inset-bottom));">
+  <div style="display:flex;align-items:center;gap:12px;max-width:600px;margin:0 auto;">
+    <img src="./icons/icon-96.png" width="44" height="44"
+         style="border-radius:10px;flex-shrink:0;" alt="icon">
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:700;font-size:14px;">Install Time Attendance</div>
+      <div style="font-size:11px;opacity:.8;margin-top:2px;">
+        Add to Home Screen for the full app experience
+      </div>
+    </div>
+    <button id="pwaInstallBtn"
+      style="background:#2563EB;color:#fff;border:none;border-radius:8px;
+             padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;
+             white-space:nowrap;flex-shrink:0;">
+      Install
+    </button>
+    <button id="pwaInstallDismiss"
+      style="background:transparent;color:rgba(255,255,255,.6);border:none;
+             font-size:20px;cursor:pointer;padding:4px 6px;flex-shrink:0;
+             line-height:1;">✕</button>
+  </div>
+</div>
+
+<!-- iOS INSTALL HINT (shown on Safari/iOS since iOS can't use beforeinstallprompt) -->
+<div id="iosInstallHint" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:2000;
+  background:#0F2354;color:#fff;padding:14px 16px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.4);font-family:Arial,sans-serif;
+  border-top:3px solid #2563EB;text-align:center;
+  padding-bottom:calc(14px + env(safe-area-inset-bottom));">
+  <div style="font-weight:700;font-size:14px;margin-bottom:4px;">
+    📲 Install Time Attendance
+  </div>
+  <div style="font-size:12px;opacity:.85;line-height:1.5;">
+    Tap <strong>Share</strong> <span style="font-size:16px">⬆️</span> then
+    <strong>"Add to Home Screen"</strong> for the full app experience
+  </div>
+  <button id="iosHintDismiss"
+    style="margin-top:10px;background:transparent;color:rgba(255,255,255,.7);
+           border:1px solid rgba(255,255,255,.3);border-radius:6px;
+           padding:5px 16px;font-size:12px;cursor:pointer;">
+    Not now
+  </button>
+</div>
 
 <!-- OFFLINE BAR -->
 <div id="offlineBar">📡 You are offline — changes saved locally, will sync when reconnected</div>
@@ -336,18 +406,6 @@ function clearAll(){
 }
 
 // ── FIELD UPDATES ──────────────────────────────────────────────────────────
-function updDate(id,val){
-  const r=rows.find(x=>x.id===id); if(!r) return;
-  if(!val){ r.date=null; r.dayType='— Select —'; r.timeIn=''; r.timeOut=''; }
-  else{
-    const [y,m,d]=val.split('-').map(Number);
-    r.year=y; r.month=m-1; r.date=d;
-    const dow=new Date(y,m-1,d).getDay();
-    if(r.dayType==='— Select —'||!r.dayType) r.dayType=autoType(dow);
-    if(!r.timeIn){ const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e; }
-  }
-  calcRow(r); renderTable(); calcSummary(); saveLocal(); scheduleSave();
-}
 
 function updDT(id,val){
   const r=rows.find(x=>x.id===id); if(!r) return;
@@ -559,6 +617,108 @@ function renderFooter(vis){
     tf.appendChild(lr);
   });
 }
+
+// ── PWA: SERVICE WORKER + INSTALL PROMPT ──────────────────────────────────
+(function(){
+  // Register service worker
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./sw.js', {scope: './'})
+        .then(function(reg){
+          console.log('[PWA] SW registered, scope:', reg.scope);
+        })
+        .catch(function(err){
+          console.log('[PWA] SW failed:', err);
+        });
+    });
+  }
+
+  var deferredPrompt = null;
+  var installBanner  = null;
+  var iosHint        = null;
+
+  function isIOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+  function isInStandaloneMode(){
+    return ('standalone' in navigator && navigator.standalone) ||
+           window.matchMedia('(display-mode: standalone)').matches;
+  }
+  function isAndroidChrome(){
+    return /android/i.test(navigator.userAgent) && /chrome/i.test(navigator.userAgent);
+  }
+
+  window.addEventListener('DOMContentLoaded', function(){
+    installBanner = document.getElementById('pwaInstallBanner');
+    iosHint       = document.getElementById('iosInstallHint');
+
+    // Don't show if already installed
+    if(isInStandaloneMode()) return;
+
+    // iOS: show manual install hint after 3 seconds
+    if(isIOS()){
+      var shown = sessionStorage.getItem('ios_hint_shown');
+      if(!shown){
+        setTimeout(function(){
+          if(iosHint) iosHint.style.display = 'block';
+        }, 3000);
+      }
+      var dismiss = document.getElementById('iosHintDismiss');
+      if(dismiss){
+        dismiss.addEventListener('click', function(){
+          iosHint.style.display = 'none';
+          sessionStorage.setItem('ios_hint_shown','1');
+        });
+      }
+      return;
+    }
+
+    // Android/Chrome: listen for beforeinstallprompt
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault();
+      deferredPrompt = e;
+      // Show install banner after 2 seconds
+      setTimeout(function(){
+        var dismissed = localStorage.getItem('pwa_install_dismissed');
+        if(!dismissed && installBanner){
+          installBanner.style.display = 'block';
+        }
+      }, 2000);
+    });
+
+    // Install button clicked
+    var installBtn = document.getElementById('pwaInstallBtn');
+    if(installBtn){
+      installBtn.addEventListener('click', function(){
+        if(!deferredPrompt) return;
+        installBanner.style.display = 'none';
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function(choice){
+          if(choice.outcome === 'accepted'){
+            console.log('[PWA] User accepted install');
+          }
+          deferredPrompt = null;
+        });
+      });
+    }
+
+    // Dismiss button
+    var dismissBtn = document.getElementById('pwaInstallDismiss');
+    if(dismissBtn){
+      dismissBtn.addEventListener('click', function(){
+        installBanner.style.display = 'none';
+        localStorage.setItem('pwa_install_dismissed','1');
+      });
+    }
+
+    // Hide banner once app is installed
+    window.addEventListener('appinstalled', function(){
+      if(installBanner) installBanner.style.display = 'none';
+      deferredPrompt = null;
+      console.log('[PWA] App installed successfully');
+    });
+  });
+})();
 
 // ── LEAVE CARRY-FORWARD ────────────────────────────────────────────────────
 // Returns leave taken BEFORE the given year/month (for carry-forward display)
