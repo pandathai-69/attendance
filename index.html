@@ -116,9 +116,8 @@
 <!-- CLOUD SYNC -->
 <div class="xbar noprint">
   <span style="font-size:11px;font-weight:700;color:var(--txt3);white-space:nowrap;">☁ Cloud</span>
-  <input id="urlIn" class="xbar-url" type="text" placeholder="Paste Google Apps Script Web App URL here…"
-    onkeydown="if(event.key==='Enter')connectUrl()">
-  <button class="btn b-blue" onclick="connectUrl()" style="font-size:11px;padding:6px 12px;">Connect</button>
+  <input id="urlIn" class="xbar-url" type="text" placeholder="Paste Google Apps Script Web App URL here…">
+  <button class="btn b-blue" onclick="setUrl(g('urlIn'))" style="font-size:11px;padding:6px 12px;">Connect</button>
   <button class="btn b-gray" onclick="manualLoad()" style="font-size:11px;padding:6px 12px;">↺ Reload</button>
   <button class="btn b-gray" onclick="manualSave()" style="font-size:11px;padding:6px 12px;">☁ Save Now</button>
   <button class="btn b-gray" onclick="backupData()" style="font-size:11px;padding:6px 12px;">💾 Backup</button>
@@ -1078,11 +1077,6 @@ function manualSave(){
   doSave();
 }
 
-function connectUrl(){
-  const el=document.getElementById('urlIn');
-  const url=el?el.value.trim():'';
-  setUrl(url);
-}
 function setUrl(url){
   if(!url){ alert('Please paste a valid Apps Script URL.'); return; }
   CLOUD_URL=url;
