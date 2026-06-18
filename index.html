@@ -117,8 +117,8 @@
 <div class="xbar noprint">
   <span style="font-size:11px;font-weight:700;color:var(--txt3);white-space:nowrap;">☁ Cloud</span>
   <input id="urlIn" class="xbar-url" type="text" placeholder="Paste Google Apps Script Web App URL here…"
-    onkeydown="if(event.key==='Enter'){setUrl(this.value.trim());}">
-  <button class="btn b-blue" onclick="setUrl(document.getElementById('urlIn').value.trim())" style="font-size:11px;padding:6px 12px;">Connect</button>
+    onkeydown="if(event.key==='Enter')connectUrl()">
+  <button class="btn b-blue" onclick="connectUrl()" style="font-size:11px;padding:6px 12px;">Connect</button>
   <button class="btn b-gray" onclick="manualLoad()" style="font-size:11px;padding:6px 12px;">↺ Reload</button>
   <button class="btn b-gray" onclick="manualSave()" style="font-size:11px;padding:6px 12px;">☁ Save Now</button>
   <button class="btn b-gray" onclick="backupData()" style="font-size:11px;padding:6px 12px;">💾 Backup</button>
@@ -1078,6 +1078,11 @@ function manualSave(){
   doSave();
 }
 
+function connectUrl(){
+  const el=document.getElementById('urlIn');
+  const url=el?el.value.trim():'';
+  setUrl(url);
+}
 function setUrl(url){
   if(!url){ alert('Please paste a valid Apps Script URL.'); return; }
   CLOUD_URL=url;
@@ -1225,6 +1230,19 @@ function exportPayslipPDF(){
 }
 
 (async function init(){
+  // Migrate old localStorage keys (ta_ → att_) for returning users
+  if(!localStorage.getItem('att_url') && localStorage.getItem('ta_url')){
+    localStorage.setItem('att_url', localStorage.getItem('ta_url'));
+    localStorage.removeItem('ta_url');
+  }
+  if(!localStorage.getItem('att_rows') && localStorage.getItem('ta_rows')){
+    localStorage.setItem('att_rows', localStorage.getItem('ta_rows'));
+    localStorage.removeItem('ta_rows');
+  }
+  if(!localStorage.getItem('att_sett') && localStorage.getItem('ta_sett')){
+    localStorage.setItem('att_sett', localStorage.getItem('ta_sett'));
+    localStorage.removeItem('ta_sett');
+  }
   // Load saved URL from localStorage, or use the hardcoded fallback
   const savedUrl=localStorage.getItem('att_url')||FALLBACK_URL;
   if(savedUrl){
@@ -1239,11 +1257,7 @@ function exportPayslipPDF(){
   } else {
     rows.forEach(r=>calcRow(r));
     renderTable(); calcSummary();
-    // Show reconnect notice if app was previously set up (has employee name)
-    const empName=g('empName');
-    if(!CLOUD_URL && empName && empName.length>0){
-      setStat('warn','⚪ Reconnect needed — paste your Apps Script URL and click Connect to restore settings');
-    }
+    setStat('warn','⚪ Paste your Apps Script URL above and click Connect');
   }
 })();
 </script>
