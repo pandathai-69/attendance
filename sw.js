@@ -1,5 +1,5 @@
 // Time Attendance App — Service Worker v1.1
-const CACHE = 'ta-v2';
+const CACHE = 'ta-v1';
 const ASSETS = [
   'index.html',
   'manifest.json',
