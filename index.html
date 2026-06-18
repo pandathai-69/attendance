@@ -108,7 +108,6 @@
     <button class="btn b-gray" onclick="fillMonth()">📅 Fill</button>
     <button class="btn b-gray" onclick="window.print()">🖨</button>
     <button class="btn b-gray" onclick="showPayslip()">🧾 Payslip</button>
-    <button class="btn b-gray" onclick="archiveMonth()" title="Export current month to Excel and remove from app to keep data size small">📦 Archive</button>
     <button class="btn b-red" onclick="clearAll()">🗑 Clear</button>
   </div>
 </div>
@@ -116,8 +115,9 @@
 <!-- CLOUD SYNC -->
 <div class="xbar noprint">
   <span style="font-size:11px;font-weight:700;color:var(--txt3);white-space:nowrap;">☁ Cloud</span>
-  <input id="urlIn" class="xbar-url" type="text" placeholder="Paste Google Apps Script Web App URL here…">
-  <button class="btn b-blue" onclick="setUrl(g('urlIn'))" style="font-size:11px;padding:6px 12px;">Connect</button>
+  <input id="urlIn" class="xbar-url" type="text" placeholder="Paste Google Apps Script Web App URL here…"
+    onchange="setUrl(this.value.trim())">
+  <button class="btn b-blue" onclick="setUrl(document.getElementById('urlIn').value.trim())" style="font-size:11px;padding:6px 12px;">Connect</button>
   <button class="btn b-gray" onclick="manualLoad()" style="font-size:11px;padding:6px 12px;">↺ Reload</button>
   <button class="btn b-gray" onclick="manualSave()" style="font-size:11px;padding:6px 12px;">☁ Save Now</button>
   <button class="btn b-gray" onclick="backupData()" style="font-size:11px;padding:6px 12px;">💾 Backup</button>
@@ -401,61 +401,6 @@ function fillMonth(){
   }
 }
 
-// ── ARCHIVE MONTH ──────────────────────────────────────────────────────────
-// Exports current month to Excel then removes its rows from active data
-// Keeps payload small — prevents timeout as months accumulate
-function archiveMonth(){
-  const v=rows.filter(r=>r.year===year&&r.month===mon);
-  if(!v.length){ alert('No data for '+MN[mon]+' '+year+' to archive.'); return; }
-  const daysWithData=v.filter(r=>r.dayType&&r.dayType!=='— Select —').length;
-  if(!confirm('Archive '+MN[mon]+' '+year+'?
-
-'+
-    '✅ Exports '+daysWithData+' rows to Excel (.xlsx)
-'+
-    '✅ Removes this month from the app
-'+
-    '✅ Data stays in your Google Sheet
-
-'+
-    'This keeps the app fast as months grow.
-Proceed?')) return;
-
-  // Export to Excel first
-  if(typeof XLSX==='undefined'){ alert('SheetJS not loaded — try again in a moment.'); return; }
-  const bas=n('bas'),alw=n('alw'),oth=n('oth'),dr=n('drR');
-  const tPay=v.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
-  const tMeal=v.reduce((a,r)=>a+r.meal,0),tAtt=v.reduce((a,r)=>a+r.att,0);
-  const tReg=v.reduce((a,r)=>a+r.regH,0),tOT=v.reduce((a,r)=>a+r.otH,0);
-  const unDed=v.filter(r=>r.dayType==='Unpaid Leave').length*dr;
-  const grand=tPay+tMeal+tAtt+bas+alw+oth-unDed;
-  const hdr=['#','Date','Day','Day Type','Time In','Time Out','Reg Hrs','OT Hrs','Tot Hrs','Rate','OT Pay','Meal','Att.','Remarks'];
-  const data=[hdr];
-  v.forEach((r,i)=>{
-    const dow=r.date?new Date(r.year,r.month,r.date).getDay():-1;
-    const dd=r.date?pad2(r.date)+'/'+pad2(r.month+1)+'/'+String(r.year).slice(-2):'';
-    const sR=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
-    data.push([i+1,dd,dow>=0?DN[dow]:'',r.dayType||'',r.timeIn||'',r.timeOut||'',
-      r.regH,r.otH,r.totH,sR&&r.rate>0?r.rate:0,r.pay>0?r.pay:0,r.meal,r.att,r.remarks||'']);
-  });
-  data.push([],[' TOTAL','','','','','',tReg,tOT,tReg+tOT,'',tPay,tMeal,tAtt,'']);
-  data.push([' GRAND TOTAL','','','','','','','','','',grand,'','','']);
-  const ws=XLSX.utils.aoa_to_sheet(data);
-  ws['!cols']=[{wch:4},{wch:10},{wch:5},{wch:18},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:7},{wch:11},{wch:9},{wch:9},{wch:14}];
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,MN[mon].slice(0,3)+' '+year);
-  XLSX.writeFile(wb,'Archive_'+MN[mon]+'_'+year+'.xlsx');
-
-  // Remove this month's rows from active data
-  rows=rows.filter(r=>!(r.year===year&&r.month===mon));
-  saveLocal(); scheduleSave();
-  renderTable(); calcSummary();
-  alert('✅ Archived '+MN[mon]+' '+year+' successfully!
-
-Excel file downloaded. Month removed from app.
-Data still exists in your Google Sheet.');
-}
-
 function clearAll(){
   if(!confirm('Clear ALL attendance rows from this device?\n\nNote: Google Sheets data will NOT be affected.\nYou can reload from cloud anytime using the ↺ Reload button.')) return;
   rows=[]; rid=0;
@@ -713,7 +658,7 @@ function renderFooter(vis){
   function showBanner(){
     if(isStandalone()) return;
     var b=getEl('pwaInstallBanner');
-    if(b && !localStorage.getItem('att_pwa')) b.style.display='block';
+    if(b && !localStorage.getItem('pwa_dismissed')) b.style.display='block';
     var hb=getEl('pwaHeaderBtn'); if(hb) hb.style.display='inline-flex';
   }
   function showModal(){
@@ -755,7 +700,7 @@ function renderFooter(vis){
     var ib=getEl('pwaInstallBtn');     if(ib) ib.onclick=doInstall;
     var hb=getEl('pwaHeaderBtn');      if(hb) hb.onclick=doInstall;
     var db=getEl('pwaInstallDismiss'); if(db) db.onclick=function(){
-      hideBanner(); localStorage.setItem('att_pwa','1');
+      hideBanner(); localStorage.setItem('pwa_dismissed','1');
     };
     var mc=getEl('pwaModalClose');     if(mc) mc.onclick=hideModal;
 
@@ -776,7 +721,7 @@ function renderFooter(vis){
     if(isAndroid()){
       setTimeout(function(){
         var hb=getEl('pwaHeaderBtn');
-        if(hb && !isStandalone() && !localStorage.getItem('att_pwa')){
+        if(hb && !isStandalone() && !localStorage.getItem('pwa_dismissed')){
           hb.style.display='inline-flex';
         }
       }, 5000);
@@ -880,18 +825,18 @@ function goMon(){
 // ── LOCAL STORAGE ──────────────────────────────────────────────────────────
 function saveLocal(){
   try{ 
-    localStorage.setItem('att_rows',JSON.stringify({rows,rid,year,mon}));
-    localStorage.setItem('att_sett',JSON.stringify(getSettings()));
+    localStorage.setItem('ta_rows',JSON.stringify({rows,rid,year,mon}));
+    localStorage.setItem('ta_sett',JSON.stringify(getSettings()));
   }catch(e){}
 }
 function loadLocal(){
   try{
-    const d=JSON.parse(localStorage.getItem('att_rows')||'{}');
+    const d=JSON.parse(localStorage.getItem('ta_rows')||'{}');
     if(d.rows){ rows=d.rows; rid=d.rid||0; year=d.year||new Date().getFullYear(); mon=d.mon||new Date().getMonth(); }
     rows.forEach(fixRow);
   }catch(e){ rows=[]; rid=0; }
   try{
-    const s=JSON.parse(localStorage.getItem('att_sett')||'{}');
+    const s=JSON.parse(localStorage.getItem('ta_sett')||'{}');
     applySettings(s);
   }catch(e){}
 }
@@ -1004,8 +949,7 @@ async function doLoad(){
       mon=data.mon||new Date().getMonth();
       rows.forEach(fixRow);
       applySettings(data.settings);
-      saveLocal();
-      buildYearSel(); syncSels(); // rebuild year list with cloud year
+      saveLocal(); syncSels();
       setStat('ok','🟢 Loaded from Google Sheets ✓');
     } else {
       loadLocal();
@@ -1080,11 +1024,11 @@ function manualSave(){
 function setUrl(url){
   if(!url){ alert('Please paste a valid Apps Script URL.'); return; }
   CLOUD_URL=url;
-  localStorage.setItem('att_url',url);
+  localStorage.setItem('ta_url',url);
   document.getElementById('urlIn').value=url;
   doLoad();
 }
-function clearUrl(){ CLOUD_URL=''; localStorage.removeItem('att_url'); setStat('','⚪ Local only'); }
+function clearUrl(){ CLOUD_URL=''; localStorage.removeItem('ta_url'); setStat('','⚪ Local only'); }
 async function manualLoad(){ await doLoad(); }
 // ═══════════════════════════════════════════════════════════════════════
 // OFFLINE INDICATOR
@@ -1224,21 +1168,8 @@ function exportPayslipPDF(){
 }
 
 (async function init(){
-  // Migrate old localStorage keys (ta_ → att_) for returning users
-  if(!localStorage.getItem('att_url') && localStorage.getItem('ta_url')){
-    localStorage.setItem('att_url', localStorage.getItem('ta_url'));
-    localStorage.removeItem('ta_url');
-  }
-  if(!localStorage.getItem('att_rows') && localStorage.getItem('ta_rows')){
-    localStorage.setItem('att_rows', localStorage.getItem('ta_rows'));
-    localStorage.removeItem('ta_rows');
-  }
-  if(!localStorage.getItem('att_sett') && localStorage.getItem('ta_sett')){
-    localStorage.setItem('att_sett', localStorage.getItem('ta_sett'));
-    localStorage.removeItem('ta_sett');
-  }
   // Load saved URL from localStorage, or use the hardcoded fallback
-  const savedUrl=localStorage.getItem('att_url')||FALLBACK_URL;
+  const savedUrl=localStorage.getItem('ta_url')||FALLBACK_URL;
   if(savedUrl){
     CLOUD_URL=savedUrl;
     const el=document.getElementById('urlIn');
@@ -1251,7 +1182,7 @@ function exportPayslipPDF(){
   } else {
     rows.forEach(r=>calcRow(r));
     renderTable(); calcSummary();
-    setStat('warn','⚪ Paste your Apps Script URL above and click Connect');
+    setStat('warn','⚪ Not connected — paste your Apps Script URL above and click Connect');
   }
 })();
 </script>
