@@ -413,6 +413,15 @@ function clearAll(){
 
 // ── FIELD UPDATES ──────────────────────────────────────────────────────────
 
+function updDate(id,val){
+  const r=rows.find(x=>x.id===id); if(!r) return;
+  if(!val){ r.date=null; r.year=year; r.month=mon; }
+  else {
+    const p=val.split('-');
+    r.year=parseInt(p[0]); r.month=parseInt(p[1])-1; r.date=parseInt(p[2]);
+  }
+  calcRow(r); renderTable(); calcSummary(); saveLocal(); scheduleSave();
+}
 function updDT(id,val){
   const r=rows.find(x=>x.id===id); if(!r) return;
   r.dayType=val;
