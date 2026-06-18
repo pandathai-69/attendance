@@ -108,6 +108,8 @@
     <button class="btn b-gray" onclick="fillMonth()">📅 Fill</button>
     <button class="btn b-gray" onclick="window.print()">🖨</button>
     <button class="btn b-gray" onclick="showPayslip()">🧾 Payslip</button>
+    <button class="btn b-gray" onclick="archiveMonth()" style="font-size:11px;" title="Export month to Excel then remove from app">📦 Archive</button>
+    <button class="btn b-gray" onclick="archiveMonth()" title="Export month to Excel then remove from app">📦 Archive</button>
     <button class="btn b-red" onclick="clearAll()">🗑 Clear</button>
   </div>
 </div>
@@ -399,6 +401,67 @@ function fillMonth(){
     if(rows.find(r=>r.year===year&&r.month===mon&&r.date===d)) continue;
     addRow(year,mon,d,'— Select —','','');
   }
+}
+
+function archiveMonth(){
+  // Guard: nothing to archive?
+  const vis=rows.filter(r=>r.year===year&&r.month===mon);
+  if(!vis.length){
+    alert('No data for '+MN[mon]+' '+year+'. Nothing to archive.');
+    return;
+  }
+  const taken=vis.filter(r=>r.dayType&&r.dayType!=='— Select —').length;
+  if(!confirm('Archive '+MN[mon]+' '+year+'?\n\n'
+    +'✅ Downloads '+taken+' rows as Excel (.xlsx)\n'
+    +'✅ Removes this month from the app\n'
+    +'✅ Data stays safe in Google Sheets\n\n'
+    +'This keeps saves fast as months grow.')) return;
+
+  // Export to Excel first
+  if(typeof XLSX==='undefined'){
+    alert('SheetJS not loaded yet — try again in a moment.'); return;
+  }
+  const bas=n('bas'),alw=n('alw'),oth=n('oth'),dr=n('drR');
+  const sorted=vis.slice().sort((a,b)=>(a.date||0)-(b.date||0));
+  const tPay=sorted.reduce((s,r)=>s+(r.pay>0?r.pay:0),0);
+  const tMeal=sorted.reduce((s,r)=>s+r.meal,0);
+  const tAtt=sorted.reduce((s,r)=>s+r.att,0);
+  const tReg=sorted.reduce((s,r)=>s+r.regH,0);
+  const tOT=sorted.reduce((s,r)=>s+r.otH,0);
+  const unDed=sorted.filter(r=>r.dayType==='Unpaid Leave').length*dr;
+  const grand=tPay+tMeal+tAtt+bas+alw+oth-unDed;
+
+  const hdr=['#','Date','Day','Day Type','Time In','Time Out',
+             'Reg Hrs','OT Hrs','Tot Hrs','Rate','OT Pay','Meal','Att.','Remarks'];
+  const data=[hdr];
+  sorted.forEach((r,i)=>{
+    const dow=r.date?new Date(r.year,r.month,r.date).getDay():-1;
+    const dd=r.date?pad2(r.date)+'/'+pad2(r.month+1)+'/'+String(r.year).slice(-2):'';
+    const sR=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||(r.otH||0)>0;
+    data.push([i+1,dd,dow>=0?DN[dow]:'',r.dayType||'',
+      r.timeIn||'',r.timeOut||'',
+      +(r.regH||0).toFixed(2),+(r.otH||0).toFixed(2),+(r.totH||0).toFixed(2),
+      sR&&r.rate>0?+(r.rate||0).toFixed(2):0,
+      r.pay>0?+(r.pay||0).toFixed(2):0,
+      +(r.meal||0).toFixed(2),+(r.att||0).toFixed(2),r.remarks||'']);
+  });
+  data.push([]);
+  data.push(['TOTAL','','','','','',+tReg.toFixed(2),+tOT.toFixed(2),'','',
+             +tPay.toFixed(2),+tMeal.toFixed(2),+tAtt.toFixed(2),'']);
+  data.push(['GRAND TOTAL','','','','','','','','','',+grand.toFixed(2),'','','']);
+
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:4},{wch:10},{wch:5},{wch:18},{wch:8},{wch:8},
+               {wch:8},{wch:8},{wch:8},{wch:7},{wch:11},{wch:9},{wch:9},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,MN[mon].slice(0,3)+' '+year);
+  XLSX.writeFile(wb,'Archive_'+MN[mon]+'_'+year+'.xlsx');
+
+  // Remove this month from rows array
+  rows=rows.filter(r=>!(r.year===year&&r.month===mon));
+  saveLocal(); scheduleSave();
+  renderTable(); calcSummary();
+  alert('✅ Archived '+MN[mon]+' '+year+' successfully!\nExcel downloaded. Month removed from app.\nYour Google Sheet still has all data.');
 }
 
 function clearAll(){
@@ -1034,7 +1097,12 @@ function setUrl(url){
   if(!url){ alert('Please paste a valid Apps Script URL.'); return; }
   CLOUD_URL=url;
   localStorage.setItem('ta_url',url);
-  document.getElementById('urlIn').value=url;
+  const urlEl=document.getElementById('urlIn');
+  if(urlEl){
+    urlEl.value=url;
+    urlEl.style.borderColor='';
+    urlEl.style.boxShadow='';
+  }
   doLoad();
 }
 function clearUrl(){ CLOUD_URL=''; localStorage.removeItem('ta_url'); setStat('','⚪ Local only'); }
@@ -1192,6 +1260,8 @@ function exportPayslipPDF(){
     rows.forEach(r=>calcRow(r));
     renderTable(); calcSummary();
     setStat('warn','⚪ Not connected — paste your Apps Script URL above and click Connect');
+    const urlEl=document.getElementById('urlIn');
+    if(urlEl){ urlEl.style.borderColor='#F59E0B'; urlEl.style.boxShadow='0 0 0 2px #FDE68A'; }
   }
 })();
 </script>
