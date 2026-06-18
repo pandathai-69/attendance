@@ -117,7 +117,7 @@
 <div class="xbar noprint">
   <span style="font-size:11px;font-weight:700;color:var(--txt3);white-space:nowrap;">☁ Cloud</span>
   <input id="urlIn" class="xbar-url" type="text" placeholder="Paste Google Apps Script Web App URL here…"
-    onchange="setUrl(this.value.trim())">
+    onkeydown="if(event.key==='Enter'){setUrl(this.value.trim());}">
   <button class="btn b-blue" onclick="setUrl(document.getElementById('urlIn').value.trim())" style="font-size:11px;padding:6px 12px;">Connect</button>
   <button class="btn b-gray" onclick="manualLoad()" style="font-size:11px;padding:6px 12px;">↺ Reload</button>
   <button class="btn b-gray" onclick="manualSave()" style="font-size:11px;padding:6px 12px;">☁ Save Now</button>
@@ -460,7 +460,7 @@ Data still exists in your Google Sheet.');
 function clearAll(){
   if(!confirm('Clear ALL attendance rows from this device?\n\nNote: Google Sheets data will NOT be affected.\nYou can reload from cloud anytime using the ↺ Reload button.')) return;
   rows=[]; rid=0;
-  localStorage.removeItem('ta_rows');  // clear rows locally only
+  localStorage.removeItem('att_rows');  // clear rows locally only
   // Settings and cloud URL are kept
   // Do NOT sync to cloud — Google Sheets keeps its data intact
   renderTable(); calcSummary();
@@ -714,7 +714,7 @@ function renderFooter(vis){
   function showBanner(){
     if(isStandalone()) return;
     var b=getEl('pwaInstallBanner');
-    if(b && !localStorage.getItem('pwa_dismissed')) b.style.display='block';
+    if(b && !localStorage.getItem('att_pwa')) b.style.display='block';
     var hb=getEl('pwaHeaderBtn'); if(hb) hb.style.display='inline-flex';
   }
   function showModal(){
@@ -756,7 +756,7 @@ function renderFooter(vis){
     var ib=getEl('pwaInstallBtn');     if(ib) ib.onclick=doInstall;
     var hb=getEl('pwaHeaderBtn');      if(hb) hb.onclick=doInstall;
     var db=getEl('pwaInstallDismiss'); if(db) db.onclick=function(){
-      hideBanner(); localStorage.setItem('pwa_dismissed','1');
+      hideBanner(); localStorage.setItem('att_pwa','1');
     };
     var mc=getEl('pwaModalClose');     if(mc) mc.onclick=hideModal;
 
@@ -777,7 +777,7 @@ function renderFooter(vis){
     if(isAndroid()){
       setTimeout(function(){
         var hb=getEl('pwaHeaderBtn');
-        if(hb && !isStandalone() && !localStorage.getItem('pwa_dismissed')){
+        if(hb && !isStandalone() && !localStorage.getItem('att_pwa')){
           hb.style.display='inline-flex';
         }
       }, 5000);
@@ -880,16 +880,19 @@ function goMon(){
 
 // ── LOCAL STORAGE ──────────────────────────────────────────────────────────
 function saveLocal(){
-  try{ localStorage.setItem('ta_rows',JSON.stringify({rows,rid,year,mon})); }catch(e){}
+  try{ 
+    localStorage.setItem('att_rows',JSON.stringify({rows,rid,year,mon}));
+    localStorage.setItem('att_sett',JSON.stringify(getSettings()));
+  }catch(e){}
 }
 function loadLocal(){
   try{
-    const d=JSON.parse(localStorage.getItem('ta_rows')||'{}');
+    const d=JSON.parse(localStorage.getItem('att_rows')||'{}');
     if(d.rows){ rows=d.rows; rid=d.rid||0; year=d.year||new Date().getFullYear(); mon=d.mon||new Date().getMonth(); }
     rows.forEach(fixRow);
   }catch(e){ rows=[]; rid=0; }
   try{
-    const s=JSON.parse(localStorage.getItem('ta_sett')||'{}');
+    const s=JSON.parse(localStorage.getItem('att_sett')||'{}');
     applySettings(s);
   }catch(e){}
 }
@@ -1002,7 +1005,8 @@ async function doLoad(){
       mon=data.mon||new Date().getMonth();
       rows.forEach(fixRow);
       applySettings(data.settings);
-      saveLocal(); syncSels();
+      saveLocal();
+      buildYearSel(); syncSels(); // rebuild year list with cloud year
       setStat('ok','🟢 Loaded from Google Sheets ✓');
     } else {
       loadLocal();
@@ -1077,11 +1081,11 @@ function manualSave(){
 function setUrl(url){
   if(!url){ alert('Please paste a valid Apps Script URL.'); return; }
   CLOUD_URL=url;
-  localStorage.setItem('ta_url',url);
+  localStorage.setItem('att_url',url);
   document.getElementById('urlIn').value=url;
   doLoad();
 }
-function clearUrl(){ CLOUD_URL=''; localStorage.removeItem('ta_url'); setStat('','⚪ Local only'); }
+function clearUrl(){ CLOUD_URL=''; localStorage.removeItem('att_url'); setStat('','⚪ Local only'); }
 async function manualLoad(){ await doLoad(); }
 // ═══════════════════════════════════════════════════════════════════════
 // OFFLINE INDICATOR
@@ -1222,7 +1226,7 @@ function exportPayslipPDF(){
 
 (async function init(){
   // Load saved URL from localStorage, or use the hardcoded fallback
-  const savedUrl=localStorage.getItem('ta_url')||FALLBACK_URL;
+  const savedUrl=localStorage.getItem('att_url')||FALLBACK_URL;
   if(savedUrl){
     CLOUD_URL=savedUrl;
     const el=document.getElementById('urlIn');
