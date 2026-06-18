@@ -97,7 +97,13 @@
       <option value="8">September</option><option value="9">October</option>
       <option value="10">November</option><option value="11">December</option>
     </select>
-    <select id="selYear" onchange="goMon()" style="font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--brd);border-radius:7px;background:var(--sur);color:var(--txt);outline:none;cursor:pointer;width:82px;"></select>
+    <select id="selYear" onchange="goMon()" style="font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--brd);border-radius:7px;background:var(--sur);color:var(--txt);outline:none;cursor:pointer;width:82px;">
+      <option value="2024">2024</option>
+      <option value="2025">2025</option>
+      <option value="2026" selected>2026</option>
+      <option value="2027">2027</option>
+      <option value="2028">2028</option>
+    </select>
     <button class="btn b-blue" onclick="addRow()">+ Row</button>
     <button class="btn b-gray" onclick="fillMonth()">📅 Fill</button>
     <button class="btn b-gray" onclick="window.print()">🖨</button>
@@ -839,20 +845,36 @@ function calcSummary(){
 function buildYearSel(){
   const el=document.getElementById('selYear'); if(!el) return;
   const cur=new Date().getFullYear();
+  // Preserve current selection if user already picked a year
+  const curVal=parseInt(el.value)||year||cur;
   el.innerHTML='';
-  for(let y=cur-5;y<=cur+3;y++){
+  for(let y=cur-5;y<=cur+5;y++){
     const o=document.createElement('option');
-    o.value=y; o.textContent=y; if(y===year) o.selected=true;
+    o.value=y; o.textContent=y;
+    if(y===curVal) o.selected=true;
     el.appendChild(o);
   }
+  // Ensure year global matches
+  if(!year||isNaN(year)) year=cur;
 }
 function syncSels(){
   const sm=document.getElementById('selMon'), sy=document.getElementById('selYear');
-  if(sm) sm.value=mon; if(sy) sy.value=year;
+  if(sm && !isNaN(mon)) sm.value=mon;
+  if(sy && !isNaN(year) && year>2000){
+    // If year not in options, rebuild the list first
+    if(!sy.querySelector('option[value="'+year+'"]')){
+      buildYearSel();
+    }
+    sy.value=year;
+  }
 }
 function goMon(){
   const sm=document.getElementById('selMon'), sy=document.getElementById('selYear');
-  if(sm) mon=parseInt(sm.value); if(sy) year=parseInt(sy.value);
+  const newMon=sm?parseInt(sm.value):mon;
+  const newYear=sy?parseInt(sy.value):year;
+  // Guard against NaN - never let invalid values through
+  if(!isNaN(newMon)) mon=newMon;
+  if(!isNaN(newYear) && newYear>2000) year=newYear;
   renderTable(); calcSummary();
 }
 
