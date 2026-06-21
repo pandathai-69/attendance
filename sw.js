@@ -46,8 +46,12 @@ self.addEventListener('fetch', function(e) {
       // Stale-while-revalidate: serve cache, update in background
       var fetchPromise = fetch(e.request).then(function(response) {
         if (response && response.status === 200 && response.type !== 'opaque') {
+          // Clone IMMEDIATELY, synchronously, before the response body
+          // can be consumed elsewhere. Cloning inside an async .then()
+          // callback risks the body already being used by the time it runs.
+          var responseToCache = response.clone();
           caches.open(CACHE).then(function(c) {
-            c.put(e.request, response.clone());
+            c.put(e.request, responseToCache);
           });
         }
         return response;
