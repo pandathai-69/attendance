@@ -139,6 +139,12 @@ tbody td input[type="date"]{min-width:0;}tbody td input[type="date"]::-webkit-ca
     <button class="btn b-gray" onclick="manualSave()" style="font-size:11px;padding:6px 12px;">☁ Save Now</button>
     <button class="btn b-gray" onclick="supaSignOut()" style="font-size:11px;padding:6px 12px;">Sign out</button>
   </span>
+  <span id="passwordSetupBar" style="display:none;grid-template-columns:1fr 1fr;gap:6px;width:100%;">
+    <div style="grid-column:1/-1;font-size:11px;font-weight:600;color:var(--txt2);">Welcome, <span id="setupEmailLabel"></span> — set a password to finish setting up your account:</div>
+    <input id="newPassIn" class="xbar-url" type="password" placeholder="New password (6+ chars)" style="width:100%;max-width:none;">
+    <input id="newPassConfirmIn" class="xbar-url" type="password" placeholder="Confirm password" style="width:100%;max-width:none;">
+    <button class="btn b-blue" onclick="submitNewPassword()" style="grid-column:1/-1;font-size:11px;padding:6px 12px;justify-content:center;">Set password and continue</button>
+  </span>
   <span id="loginBar" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;">
     <input id="supaUrlIn" class="xbar-url" type="text" placeholder="Supabase Project URL" style="width:100%;max-width:none;">
     <input id="supaKeyIn" class="xbar-url" type="password" placeholder="anon key" style="width:100%;max-width:none;">
@@ -337,6 +343,7 @@ const SIDS=['wdS','wdE','saS','saE','brk','hrR','drR','bas','alw','oth','mAmt','
 let year=new Date().getFullYear(), mon=new Date().getMonth(), rows=[], rid=0;
 let SUPA_URL='', SUPA_KEY='', supaSession=null;
 let EXPORT_URL=''; // employee's own existing Apps Script Web App URL — for on-demand Sheets export only
+let pendingPasswordSetup=null; // holds an authenticated-but-not-yet-password-set session
 let mealTiers=[{hrs:2,amt:20}]; // default: matches old behavior (OT>=2h -> RM20)
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
@@ -1235,25 +1242,34 @@ async function handleMagicLinkRedirect(){
     const user=await userRes.json();
     if(!user||!user.id) throw new Error('Could not verify the sign-in link.');
 
-    let role='employee';
-    const profRes=await fetch(SUPA_URL+'/rest/v1/ta_profiles?id=eq.'+user.id+'&select=role', {
+    let role='employee', passwordSet=false;
+    const profRes=await fetch(SUPA_URL+'/rest/v1/ta_profiles?id=eq.'+user.id+'&select=role,password_set', {
       headers:{apikey:SUPA_KEY, Authorization:'Bearer '+params.access_token}
     });
     const prof=await profRes.json();
     if(prof && prof.length){
       role=prof[0].role||'employee';
+      passwordSet=!!prof[0].password_set;
     } else {
-      // First time signing in via magic link — create their profile, same as password signup does
+      // First time signing in via this link — create their profile now.
+      // password_set defaults to false: an invite/magic-link account has no password yet.
       await fetch(SUPA_URL+'/rest/v1/ta_profiles', {
         method:'POST',
         headers:{'Content-Type':'application/json', apikey:SUPA_KEY, Authorization:'Bearer '+params.access_token, Prefer:'return=minimal'},
-        body: JSON.stringify({id:user.id, email:user.email||'', full_name:(g('empName')||user.email||''), role:'employee'})
+        body: JSON.stringify({id:user.id, email:user.email||'', full_name:(g('empName')||user.email||''), role:'employee', password_set:false})
       });
+      passwordSet=false;
+    }
+
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+
+    if(!passwordSet){
+      // Don't grant full access yet — hold the session pending, force a password to be set first
+      pendingPasswordSetup={accessToken:params.access_token, refreshToken:params.refresh_token||'', userId:user.id, email:user.email||'', role:role};
+      return 'needs_password';
     }
     supaSession={accessToken:params.access_token, refreshToken:params.refresh_token||'', userId:user.id, email:user.email||'', role:role};
     persistSession();
-    // Remove the tokens from the visible URL/history — they've done their job
-    history.replaceState(null, '', window.location.pathname + window.location.search);
     return true;
   }catch(e){
     console.error('Magic-link sign-in failed:', e);
@@ -1262,11 +1278,48 @@ async function handleMagicLinkRedirect(){
 }
 function updateCloudUI(){
   const authed=!!supaSession;
-  const authedBar=document.getElementById('authedBar'), loginBar=document.getElementById('loginBar');
+  const needsPassword=!authed && !!pendingPasswordSetup;
+  const authedBar=document.getElementById('authedBar');
+  const loginBar=document.getElementById('loginBar');
+  const passwordSetupBar=document.getElementById('passwordSetupBar');
   if(authedBar) authedBar.style.display=authed?'flex':'none';
-  if(loginBar) loginBar.style.display=authed?'none':'grid';
+  if(passwordSetupBar) passwordSetupBar.style.display=needsPassword?'grid':'none';
+  if(loginBar) loginBar.style.display=(authed||needsPassword)?'none':'grid';
   const who=document.getElementById('whoAmI');
   if(who&&supaSession) who.textContent=supaSession.email+' ('+supaSession.role+')';
+  const setupLabel=document.getElementById('setupEmailLabel');
+  if(setupLabel&&pendingPasswordSetup) setupLabel.textContent=pendingPasswordSetup.email;
+}
+
+async function submitNewPassword(){
+  if(!pendingPasswordSetup){ alert('Nothing pending — please sign in again.'); return; }
+  const p1=g('newPassIn'), p2=g('newPassConfirmIn');
+  if(!p1||p1.length<6){ alert('Password must be at least 6 characters.'); return; }
+  if(p1!==p2){ alert('Passwords do not match.'); return; }
+  const pending=pendingPasswordSetup;
+  try{
+    const res=await fetch(SUPA_URL+'/auth/v1/user', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json', apikey:SUPA_KEY, Authorization:'Bearer '+pending.accessToken},
+      body: JSON.stringify({password:p1})
+    });
+    if(!res.ok){ const t=await res.text(); throw new Error('Request failed ('+res.status+') '+t.slice(0,150)); }
+
+    // Best-effort — don't block getting into the app if this particular write fails
+    try{
+      await fetch(SUPA_URL+'/rest/v1/ta_profiles?id=eq.'+pending.userId, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json', apikey:SUPA_KEY, Authorization:'Bearer '+pending.accessToken, Prefer:'return=minimal'},
+        body: JSON.stringify({password_set:true})
+      });
+    }catch(e){ console.error('Could not record password_set flag:', e); }
+
+    supaSession=pending;
+    pendingPasswordSetup=null;
+    persistSession();
+    updateCloudUI();
+    await doLoad();
+  }catch(e){ alert('Could not set password: '+e.message); }
 }
 
 // Accounts are admin-created only (Supabase dashboard > Authentication > Users > Invite),
@@ -1293,7 +1346,7 @@ async function supaSignIn(){
       await fetch(SUPA_URL+'/rest/v1/ta_profiles', {
         method:'POST',
         headers:{'Content-Type':'application/json', apikey:SUPA_KEY, Authorization:'Bearer '+r.access_token, Prefer:'return=minimal'},
-        body: JSON.stringify({id:r.user.id, email:email, full_name:(g('empName')||email), role:'employee'})
+        body: JSON.stringify({id:r.user.id, email:email, full_name:(g('empName')||email), role:'employee', password_set:true})
       });
     }
     supaSession={accessToken:r.access_token, refreshToken:r.refresh_token||'', userId:r.user.id, email:email, role:role};
@@ -1558,7 +1611,9 @@ function exportPayslipPDF(){
     }
   }
   updateCloudUI();
-  if(restored){
+  if(restored==='needs_password'){
+    setStat('warn','⚪ Set a password above to finish setting up your account');
+  } else if(restored){
     await doLoad();
     // Keep the session alive for long-open tabs — refresh well before the
     // ~1hr default access-token expiry, silently, with no UI interruption.
