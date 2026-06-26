@@ -68,9 +68,20 @@
   <div class="card hidden" id="authCard">
     <div style="font-size:14px;font-weight:700;color:var(--dark);margin-bottom:10px;">Sign in</div>
     <input id="email" placeholder="email">
-    <input id="password" type="password" placeholder="password">
+    <input id="password" type="password" placeholder="password (leave blank for magic link)">
     <div class="err hidden" id="authErr"></div>
     <button id="authBtn">Sign in</button>
+    <button id="magicLinkBtn" style="background:#F59E0B;margin-top:8px;">✉ Or send me a magic sign-in link instead</button>
+  </div>
+
+  <!-- Forced password setup for first-time invite/magic-link arrivals -->
+  <div class="card hidden" id="passwordSetupCard">
+    <div style="font-size:14px;font-weight:700;color:var(--dark);margin-bottom:6px;">Welcome, <span id="setupEmailLabel"></span></div>
+    <div class="small" style="margin-bottom:10px;">Set a password to finish setting up your account:</div>
+    <input id="newPassIn" type="password" placeholder="New password (6+ chars)">
+    <input id="newPassConfirmIn" type="password" placeholder="Confirm password">
+    <div class="err hidden" id="setupErr"></div>
+    <button id="setupBtn">Set password and continue</button>
   </div>
 
   <!-- WARN if not admin -->
@@ -118,6 +129,7 @@
 
 <script>
 let URL_BASE="", ANON_KEY="", session=null, employees=[], currentDetail=null;
+let pendingAdminSetup=null; // holds an authenticated-but-not-yet-password-set session
 
 function $(id){ return document.getElementById(id); }
 function cleanUrl(u){
@@ -140,14 +152,15 @@ async function api(path, opts){
 
 $("infoToggle").onclick = () => $("infoBox").classList.toggle("hidden");
 
-$("connectBtn").onclick = () => {
+$("connectBtn").onclick = async () => {
   const u = $("url").value, k = $("anonKey").value;
   if(!u.trim() || !k.trim()) return;
   URL_BASE = cleanUrl(u); ANON_KEY = k.trim();
   try{ localStorage.setItem('admin_supa_url', URL_BASE); localStorage.setItem('admin_supa_key', ANON_KEY); }
   catch(e){ console.error('Could not persist URL/key:', e); }
-  $("connectCard").classList.add("hidden");
-  $("authCard").classList.remove("hidden");
+  let handled = false;
+  try{ handled = await handleAdminRedirect(); }catch(e){ console.error('Redirect handling errored:', e); }
+  if(!handled) showAdminScreen('authCard');
 };
 
 function persistAdminSession(refreshToken){
@@ -160,6 +173,11 @@ function clearPersistedAdminSession(){
   catch(e){ console.error('Could not clear persisted session:', e); }
 }
 
+function showAdminScreen(screen){
+  ['connectCard','authCard','passwordSetupCard'].forEach(id=>$(id).classList.add('hidden'));
+  if(screen) $(screen).classList.remove('hidden');
+}
+
 async function finishSignIn(accessToken, refreshToken, userId, email){
   const profRes = await fetch(URL_BASE + "/rest/v1/ta_profiles?id=eq." + userId + "&select=role,full_name", {
     headers:{apikey:ANON_KEY, Authorization:"Bearer "+accessToken}
@@ -168,8 +186,7 @@ async function finishSignIn(accessToken, refreshToken, userId, email){
   const role = prof?.[0]?.role || "employee";
   session = {accessToken, refreshToken, userId, email, role};
   persistAdminSession(refreshToken);
-  $("connectCard").classList.add("hidden");
-  $("authCard").classList.add("hidden");
+  showAdminScreen(null);
   if(role !== "admin"){
     $("notAdminMsg").textContent = 'Signed in as "' + email + '" (role: ' + role + '). This page is most useful with an admin account — but RLS still applies, so you will only ever see your own data below regardless.';
     $("notAdminCard").classList.remove("hidden");
@@ -195,6 +212,104 @@ async function trySilentAdminSignIn(){
     return false;
   }
 }
+
+// Handles landing here after an invite or magic-link email click — same mechanism,
+// Supabase appends tokens as a URL hash fragment regardless of which flow produced them.
+async function handleAdminRedirect(){
+  const hash=(window.location.hash||'').replace(/^#/,'');
+  if(!hash.includes('access_token=')) return false;
+  if(!URL_BASE||!ANON_KEY) return false;
+  const params={};
+  hash.split('&').forEach(pair=>{
+    const idx=pair.indexOf('=');
+    if(idx>0) params[decodeURIComponent(pair.slice(0,idx))]=decodeURIComponent(pair.slice(idx+1));
+  });
+  if(!params.access_token) return false;
+  try{
+    const userRes=await fetch(URL_BASE+'/auth/v1/user', {
+      headers:{apikey:ANON_KEY, Authorization:'Bearer '+params.access_token}
+    });
+    const user=await userRes.json();
+    if(!user||!user.id) throw new Error('Could not verify the sign-in link.');
+
+    let role='employee', passwordSet=false;
+    const profRes=await fetch(URL_BASE+'/rest/v1/ta_profiles?id=eq.'+user.id+'&select=role,password_set', {
+      headers:{apikey:ANON_KEY, Authorization:'Bearer '+params.access_token}
+    });
+    const prof=await profRes.json();
+    if(prof && prof.length){
+      role=prof[0].role||'employee';
+      passwordSet=!!prof[0].password_set;
+    } else {
+      await fetch(URL_BASE+'/rest/v1/ta_profiles', {
+        method:'POST',
+        headers:{'Content-Type':'application/json', apikey:ANON_KEY, Authorization:'Bearer '+params.access_token, Prefer:'return=minimal'},
+        body: JSON.stringify({id:user.id, email:user.email||'', full_name:user.email||'', role:'employee', password_set:false})
+      });
+      passwordSet=false;
+    }
+
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+
+    if(!passwordSet){
+      pendingAdminSetup={accessToken:params.access_token, refreshToken:params.refresh_token||'', userId:user.id, email:user.email||'', role:role};
+      $("setupEmailLabel").textContent = user.email||'';
+      showAdminScreen('passwordSetupCard');
+      return 'needs_password';
+    }
+    await finishSignIn(params.access_token, params.refresh_token||'', user.id, user.email||'');
+    return true;
+  }catch(e){
+    console.error('Admin redirect sign-in failed:', e);
+    return false;
+  }
+}
+
+$("setupBtn").onclick = async () => {
+  $("setupErr").classList.add("hidden");
+  if(!pendingAdminSetup){ $("setupErr").textContent='Nothing pending — please sign in again.'; $("setupErr").classList.remove("hidden"); return; }
+  const p1=$("newPassIn").value, p2=$("newPassConfirmIn").value;
+  if(!p1||p1.length<6){ $("setupErr").textContent='Password must be at least 6 characters.'; $("setupErr").classList.remove("hidden"); return; }
+  if(p1!==p2){ $("setupErr").textContent='Passwords do not match.'; $("setupErr").classList.remove("hidden"); return; }
+  const pending=pendingAdminSetup;
+  $("setupBtn").disabled=true;
+  try{
+    const res=await fetch(URL_BASE+'/auth/v1/user', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json', apikey:ANON_KEY, Authorization:'Bearer '+pending.accessToken},
+      body: JSON.stringify({password:p1})
+    });
+    if(!res.ok){ const t=await res.text(); throw new Error('Request failed ('+res.status+') '+t.slice(0,150)); }
+    try{
+      await fetch(URL_BASE+'/rest/v1/ta_profiles?id=eq.'+pending.userId, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json', apikey:ANON_KEY, Authorization:'Bearer '+pending.accessToken, Prefer:'return=minimal'},
+        body: JSON.stringify({password_set:true})
+      });
+    }catch(e){ console.error('Could not record password_set flag:', e); }
+    pendingAdminSetup=null;
+    await finishSignIn(pending.accessToken, pending.refreshToken, pending.userId, pending.email);
+  }catch(e){
+    $("setupErr").textContent='Could not set password: '+e.message; $("setupErr").classList.remove("hidden");
+  }
+  $("setupBtn").disabled=false;
+};
+
+$("magicLinkBtn").onclick = async () => {
+  const email = $("email").value.trim();
+  if(!email){ $("authErr").textContent='Enter your email first.'; $("authErr").classList.remove("hidden"); return; }
+  const redirectTo = window.location.origin + window.location.pathname;
+  try{
+    const res = await fetch(URL_BASE+'/auth/v1/otp?redirect_to='+encodeURIComponent(redirectTo), {
+      method:'POST', headers:{'Content-Type':'application/json', apikey:ANON_KEY},
+      body: JSON.stringify({email:email, create_user:false})
+    });
+    if(!res.ok){ const d=await res.json().catch(()=>({})); throw new Error(d.msg||d.error_description||'Request failed'); }
+    alert('Check your email for a sign-in link.');
+  }catch(e){
+    $("authErr").textContent='Could not send magic link: '+e.message; $("authErr").classList.remove("hidden");
+  }
+};
 
 $("authBtn").onclick = async () => {
   $("authErr").classList.add("hidden");
@@ -390,19 +505,21 @@ $("backBtn").onclick = () => { $("detail").classList.add("hidden"); $("dashboard
   }catch(e){ console.error('Could not read saved URL/key:', e); }
 
   if(!savedUrl || !savedKey){
-    return; // first-ever visit — leave the Connect screen showing, as already set up in HTML
+    return; // first-ever visit, no known project yet — Connect screen handles the redirect itself once URL/key are entered
   }
   URL_BASE = cleanUrl(savedUrl); ANON_KEY = savedKey;
 
   let restored = false;
-  try{ restored = await trySilentAdminSignIn(); }catch(e){ console.error('Silent sign-in errored:', e); }
+  try{ restored = await handleAdminRedirect(); }catch(e){ console.error('Redirect handling errored:', e); }
+  if(!restored){
+    try{ restored = await trySilentAdminSignIn(); }catch(e){ console.error('Silent sign-in errored:', e); }
+  }
 
   if(!restored){
     // We know the project, just not who's signed in — skip straight to the sign-in screen
-    $("connectCard").classList.add("hidden");
-    $("authCard").classList.remove("hidden");
+    showAdminScreen('authCard');
   }
-  // If restored, trySilentAdminSignIn() -> finishSignIn() already handled showing the dashboard.
+  // If restored (true or 'needs_password'), the relevant handler already showed the right screen.
 })();
 </script>
 </body>
