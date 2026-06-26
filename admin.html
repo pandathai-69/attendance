@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Live Test</title>
+<style>
+  :root{
+    --bg:#F0F4F8; --sur:#fff; --sur2:#F8FAFC; --brd:#E2E8F0;
+    --acc:#2563EB; --acc2:#EFF6FF; --grn:#10B981; --grn2:#ECFDF5;
+    --amb:#F59E0B; --amb2:#FFFBEB; --red:#EF4444; --red2:#FEF2F2;
+    --txt:#111827; --txt2:#4B5563; --txt3:#9CA3AF; --head:#1E40AF; --dark:#1E293B;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);font-family:system-ui,sans-serif;color:var(--txt);margin:0;padding:16px;display:flex;justify-content:center;}
+  .wrap{width:100%;max-width:520px;}
+  h1{font-size:18px;font-weight:700;color:var(--dark);margin:0;}
+  .sub{font-size:11px;color:var(--txt3);font-family:ui-monospace,monospace;margin:2px 0 12px;}
+  .card{background:var(--sur);border:1px solid var(--brd);border-radius:12px;padding:18px;margin-bottom:12px;}
+  label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--txt3);display:block;margin-bottom:4px;}
+  input{width:100%;font-size:14px;padding:9px 12px;border:1px solid var(--brd);border-radius:8px;outline:none;margin-bottom:10px;-webkit-user-select:text;}
+  button{font-size:14px;font-weight:600;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;color:#fff;background:var(--acc);width:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
+  button:disabled{opacity:.6;cursor:default;}
+  .btn-row{display:flex;gap:8px;margin-bottom:12px;}
+  .tab{flex:1;background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);}
+  .tab.active{background:var(--dark);color:#fff;border-color:var(--dark);}
+  .err{font-size:12px;background:var(--red2);color:var(--red);padding:8px 10px;border-radius:8px;margin-bottom:10px;}
+  .warn{font-size:12px;background:var(--amb2);color:#92400E;padding:8px 10px;border-radius:8px;margin-bottom:10px;}
+  .info{font-size:12px;background:var(--acc2);color:#1e3a8a;padding:10px;border-radius:8px;margin-bottom:12px;line-height:1.5;}
+  .toggle{font-size:12px;font-weight:600;color:var(--acc);background:none;border:none;cursor:pointer;padding:0;margin-bottom:10px;width:auto;text-align:left;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+  .stat{border-radius:10px;padding:10px;}
+  .stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+  .stat-val{font-size:15px;font-weight:700;font-family:ui-monospace,monospace;}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--brd);cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+  .row:first-child{border-top:none;}
+  .erow{display:flex;justify-content:space-between;font-size:12px;padding:7px 0;border-top:1px solid var(--brd);}
+  .erow:first-child{border-top:none;}
+  .head-row{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--txt3);letter-spacing:.03em;}
+  .grand{display:flex;justify-content:space-between;background:var(--head);color:#fff;font-weight:700;font-size:13px;padding:10px 12px;border-radius:8px;margin-top:8px;}
+  .small{font-size:11px;color:var(--txt3);}
+  .back{font-size:12px;font-weight:600;color:var(--acc);background:none;border:none;cursor:pointer;padding:0;margin-bottom:10px;width:auto;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+  .hidden{display:none;}
+  code{background:var(--sur2);padding:1px 4px;border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Admin Dashboard — Live Test</h1>
+  <div class="sub">Reads the real ta_data table — same one index.html writes to</div>
+
+  <button class="toggle" id="infoToggle">ⓘ What is this actually doing?</button>
+  <div class="info hidden" id="infoBox">
+    This fetches every employee's real saved data straight from <code>ta_data</code> (the JSONB blob each employee's app saves to) and aggregates it here, in your browser. Row Level Security still applies — an admin account sees everyone; a regular employee account would only ever get their own row back, even from this same page.
+  </div>
+
+  <!-- CONNECT -->
+  <div class="card" id="connectCard">
+    <div style="font-size:14px;font-weight:700;color:var(--dark);margin-bottom:10px;">Connect to your Supabase project</div>
+    <label>Project URL</label>
+    <input id="url" placeholder="https://xxxx.supabase.co">
+    <label>anon / publishable key</label>
+    <input id="anonKey" type="password" placeholder="eyJhbGciOi... or sb_publishable_...">
+    <button id="connectBtn">Connect</button>
+  </div>
+
+  <!-- AUTH -->
+  <div class="card hidden" id="authCard">
+    <div style="font-size:14px;font-weight:700;color:var(--dark);margin-bottom:10px;">Sign in</div>
+    <input id="email" placeholder="email">
+    <input id="password" type="password" placeholder="password">
+    <div class="err hidden" id="authErr"></div>
+    <button id="authBtn">Sign in</button>
+  </div>
+
+  <!-- WARN if not admin -->
+  <div class="card hidden" id="notAdminCard">
+    <div class="warn" id="notAdminMsg"></div>
+    <button id="signOutBtn2" style="background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);">Sign in as someone else</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="hidden" id="dashboard">
+    <div style="margin-bottom:10px;">
+      <label style="margin-bottom:4px;">Period</label>
+      <select id="periodSel" style="width:100%;font-size:13px;padding:9px 12px;border:1px solid var(--brd);border-radius:8px;background:var(--sur);-webkit-user-select:none;">
+        <option value="all">All time</option>
+      </select>
+    </div>
+    <div class="grid3">
+      <div class="stat" id="statEmp" style="background:var(--acc2);"><div class="stat-label" style="color:var(--acc);">Employees</div><div class="stat-val" style="color:var(--acc);" id="vEmp">0</div></div>
+      <div class="stat" id="statOT" style="background:var(--amb2);"><div class="stat-label" style="color:var(--amb);">Total OT (hrs)</div><div class="stat-val" style="color:var(--amb);" id="vOT">0</div></div>
+      <div class="stat" id="statPay" style="background:var(--grn2);"><div class="stat-label" style="color:var(--grn);">Total Pay</div><div class="stat-val" style="color:var(--grn);font-size:12px;" id="vPay">RM 0.00</div></div>
+    </div>
+    <div class="card">
+      <div class="head-row" style="margin-bottom:6px;" id="empHeader">All employees</div>
+      <div id="empList"></div>
+    </div>
+    <button id="refreshBtn" style="background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);margin-bottom:8px;">↻ Refresh real data</button>
+    <button id="signOutBtn" style="background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);">Sign out</button>
+  </div>
+
+  <!-- DETAIL -->
+  <div class="hidden" id="detail">
+    <button class="back" id="backBtn">← Back to all employees</button>
+    <div class="card">
+      <div style="font-size:14px;font-weight:700;color:var(--dark);margin-bottom:2px;" id="detName"></div>
+      <div class="small" id="detEmail" style="margin-bottom:6px;"></div>
+      <div class="small" id="detRate" style="margin-bottom:12px;"></div>
+      <div class="head-row" style="margin-bottom:6px;">Earnings Breakdown</div>
+      <div id="detBreakdown" style="margin-bottom:14px;"></div>
+      <div class="head-row" style="margin-bottom:6px;">Daily Entries</div>
+      <div id="detRows"></div>
+      <div class="grand"><span>Net Pay</span><span id="detPay"></span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let URL_BASE="", ANON_KEY="", session=null, employees=[], currentDetail=null;
+
+function $(id){ return document.getElementById(id); }
+function cleanUrl(u){
+  u=u.trim().replace(/\/+$/,"");
+  u=u.replace(/\/(rest|auth)\/v1.*$/i,"");
+  return u;
+}
+function money(n){ return "RM " + (Number(n)||0).toFixed(2); }
+
+async function api(path, opts){
+  opts = opts || {};
+  const headers = {"Content-Type":"application/json", apikey: ANON_KEY};
+  if(session?.accessToken) headers.Authorization = "Bearer " + session.accessToken;
+  const res = await fetch(URL_BASE + path, {method: opts.method||"GET", headers, body: opts.body?JSON.stringify(opts.body):undefined});
+  const text = await res.text();
+  let data; try{ data = text ? JSON.parse(text) : null; } catch{ data = text; }
+  if(!res.ok) throw new Error((data && (data.msg || data.message || data.error_description)) || ("Request failed (" + res.status + ")"));
+  return data;
+}
+
+$("infoToggle").onclick = () => $("infoBox").classList.toggle("hidden");
+
+$("connectBtn").onclick = () => {
+  const u = $("url").value, k = $("anonKey").value;
+  if(!u.trim() || !k.trim()) return;
+  URL_BASE = cleanUrl(u); ANON_KEY = k.trim();
+  try{ localStorage.setItem('admin_supa_url', URL_BASE); localStorage.setItem('admin_supa_key', ANON_KEY); }
+  catch(e){ console.error('Could not persist URL/key:', e); }
+  $("connectCard").classList.add("hidden");
+  $("authCard").classList.remove("hidden");
+};
+
+function persistAdminSession(refreshToken){
+  if(!refreshToken) return;
+  try{ localStorage.setItem('admin_supa_refresh', refreshToken); }
+  catch(e){ console.error('Could not persist session:', e); }
+}
+function clearPersistedAdminSession(){
+  try{ localStorage.removeItem('admin_supa_refresh'); }
+  catch(e){ console.error('Could not clear persisted session:', e); }
+}
+
+async function finishSignIn(accessToken, refreshToken, userId, email){
+  const profRes = await fetch(URL_BASE + "/rest/v1/ta_profiles?id=eq." + userId + "&select=role,full_name", {
+    headers:{apikey:ANON_KEY, Authorization:"Bearer "+accessToken}
+  });
+  const prof = await profRes.json();
+  const role = prof?.[0]?.role || "employee";
+  session = {accessToken, refreshToken, userId, email, role};
+  persistAdminSession(refreshToken);
+  $("connectCard").classList.add("hidden");
+  $("authCard").classList.add("hidden");
+  if(role !== "admin"){
+    $("notAdminMsg").textContent = 'Signed in as "' + email + '" (role: ' + role + '). This page is most useful with an admin account — but RLS still applies, so you will only ever see your own data below regardless.';
+    $("notAdminCard").classList.remove("hidden");
+  }
+  await loadAdminData();
+}
+
+// Try to restore a session silently using a saved refresh_token. Never throws —
+// any failure just falls back to showing the normal sign-in screen.
+async function trySilentAdminSignIn(){
+  let refreshToken=''; try{ refreshToken=localStorage.getItem('admin_supa_refresh')||''; }catch(e){ return false; }
+  if(!refreshToken || !URL_BASE || !ANON_KEY) return false;
+  try{
+    const r = await fetch(URL_BASE+"/auth/v1/token?grant_type=refresh_token", {
+      method:"POST", headers:{"Content-Type":"application/json", apikey:ANON_KEY}, body: JSON.stringify({refresh_token:refreshToken})
+    });
+    const rd = await r.json();
+    if(!r.ok || !rd.access_token) throw new Error('expired');
+    await finishSignIn(rd.access_token, rd.refresh_token||refreshToken, rd.user.id, rd.user?.email||'');
+    return true;
+  }catch(e){
+    clearPersistedAdminSession();
+    return false;
+  }
+}
+
+$("authBtn").onclick = async () => {
+  $("authErr").classList.add("hidden");
+  const email = $("email").value, password = $("password").value;
+  $("authBtn").disabled = true;
+  try{
+    const r = await fetch(URL_BASE + "/auth/v1/token?grant_type=password", {
+      method:"POST", headers:{"Content-Type":"application/json", apikey:ANON_KEY}, body: JSON.stringify({email,password})
+    });
+    const rd = await r.json();
+    if(!r.ok) throw new Error(rd.msg || rd.error_description || "Sign in failed");
+    await finishSignIn(rd.access_token, rd.refresh_token, rd.user.id, email);
+  } catch(e){
+    $("authErr").textContent = e.message; $("authErr").classList.remove("hidden");
+  }
+  $("authBtn").disabled = false;
+};
+
+function signOut(){
+  stopAutoRefresh();
+  clearPersistedAdminSession();
+  session = null; employees = []; currentDetail = null;
+  $("dashboard").classList.add("hidden");
+  $("detail").classList.add("hidden");
+  $("notAdminCard").classList.add("hidden");
+  $("authCard").classList.remove("hidden");
+  $("email").value=""; $("password").value="";
+}
+$("signOutBtn").onclick = signOut;
+$("signOutBtn2").onclick = signOut;
+
+const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+let rawEmployees = []; // unfiltered — full validRows per employee, source of truth for the period filter
+let currentPeriod = 'all';
+
+async function loadAdminData(silent){
+  const wasInDetail = !$("detail").classList.contains("hidden") && !!currentDetail;
+  try{
+    const [profiles, dataRows] = await Promise.all([
+      api("/rest/v1/ta_profiles?select=id,full_name,email,role"),
+      api("/rest/v1/ta_data?select=employee_id,payload,updated_at")
+    ]);
+    rawEmployees = dataRows.map(d => {
+      const prof = profiles.find(p => p.id === d.employee_id) || {};
+      const validRows = (d.payload?.rows || []).filter(r => r.date && r.dayType && r.dayType !== "— Select —");
+      return {
+        id: d.employee_id,
+        name: prof.full_name || prof.email || d.employee_id.slice(0,8),
+        email: prof.email || "",
+        rows: validRows,
+        settings: d.payload?.settings || {}
+      };
+    }).sort((a,b) => a.name.localeCompare(b.name));
+    buildPeriodOptions();
+    applyPeriod(currentPeriod); // updates the dashboard's content either way — harmless if it's not the visible view right now
+    if(wasInDetail){
+      // Stay on the detail screen and just refresh its numbers — don't yank the user back to the list
+      const fresh = employees.find(e => e.id === currentDetail.id);
+      if(fresh){ currentDetail = fresh; renderDetail(fresh); }
+    } else {
+      $("dashboard").classList.remove("hidden");
+    }
+    startAutoRefresh();
+  } catch(e){
+    if(silent) console.error('Auto-refresh failed (will retry next interval):', e);
+    else alert("Load failed: " + e.message);
+  }
+}
+$("refreshBtn").onclick = () => loadAdminData(false);
+
+let autoRefreshTimer=null;
+function startAutoRefresh(){
+  if(autoRefreshTimer) return; // already running, don't stack intervals
+  autoRefreshTimer = setInterval(() => loadAdminData(true), 30000);
+}
+function stopAutoRefresh(){
+  if(autoRefreshTimer){ clearInterval(autoRefreshTimer); autoRefreshTimer=null; }
+}
+
+function buildPeriodOptions(){
+  const seen = new Map(); // key "YYYY-M" -> {year,month}
+  rawEmployees.forEach(e => e.rows.forEach(r => {
+    if(r.year==null || r.month==null) return;
+    seen.set(r.year+'-'+r.month, {year:r.year, month:r.month});
+  }));
+  const periods = Array.from(seen.values()).sort((a,b) => (b.year*100+b.month) - (a.year*100+a.month));
+  const sel = $("periodSel");
+  const prevValue = sel.value || currentPeriod;
+  sel.innerHTML = '<option value="all">All time</option>' + periods.map(p =>
+    '<option value="' + p.year + '-' + p.month + '">' + MN[p.month] + ' ' + p.year + '</option>'
+  ).join("");
+  // Keep the previously selected period if it still exists in the new option list, else fall back to All time
+  const stillExists = Array.from(sel.options).some(o => o.value === prevValue);
+  sel.value = stillExists ? prevValue : 'all';
+  currentPeriod = sel.value;
+}
+$("periodSel").onchange = (e) => applyPeriod(e.target.value);
+
+function applyPeriod(periodValue){
+  currentPeriod = periodValue;
+  $("periodSel").value = periodValue;
+  employees = rawEmployees.map(raw => {
+    const rows = periodValue === 'all'
+      ? raw.rows
+      : raw.rows.filter(r => (r.year + '-' + r.month) === periodValue);
+    const s = raw.settings || {};
+    const hrR = Number(s.hrR)||0, drR = Number(s.drR)||0;
+    const bas = Number(s.bas)||0, alw = Number(s.alw)||0, oth = Number(s.oth)||0;
+
+    let regH=0, otH=0, otPay=0, mealAllow=0, attAllow=0, unpaidDays=0;
+    const monthsPresent = new Set();
+    rows.forEach(r => {
+      regH += Number(r.regH)||0;
+      otH += Number(r.otH)||0;
+      otPay += (Number(r.pay)>0?Number(r.pay):0);
+      mealAllow += Number(r.meal)||0;
+      attAllow += Number(r.att)||0;
+      if(r.dayType === 'Unpaid Leave') unpaidDays++;
+      if(r.year!=null && r.month!=null) monthsPresent.add(r.year+'-'+r.month);
+    });
+    // Basic/Allowance/Others are fixed-per-month amounts (same logic Code.gs/the payslip use) —
+    // when "All time" spans several months, each month they actually logged counts once.
+    const monthsCount = Math.max(monthsPresent.size, 1);
+    const basTotal = bas*monthsCount, alwTotal = alw*monthsCount, othTotal = oth*monthsCount;
+    const unpaidDed = unpaidDays*drR;
+    const pay = otPay+mealAllow+attAllow+basTotal+alwTotal+othTotal-unpaidDed;
+
+    return {
+      id: raw.id, name: raw.name, email: raw.email, rows, entries: rows.length,
+      regH, otH, pay, hrR, drR, otPay, mealAllow, attAllow,
+      basTotal, alwTotal, othTotal, unpaidDays, unpaidDed, monthsCount
+    };
+  });
+  renderDashboard();
+}
+
+function renderDashboard(){
+  $("vEmp").textContent = employees.length;
+  const totalOT = employees.reduce((s,e)=>s+e.otH,0);
+  const totalPay = employees.reduce((s,e)=>s+e.pay,0);
+  $("vOT").textContent = totalOT.toFixed(1);
+  $("vPay").textContent = money(totalPay);
+  const periodLabel = currentPeriod === 'all' ? 'all-time totals' : $("periodSel").selectedOptions[0].textContent + ' totals';
+  $("empHeader").textContent = employees.length + " employee" + (employees.length===1?"":"s") + " · " + periodLabel;
+  $("empList").innerHTML = employees.map((e,i) => (
+    '<div class="row" data-i="' + i + '">' +
+      '<div><div style="font-size:13px;font-weight:600;">' + e.name + '</div>' +
+      '<div class="small">' + e.entries + ' entries · ' + e.otH.toFixed(1) + 'h OT</div></div>' +
+      '<div style="font-weight:700;color:var(--head);font-family:ui-monospace,monospace;">' + money(e.pay) + '</div>' +
+    '</div>'
+  )).join("") || '<div class="small">No entries for this period.</div>';
+  Array.from(document.querySelectorAll("#empList .row")).forEach(el => {
+    el.onclick = () => openDetail(employees[+el.dataset.i]);
+  });
+}
+
+function openDetail(emp){
+  currentDetail = emp;
+  $("dashboard").classList.add("hidden");
+  $("detail").classList.remove("hidden");
+  renderDetail(emp);
+}
+function renderDetail(emp){
+  $("detName").textContent = emp.name;
+  $("detEmail").textContent = emp.email;
+  $("detRate").textContent = 'RM ' + emp.hrR.toFixed(2) + '/hr · RM ' + emp.drR.toFixed(2) + '/day' +
+    (emp.monthsCount>1 ? ' · ' + emp.monthsCount + ' months in this period (basic/allowance counted per month)' : '');
+
+  const bd = [['Basic Salary', emp.basTotal], ['Allowance', emp.alwTotal]];
+  if(emp.othTotal) bd.push(['Others', emp.othTotal]);
+  bd.push(['OT Pay', emp.otPay], ['Meal Allowance', emp.mealAllow], ['Attendance Allow.', emp.attAllow]);
+  if(emp.unpaidDays>0) bd.push(['Unpaid Leave Deduct. (' + emp.unpaidDays + 'd)', -emp.unpaidDed]);
+  $("detBreakdown").innerHTML = bd.map(([label,val]) => (
+    '<div class="erow"><span style="color:var(--txt2);">' + label + '</span>' +
+    '<span style="font-family:ui-monospace,monospace;' + (val<0?'color:var(--red);':'') + '">' +
+    (val<0?'-':'') + money(Math.abs(val)) + '</span></div>'
+  )).join("");
+
+  $("detRows").innerHTML = emp.rows.map(r => (
+    '<div class="erow"><span style="font-family:ui-monospace,monospace;color:var(--txt2);">' + r.date + '</span>' +
+    '<span style="color:var(--txt3);">' + (r.dayType||'') + '</span>' +
+    '<span>' + (Number(r.regH)||0) + 'h reg · ' + (Number(r.otH)||0) + 'h OT</span></div>'
+  )).join("") || '<div class="small">No entries.</div>';
+  $("detPay").textContent = money(emp.pay);
+}
+$("backBtn").onclick = () => { $("detail").classList.add("hidden"); $("dashboard").classList.remove("hidden"); };
+
+(async function initAdmin(){
+  let savedUrl='', savedKey='';
+  try{
+    savedUrl = localStorage.getItem('admin_supa_url') || '';
+    savedKey = localStorage.getItem('admin_supa_key') || '';
+  }catch(e){ console.error('Could not read saved URL/key:', e); }
+
+  if(!savedUrl || !savedKey){
+    return; // first-ever visit — leave the Connect screen showing, as already set up in HTML
+  }
+  URL_BASE = cleanUrl(savedUrl); ANON_KEY = savedKey;
+
+  let restored = false;
+  try{ restored = await trySilentAdminSignIn(); }catch(e){ console.error('Silent sign-in errored:', e); }
+
+  if(!restored){
+    // We know the project, just not who's signed in — skip straight to the sign-in screen
+    $("connectCard").classList.add("hidden");
+    $("authCard").classList.remove("hidden");
+  }
+  // If restored, trySilentAdminSignIn() -> finishSignIn() already handled showing the dashboard.
+})();
+</script>
+</body>
+</html>
