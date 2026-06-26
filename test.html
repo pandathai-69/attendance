@@ -144,10 +144,10 @@ tbody td input[type="date"]{min-width:0;}tbody td input[type="date"]::-webkit-ca
     <input id="supaKeyIn" class="xbar-url" type="password" placeholder="anon key" style="width:100%;max-width:none;">
     <input id="supaEmailIn" class="xbar-url" type="text" placeholder="email" style="width:100%;max-width:none;">
     <input id="supaPassIn" class="xbar-url" type="password" placeholder="password (leave blank for magic link)" style="width:100%;max-width:none;">
-    <button class="btn b-blue" onclick="supaSignIn()" style="font-size:11px;padding:6px 12px;justify-content:center;">Sign in</button>
-    <button class="btn b-gray" onclick="supaSignUp()" style="font-size:11px;padding:6px 12px;justify-content:center;">Sign up</button>
+    <button class="btn b-blue" onclick="supaSignIn()" style="grid-column:1/-1;font-size:11px;padding:6px 12px;justify-content:center;">Sign in</button>
     <button class="btn b-amb" onclick="sendMagicLink()" style="grid-column:1/-1;font-size:11px;padding:6px 12px;justify-content:center;">✉ Or send me a magic sign-in link instead</button>
   </span>
+  <div style="font-size:10px;color:var(--txt3);width:100%;margin-top:-4px;">New here? Ask your admin to set up your account first.</div>
   <button class="btn b-gray" onclick="backupData()" style="font-size:11px;padding:6px 12px;">💾 Backup</button>
   <button class="btn b-gray" onclick="restoreBackup()" style="font-size:11px;padding:6px 12px;">♻️ Restore</button>
   <span class="sstat" id="sstat">⚪ Local only</span>
@@ -1269,25 +1269,10 @@ function updateCloudUI(){
   if(who&&supaSession) who.textContent=supaSession.email+' ('+supaSession.role+')';
 }
 
-async function supaSignUp(){
-  const url=cleanSupaUrl(g('supaUrlIn')), key=g('supaKeyIn').trim();
-  const email=g('supaEmailIn').trim(), password=g('supaPassIn');
-  if(!url||!key||!email||!password){ alert('Fill in Supabase URL, key, email and password first.'); return; }
-  SUPA_URL=url; SUPA_KEY=key;
-  try{
-    const r=await supaApi('/auth/v1/signup', {method:'POST', auth:false, body:{email:email, password:password}});
-    if(!r.access_token) throw new Error('No session returned — check "Confirm email" is OFF in Supabase Auth settings.');
-    supaSession={accessToken:r.access_token, refreshToken:r.refresh_token||'', userId:r.user.id, email:email, role:'employee'};
-    await fetch(SUPA_URL+'/rest/v1/ta_profiles', {
-      method:'POST',
-      headers:{'Content-Type':'application/json', apikey:SUPA_KEY, Authorization:'Bearer '+r.access_token, Prefer:'return=minimal'},
-      body: JSON.stringify({id:r.user.id, email:email, full_name:(g('empName')||email), role:'employee'})
-    });
-    persistSupa(); persistSession(); updateCloudUI();
-    await doLoad();
-  }catch(e){ alert('Sign up failed: '+e.message); }
-}
-
+// Accounts are admin-created only (Supabase dashboard > Authentication > Users > Invite),
+// not self-signup — see lessons-learned.md for why open signup was removed.
+// Sign-in still needs to handle a brand-new admin-invited account's very first login,
+// since that account has no ta_profiles row yet until this point.
 async function supaSignIn(){
   const url=cleanSupaUrl(g('supaUrlIn')), key=g('supaKeyIn').trim();
   const email=g('supaEmailIn').trim(), password=g('supaPassIn');
@@ -1299,7 +1284,19 @@ async function supaSignIn(){
       headers:{apikey:SUPA_KEY, Authorization:'Bearer '+r.access_token}
     });
     const prof=await profRes.json();
-    supaSession={accessToken:r.access_token, refreshToken:r.refresh_token||'', userId:r.user.id, email:email, role:(prof&&prof[0]?prof[0].role:'employee')};
+    let role='employee';
+    if(prof && prof.length){
+      role=prof[0].role||'employee';
+    } else {
+      // First sign-in for this account — create their profile now (defaults to employee;
+      // an admin role still has to be set manually afterward, same as before)
+      await fetch(SUPA_URL+'/rest/v1/ta_profiles', {
+        method:'POST',
+        headers:{'Content-Type':'application/json', apikey:SUPA_KEY, Authorization:'Bearer '+r.access_token, Prefer:'return=minimal'},
+        body: JSON.stringify({id:r.user.id, email:email, full_name:(g('empName')||email), role:'employee'})
+      });
+    }
+    supaSession={accessToken:r.access_token, refreshToken:r.refresh_token||'', userId:r.user.id, email:email, role:role};
     persistSupa(); persistSession(); updateCloudUI();
     await doLoad();
   }catch(e){ alert('Sign in failed: '+e.message); }
