@@ -1317,7 +1317,7 @@ async function sendMagicLink(){
   // Additional Redirect URLs, or the link falls back to the default Site URL instead.
   const redirectTo = window.location.origin + window.location.pathname;
   try{
-    await supaApi('/auth/v1/otp?redirect_to='+encodeURIComponent(redirectTo), {method:'POST', auth:false, body:{email:email, create_user:true}});
+    await supaApi('/auth/v1/otp?redirect_to='+encodeURIComponent(redirectTo), {method:'POST', auth:false, body:{email:email, create_user:false}});
     alert('Check your email for a sign-in link — tap it and you\u2019ll be brought straight back here, signed in.');
   }catch(e){ alert('Could not send magic link: '+e.message); }
 }
