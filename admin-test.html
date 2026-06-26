@@ -107,6 +107,21 @@
       <div class="head-row" style="margin-bottom:6px;" id="empHeader">All employees</div>
       <div id="empList"></div>
     </div>
+    <button id="manageBtn" style="background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);margin-bottom:8px;">👥 Manage Employees</button>
+    <div class="card hidden" id="manageCard">
+      <div class="head-row" style="margin-bottom:6px;">All accounts — including not-yet-active ones</div>
+      <div id="manageList"></div>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--brd);">
+        <div class="head-row" style="margin-bottom:6px;">Invite a new user</div>
+        <label>New person's email</label>
+        <input id="inviteEmail" placeholder="newperson@example.com">
+        <label>service_role key (Settings → API — required each time, never saved)</label>
+        <input id="inviteServiceKey" type="password" placeholder="eyJhbGciOi...">
+        <div class="err hidden" id="inviteErr"></div>
+        <div class="small" id="inviteOk" style="display:none;color:#166534;font-weight:600;margin-bottom:8px;"></div>
+        <button id="inviteBtn">Send invite to this page</button>
+      </div>
+    </div>
     <button id="refreshBtn" style="background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);margin-bottom:8px;">↻ Refresh real data</button>
     <button id="signOutBtn" style="background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);">Sign out</button>
   </div>
@@ -379,6 +394,87 @@ async function loadAdminData(silent){
   }
 }
 $("refreshBtn").onclick = () => loadAdminData(false);
+
+let manageOpen = false;
+$("manageBtn").onclick = async () => {
+  manageOpen = !manageOpen;
+  $("manageCard").classList.toggle("hidden", !manageOpen);
+  $("manageBtn").textContent = manageOpen ? "👥 Hide Manage Employees" : "👥 Manage Employees";
+  if(manageOpen) await loadProfiles();
+};
+
+async function loadProfiles(){
+  $("manageList").innerHTML = '<div class="small">Loading…</div>';
+  try{
+    const profiles = await api("/rest/v1/ta_profiles?select=id,email,full_name,role,password_set&order=email.asc");
+    $("manageList").innerHTML = profiles.map(p => {
+      const setupDone = !!p.password_set;
+      const statusLabel = setupDone ? "" : ' <span style="color:var(--amb);font-weight:700;">(setup not finished)</span>';
+      const isAdmin = p.role === "admin";
+      return '<div class="row" style="cursor:default;">' +
+        '<div><div style="font-size:13px;font-weight:600;">' + (p.full_name || p.email) + statusLabel + '</div>' +
+        '<div class="small">' + p.email + ' · role: ' + p.role + '</div></div>' +
+        '<button data-id="' + p.id + '" data-role="' + p.role + '" class="role-toggle-btn" ' +
+          'style="width:auto;font-size:11px;padding:6px 10px;' + (isAdmin ? 'background:var(--red2);color:var(--red);' : 'background:var(--acc2);color:var(--acc);') + '">' +
+          (isAdmin ? "Demote to employee" : "Promote to admin") +
+        '</button>' +
+      '</div>';
+    }).join("") || '<div class="small">No accounts yet.</div>';
+
+    Array.from(document.querySelectorAll(".role-toggle-btn")).forEach(btn => {
+      btn.onclick = () => toggleRole(btn.dataset.id, btn.dataset.role);
+    });
+  } catch(e){
+    $("manageList").innerHTML = '<div class="small" style="color:var(--red);">Load failed: ' + e.message + '</div>';
+  }
+}
+
+async function toggleRole(id, currentRole){
+  const newRole = currentRole === "admin" ? "employee" : "admin";
+  if(!confirm("Change this account to " + newRole + "?")) return;
+  try{
+    await api("/rest/v1/ta_profiles?id=eq." + id, {
+      method: "PATCH",
+      body: { role: newRole }
+    });
+    await loadProfiles();
+  } catch(e){
+    alert("Could not change role: " + e.message);
+  }
+}
+
+$("inviteBtn").onclick = async () => {
+  $("inviteErr").classList.add("hidden");
+  $("inviteOk").style.display = "none";
+  const email = $("inviteEmail").value.trim();
+  const serviceKey = $("inviteServiceKey").value.trim(); // read fresh, never persisted to storage
+  if(!email || !serviceKey){
+    $("inviteErr").textContent = "Enter the email and the service_role key first.";
+    $("inviteErr").classList.remove("hidden");
+    return;
+  }
+  const redirectTo = window.location.origin + window.location.pathname; // always this exact page, wherever it's hosted
+  $("inviteBtn").disabled = true; $("inviteBtn").textContent = "Sending…";
+  try{
+    const res = await fetch(URL_BASE + "/auth/v1/invite?redirect_to=" + encodeURIComponent(redirectTo), {
+      method: "POST",
+      headers: { "Content-Type":"application/json", apikey:serviceKey, Authorization:"Bearer "+serviceKey },
+      body: JSON.stringify({ email: email })
+    });
+    const text = await res.text();
+    let data; try{ data = text ? JSON.parse(text) : {}; } catch(e){ data = {}; }
+    if(!res.ok) throw new Error(data.msg || data.error_description || ("Request failed (" + res.status + ")"));
+    $("inviteOk").textContent = "✓ Invite sent to " + email + " — it will land back on this exact page.";
+    $("inviteOk").style.display = "block";
+    $("inviteEmail").value = "";
+    $("inviteServiceKey").value = ""; // clear immediately after use, never left sitting in the field
+    if(manageOpen) await loadProfiles();
+  } catch(e){
+    $("inviteErr").textContent = "Could not send invite: " + e.message;
+    $("inviteErr").classList.remove("hidden");
+  }
+  $("inviteBtn").disabled = false; $("inviteBtn").textContent = "Send invite to this page";
+};
 
 let autoRefreshTimer=null;
 function startAutoRefresh(){
