@@ -357,6 +357,8 @@ $("signOutBtn").onclick = signOut;
 $("signOutBtn2").onclick = signOut;
 
 const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
 let rawEmployees = []; // unfiltered — full validRows per employee, source of truth for the period filter
 let currentPeriod = 'all';
 
@@ -413,8 +415,8 @@ async function loadProfiles(){
       const isAdmin = p.role === "admin";
       return '<div class="row" style="cursor:default;">' +
         '<div><div style="font-size:13px;font-weight:600;">' + (p.full_name || p.email) + statusLabel + '</div>' +
-        '<div class="small">' + p.email + ' · role: ' + p.role + '</div></div>' +
-        '<button data-id="' + p.id + '" data-role="' + p.role + '" class="role-toggle-btn" ' +
+        '<div class="small">' + esc(p.email) + ' · role: ' + esc(p.role) + '</div></div>' +
+        '<button data-id="' + esc(p.id) + '" data-role="' + esc(p.role) + '" class="role-toggle-btn" ' +
           'style="width:auto;font-size:11px;padding:6px 10px;' + (isAdmin ? 'background:var(--red2);color:var(--red);' : 'background:var(--acc2);color:var(--acc);') + '">' +
           (isAdmin ? "Demote to employee" : "Promote to admin") +
         '</button>' +
@@ -552,7 +554,7 @@ function renderDashboard(){
   $("empHeader").textContent = employees.length + " employee" + (employees.length===1?"":"s") + " · " + periodLabel;
   $("empList").innerHTML = employees.map((e,i) => (
     '<div class="row" data-i="' + i + '">' +
-      '<div><div style="font-size:13px;font-weight:600;">' + e.name + '</div>' +
+      '<div><div style="font-size:13px;font-weight:600;">' + esc(e.name) + '</div>' +
       '<div class="small">' + e.entries + ' entries · ' + e.otH.toFixed(1) + 'h OT</div></div>' +
       '<div style="font-weight:700;color:var(--head);font-family:ui-monospace,monospace;">' + money(e.pay) + '</div>' +
     '</div>'
@@ -585,8 +587,8 @@ function renderDetail(emp){
   )).join("");
 
   $("detRows").innerHTML = emp.rows.map(r => (
-    '<div class="erow"><span style="font-family:ui-monospace,monospace;color:var(--txt2);">' + r.date + '</span>' +
-    '<span style="color:var(--txt3);">' + (r.dayType||'') + '</span>' +
+    '<div class="erow"><span style="font-family:ui-monospace,monospace;color:var(--txt2);">' + esc(r.date) + '</span>' +
+    '<span style="color:var(--txt3);">' + esc(r.dayType||'') + '</span>' +
     '<span>' + (Number(r.regH)||0) + 'h reg · ' + (Number(r.otH)||0) + 'h OT</span></div>'
   )).join("") || '<div class="small">No entries.</div>';
   $("detPay").textContent = money(emp.pay);
