@@ -642,8 +642,8 @@ function buildRow(r,i){
     `<td><input type="date" value="${isoD(r.year,r.month,r.date)}" style="font-family:var(--mono);font-size:11px;width:100%;max-width:100%;box-sizing:border-box;" onchange="updDate(${r.id},this.value)"></td>`+
     `<td style="text-align:center;font-family:var(--mono);font-size:10px;${dc}">${dn}</td>`+
     `<td><select onchange="updDT(${r.id},this.value)">${opts}</select></td>`+
-    `<td><input type="time" value="${r.timeIn||''}" onchange="updTime(${r.id},'timeIn',this.value)"></td>`+
-    `<td><input type="time" value="${r.timeOut||''}" onchange="updTime(${r.id},'timeOut',this.value)"></td>`+
+    `<td><input type="time" value="${esc(r.timeIn||'')}" onchange="updTime(${r.id},'timeIn',this.value)"></td>`+
+    `<td><input type="time" value="${esc(r.timeOut||'')}" onchange="updTime(${r.id},'timeOut',this.value)"></td>`+
     `<td class="n">${r.regH.toFixed(2)}</td>`+
     `<td class="n" style="${r.otH>0?'color:var(--amb)':'color:var(--txt3)'}">${r.otH>0?r.otH.toFixed(2):'—'}</td>`+
     `<td class="n"><b>${r.totH.toFixed(2)}</b></td>`+
@@ -651,7 +651,7 @@ function buildRow(r,i){
     `<td class="n" style="${r.pay>0?'color:var(--grn);font-weight:600':'color:var(--txt3)'}">${r.pay>0?'RM '+r.pay.toLocaleString('en-MY',{minimumFractionDigits:2}):'—'}</td>`+
     `<td class="n" style="${r.meal>0?'color:var(--amb)':'color:var(--txt3)'}">${r.meal>0?'RM '+r.meal.toFixed(2):'—'}</td>`+
     `<td class="n" style="${r.att>0?'color:var(--grn)':'color:var(--txt3)'}">${r.att>0?'RM '+r.att.toFixed(2):'—'}</td>`+
-    `<td><input type="text" value="${r.remarks||''}" placeholder="…" style="font-size:10px;" onchange="updField(${r.id},'remarks',this.value)"></td>`+
+    `<td><input type="text" value="${esc(r.remarks||'')}" placeholder="…" style="font-size:10px;" onchange="updField(${r.id},'remarks',this.value)"></td>`+
     `<td class="noprint" style="text-align:center"><span onclick="delRow(${r.id})" style="color:var(--red);font-size:14px;font-weight:700;cursor:pointer;">✕</span></td>`;
   return tr;
 }
@@ -1560,12 +1560,13 @@ function printPayslip(){
     setTimeout(()=>document.body.classList.remove('printing-payslip'),800);
   },100);
 }
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function exportPayslipPDF(){
   const inner=document.getElementById('payslipInner');
   const MNfull=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const empName=g('empName')||'Employee';
   const win=window.open('','_blank');
-  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip '+empName+' '+MNfull[mon]+' '+year+'</title>'+
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip '+esc(empName)+' '+MNfull[mon]+' '+year+'</title>'+
     '<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;background:#fff;}'+
     '.ps-head{background:#1E293B;color:#fff;padding:24px 28px;}.ps-head h2{font-size:20px;font-weight:700;margin-bottom:4px;}'+
     '.ps-head p{font-size:12px;opacity:.75;}.ps-section{padding:14px 28px;border-bottom:1px solid #E2E8F0;}'+
