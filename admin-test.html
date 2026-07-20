@@ -24,6 +24,14 @@
   .btn-row{display:flex;gap:8px;margin-bottom:12px;}
   .tab{flex:1;background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);}
   .tab.active{background:var(--dark);color:#fff;border-color:var(--dark);}
+  .rpt-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+  .rpt{border-collapse:collapse;width:100%;min-width:640px;font-size:12px;}
+  .rpt th{background:var(--dark);color:#fff;padding:6px 8px;text-align:left;white-space:nowrap;position:sticky;top:0;}
+  .rpt th.num,.rpt td.num{text-align:right;font-family:ui-monospace,monospace;}
+  .rpt td{padding:6px 8px;border-bottom:1px solid var(--brd);white-space:nowrap;}
+  .rpt tr:nth-child(even) td{background:var(--sur2);}
+  .rpt td.net{font-weight:700;color:var(--head);}
+  .rpt tr.mhead td{background:var(--acc2);color:var(--acc);font-weight:700;font-size:11px;letter-spacing:.4px;text-transform:uppercase;border-bottom:1px solid var(--brd);}
   .err{font-size:12px;background:var(--red2);color:var(--red);padding:8px 10px;border-radius:8px;margin-bottom:10px;}
   .warn{font-size:12px;background:var(--amb2);color:#92400E;padding:8px 10px;border-radius:8px;margin-bottom:10px;}
   .info{font-size:12px;background:var(--acc2);color:#1e3a8a;padding:10px;border-radius:8px;margin-bottom:12px;line-height:1.5;}
@@ -121,6 +129,11 @@
         <div class="small" id="inviteOk" style="display:none;color:#166534;font-weight:600;margin-bottom:8px;"></div>
         <button id="inviteBtn">Send invite to this page</button>
       </div>
+    </div>
+    <button id="reportBtn" style="background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);margin-bottom:8px;">📊 Monthly Report</button>
+    <div class="card hidden" id="reportCard">
+      <div class="head-row" style="margin-bottom:6px;">Monthly summary — every employee, every month</div>
+      <div class="rpt-wrap"><table class="rpt" id="reportTable"></table></div>
     </div>
     <button id="refreshBtn" style="background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);margin-bottom:8px;">↻ Refresh real data</button>
     <button id="signOutBtn" style="background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);">Sign out</button>
@@ -396,6 +409,70 @@ async function loadAdminData(silent){
   }
 }
 $("refreshBtn").onclick = () => loadAdminData(false);
+
+let reportOpen = false;
+$("reportBtn").onclick = () => {
+  reportOpen = !reportOpen;
+  $("reportCard").classList.toggle("hidden", !reportOpen);
+  $("reportBtn").textContent = reportOpen ? "📊 Hide Monthly Report" : "📊 Monthly Report";
+  if(reportOpen) buildMonthlyReport();
+};
+
+function buildMonthlyReport(){
+  // Group every employee's stored rows by year-month. Same math as Code.gs writeSheets:
+  // grand = otPay + meal + att + bas + alw + oth - unpaidDays*dayRate. Months stored 0-based.
+  const byMonth = {}; // key "YYYY-M(0-based)" -> [ {name, ...totals} ]
+  rawEmployees.forEach(emp => {
+    const S = emp.settings || {};
+    const bas=Number(S.bas)||0, alw=Number(S.alw)||0, oth=Number(S.oth)||0, drR=Number(S.drR)||0;
+    const perM = {};
+    emp.rows.forEach(r => {
+      if(r.year==null || r.month==null) return;
+      const k = r.year + "-" + r.month;
+      const m = perM[k] || (perM[k] = {reg:0,ot:0,tot:0,pay:0,meal:0,att:0,al:0,ml:0,ul:0,days:0});
+      m.reg += Number(r.regH)||0;
+      m.ot  += Number(r.otH)||0;
+      m.tot += Number(r.totH!=null?r.totH:r.totalH)||0;
+      m.pay += (Number(r.pay)>0?Number(r.pay):0);
+      m.meal+= Number(r.meal)||0;
+      m.att += Number(r.att)||0;
+      if(r.dayType==="Annual Leave") m.al++;
+      if(r.dayType==="Medical Leave") m.ml++;
+      if(r.dayType==="Unpaid Leave") m.ul++;
+      if((Number(r.totH)||0)>0 || r.dayType==="Annual Leave" || r.dayType==="Medical Leave") m.days++;
+    });
+    Object.keys(perM).forEach(k => {
+      const m = perM[k];
+      m.grand = m.pay + m.meal + m.att + bas + alw + oth - m.ul*drR;
+      (byMonth[k] || (byMonth[k]=[])).push({name: emp.name, ...m});
+    });
+  });
+  const keys = Object.keys(byMonth).sort((a,b) => {
+    const [ya,ma]=a.split("-").map(Number), [yb,mb]=b.split("-").map(Number);
+    return yb-ya || mb-ma; // newest first
+  });
+  if(!keys.length){ $("reportTable").innerHTML = '<tr><td class="small">No data yet.</td></tr>'; return; }
+  const hdr = '<tr><th>Employee</th><th class="num">Days</th><th class="num">Reg</th><th class="num">OT</th>' +
+    '<th class="num">OT Pay</th><th class="num">Meal</th><th class="num">Att</th>' +
+    '<th class="num">AL</th><th class="num">ML</th><th class="num">UL</th><th class="num">Net Pay</th></tr>';
+  let html = hdr;
+  keys.forEach(k => {
+    const [y,m0] = k.split("-").map(Number);
+    html += '<tr class="mhead"><td colspan="11">' + esc(MN[m0]) + ' ' + y + '</td></tr>'; // display = 0-based + name lookup
+    byMonth[k].sort((a,b)=>a.name.localeCompare(b.name)).forEach(e => {
+      html += '<tr><td>' + esc(e.name) + '</td>' +
+        '<td class="num">' + e.days + '</td>' +
+        '<td class="num">' + e.reg.toFixed(2) + '</td>' +
+        '<td class="num">' + e.ot.toFixed(2) + '</td>' +
+        '<td class="num">' + e.pay.toFixed(2) + '</td>' +
+        '<td class="num">' + e.meal.toFixed(2) + '</td>' +
+        '<td class="num">' + e.att.toFixed(2) + '</td>' +
+        '<td class="num">' + e.al + '</td><td class="num">' + e.ml + '</td><td class="num">' + e.ul + '</td>' +
+        '<td class="num net">' + money(e.grand) + '</td></tr>';
+    });
+  });
+  $("reportTable").innerHTML = html;
+}
 
 let manageOpen = false;
 $("manageBtn").onclick = async () => {
