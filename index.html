@@ -1110,6 +1110,11 @@ async function probeCaps(){
 async function doSave(){
   if(!CLOUD_URL) return;
   if(isSaving){ setStat('warn','⏳ A save is already running…'); return; }
+  // Nothing edited? A "save" would just re-upload every month for no reason (~6s).
+  if(!hasUnsaved && !fullSaveNeeded && dirtyMonths.size===0){
+    setStat('ok','✓ Nothing to save — already up to date');
+    return;
+  }
   isSaving=true;          // claim the lock BEFORE any await, or two presses both slip through
   await probeCaps();
   const MAX_RETRIES=3;
