@@ -560,12 +560,17 @@ function clearAll(){
 
 function updDate(id,val){
   const r=rows.find(x=>x.id===id); if(!r) return;
+  // A date change can move the row to a different month. The month it LEAVES must be
+  // re-sent too, or the server keeps its old copy and the row ends up duplicated.
+  const fromKey=(r.year!=null&&r.month!=null)?mKey(r.year,r.month):null;
   if(!val){ r.date=null; r.year=year; r.month=mon; }
   else {
     const p=val.split('-');
     r.year=parseInt(p[0]); r.month=parseInt(p[1])-1; r.date=parseInt(p[2]);
   }
-  calcRow(r); renderTable(); calcSummary(); saveLocal(); scheduleSave(r);
+  calcRow(r); renderTable(); calcSummary(); saveLocal();
+  if(fromKey && fromKey!==mKey(r.year,r.month)) dirtyMonths.add(fromKey);
+  scheduleSave(r);
 }
 function updDT(id,val){
   const r=rows.find(x=>x.id===id); if(!r) return;
