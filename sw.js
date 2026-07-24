@@ -1,5 +1,5 @@
-// Time Attendance App — Service Worker v1.2
-const CACHE = 'ta-v2';   // bumped: forces every client to re-fetch index.html
+// Time Attendance App — Service Worker v1.4
+const CACHE = 'ta-v4';   // bump this EVERY time index.html changes, or devices serve a stale copy
 const ASSETS = [
   'index.html',
   'manifest.json',
