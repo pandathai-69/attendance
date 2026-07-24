@@ -1096,6 +1096,7 @@ function jsonp(url, cbName, timeoutMs, retry){
 
 async function doSave(){
   if(!CLOUD_URL) return;
+  if(isSaving){ setStat('warn','⏳ A save is already running…'); return; }
   isSaving=true;
   const MAX_RETRIES=3;
   // Partial save: send only the months that changed. Requires the merge-aware
@@ -1126,7 +1127,9 @@ async function doSave(){
         const cbName='__taSave_'+ts+'_'+i;
         const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
         setStat('saving','🔄 Saving '+(i+1)+'/'+total+'…');
-        const ack=await jsonp(url, cbName, 25000);
+        // Only the LAST chunk triggers the Apps Script sheet rebuild, which can take
+        // several seconds. Killing it at 25s caused retries that re-ran the whole rebuild.
+        const ack=await jsonp(url, cbName, (i===total-1)?90000:25000);
         if(ack&&ack.merge===true) mergeOK=true;   // server understands partial saves
       }
       markSaved();
