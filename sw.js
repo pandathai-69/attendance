@@ -1,5 +1,5 @@
-// Time Attendance App — Service Worker v1.7
-const CACHE = 'ta-v7';   // bump this EVERY time index.html changes, or devices serve a stale copy
+// Time Attendance App — Service Worker v1.8
+const CACHE = 'ta-v8';   // bump this EVERY time index.html changes, or devices serve a stale copy
 const ASSETS = [
   'index.html',
   'manifest.json',
