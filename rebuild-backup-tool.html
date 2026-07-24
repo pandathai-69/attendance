@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TA — Rebuild Backup from Sheet Tabs</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--acc:#2563EB;--acc2:#EFF6FF;--bg:#F8FAFC;--sur:#FFF;--sur2:#F1F5F9;--brd:#E2E8F0;
+--txt:#0F172A;--txt2:#64748B;--head:#1E293B;--ok:#16A34A;--err:#DC2626;--warn:#D97706;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);
+padding:16px;max-width:920px;margin:0 auto;line-height:1.45;}
+h1{font-size:20px;color:var(--head);}
+.sub{font-size:12px;color:var(--txt2);margin-bottom:14px;}
+.card{background:var(--sur);border:1px solid var(--brd);border-radius:12px;padding:14px;margin-bottom:12px;}
+.card h2{font-size:14px;color:var(--head);margin-bottom:4px;}
+.hint{font-size:12px;color:var(--txt2);margin-bottom:8px;}
+label{display:block;font-size:12px;color:var(--txt2);margin:8px 0 3px;}
+input,textarea{width:100%;padding:9px 10px;border:1px solid var(--brd);border-radius:8px;
+font-size:14px;font-family:inherit;background:var(--sur);}
+textarea{font-family:ui-monospace,monospace;font-size:12px;min-height:120px;}
+button{padding:10px 16px;border:none;border-radius:8px;background:var(--acc);color:#fff;
+font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;
+-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button.sec{background:var(--sur2);color:var(--txt);border:1px solid var(--brd);}
+.msg{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:8px;display:none;white-space:pre-wrap;}
+.msg.ok{display:block;background:#F0FDF4;color:var(--ok);}
+.msg.err{display:block;background:#FEF2F2;color:var(--err);}
+.msg.warn{display:block;background:#FFFBEB;color:var(--warn);}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--sur2);border:1px solid var(--brd);
+border-radius:999px;padding:5px 12px;font-size:12px;margin:4px 6px 0 0;}
+.pill b{color:var(--head);}
+.pill .x{color:var(--err);cursor:pointer;font-weight:700;}
+.tbl-wrap{overflow-x:auto;margin-top:10px;}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:12px;}
+th{background:var(--head);color:#fff;padding:6px 8px;text-align:left;white-space:nowrap;}
+td{padding:6px 8px;border-bottom:1px solid var(--brd);white-space:nowrap;}
+tr:nth-child(even) td{background:var(--sur2);}
+.num{text-align:right;font-family:ui-monospace,monospace;}
+.warnbox{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:11px 13px;
+font-size:12px;color:#92400E;margin-bottom:12px;}
+</style>
+</head>
+<body>
+<h1>Rebuild Backup from Sheet Tabs</h1>
+<div class="sub">Reads your surviving month tabs and rebuilds a restore file for the app's ♻️ Restore button.
+Fully offline — this page never connects to anything and never writes to your Sheet.</div>
+
+<div class="warnbox">
+<b>Before you start:</b> in the live app press <b>💾 Backup</b> once and keep that file.
+Load it below as the base so your current month and your Settings are preserved exactly.
+</div>
+
+<div class="card">
+  <h2>1 · Load your current backup (the base)</h2>
+  <div class="hint">Optional but recommended — carries over Settings and any month already in the app.</div>
+  <input type="file" id="baseFile" accept=".json">
+  <div class="msg" id="baseMsg"></div>
+</div>
+
+<div class="card">
+  <h2>2 · Easiest: drop the whole workbook</h2>
+  <div class="hint">In the Sheet: <b>File → Download → Microsoft Excel (.xlsx)</b>. One file, every tab.
+  Drop it here and all month tabs are read at once — no per-month downloads.</div>
+  <input type="file" id="xlsxFile" accept=".xlsx,.xls">
+  <div class="msg" id="xlsxMsg"></div>
+</div>
+
+<div class="card">
+  <h2>2b · Or add month tabs one CSV at a time</h2>
+  <div class="hint">In the Sheet: click the month tab → File → Download → Comma-separated values (.csv).
+  Repeat per month. Add them one at a time below — combined tabs are fine, the
+  SUBTOTAL / EARNINGS / GRAND TOTAL / LEAVE BALANCE rows are ignored automatically.</div>
+  <input type="file" id="csvFile" accept=".csv,text/csv">
+  <label>…or paste the CSV text</label>
+  <textarea id="csvText" placeholder="Paste one month tab's raw CSV here"></textarea>
+  <label>Fallback year / month — only used if a tab's dates have no month or year in them</label>
+  <div style="display:flex;gap:10px;">
+    <input id="fbYear" type="number" style="flex:1;" placeholder="Year e.g. 2026">
+    <input id="fbMon" type="number" min="1" max="12" style="flex:1;" placeholder="Month 1-12">
+  </div>
+  <button id="addBtn">Add this month</button>
+  <div class="msg" id="addMsg"></div>
+  <div id="pills"></div>
+</div>
+
+<div class="card">
+  <h2>3 · Review and download the restore file</h2>
+  <div id="summary" class="hint">Nothing loaded yet.</div>
+  <div class="tbl-wrap"><table id="sumTable"></table></div>
+  <button id="dlBtn" disabled>⬇ Download restore file</button>
+  <div class="msg" id="dlMsg"></div>
+</div>
+
+<div class="card">
+  <h2>4 · Restore in the app</h2>
+  <div class="hint">
+  Open the live app → <b>♻️ Restore</b> → pick the downloaded file → confirm the row count.
+  The app replaces its data, recalculates every row from Time In/Out and your Settings,
+  then saves back to the Sheet automatically.<br><br>
+  <b>Check the row count in the confirm dialog before accepting.</b> If it looks wrong, cancel — nothing changes.
+  </div>
+</div>
+
+<script>
+'use strict';
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_TYPES=['Regular','Overtime','Rest Day (Sunday)','Public Holiday','Off Day','Annual Leave','Medical Leave','Unpaid Leave'];
+// Column-A labels and Day-Type-column labels that are NOT attendance rows (combined-tab sections)
+const SKIP_A=['SUBTOTAL','GRAND TOTAL','OVERALL TOTAL','EARNINGS','LEAVE BALANCE','TIME ATTENDANCE LOG','LEAVE TYPE','EMPLOYEE'];
+const SKIP_LABEL=['Basic Salary','Allowance','Others','OT Pay','Meal Allowance','Attendance Allow.',
+  'Sub Total','Unpaid Deduct.','Annual Leave','Medical Leave','Unpaid Leave','Off Day','NET PAY (RM)'];
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const nnum=v=>{const x=parseFloat(String(v??'').replace(/[^0-9.\-]/g,''));return isNaN(x)?0:x;};
+function show(id,cls,txt){const el=$(id);el.className='msg '+cls;el.textContent=txt;}
+
+// ── RFC4180 CSV parser (quotes, embedded commas, escaped quotes, CRLF) ────
+function parseCSV(text){
+  const rows=[];let row=[],field='',inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; }
+      else field+=c;
+    }else{
+      if(c==='"') inQ=true;
+      else if(c===','){row.push(field);field='';}
+      else if(c==='\n'||c==='\r'){
+        if(c==='\r'&&text[i+1]==='\n') i++;
+        row.push(field);field='';rows.push(row);row=[];
+      }else field+=c;
+    }
+  }
+  if(field!==''||row.length){row.push(field);rows.push(row);}
+  return rows;
+}
+
+// dd/mm/yy · dd/mm/yyyy · yyyy-mm-dd · dd/mm · bare day  → {d,m0,y}
+function parseDate(s,fbY,fbM0){
+  s=String(s??'').trim(); if(!s) return null; let m;
+  if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))) return {d:+m[3],m0:+m[2]-1,y:+m[1]};
+  if((m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/))){let y=+m[3];if(y<100)y+=2000;return {d:+m[1],m0:+m[2]-1,y:y};}
+  if((m=s.match(/^(\d{1,2})\/(\d{1,2})$/))) return {d:+m[1],m0:+m[2]-1,y:fbY??null};
+  if((m=s.match(/^(\d{1,2})$/))) return {d:+m[1],m0:fbM0??null,y:fbY??null};
+  return null;
+}
+function fuzzyDayType(s){
+  const t=String(s??'').trim(); if(!t) return '— Select —';
+  const lo=t.toLowerCase();
+  for(const dt of DAY_TYPES) if(dt.toLowerCase()===lo) return dt;
+  if(lo==='mc'||lo.startsWith('medical')||lo==='sick') return 'Medical Leave';
+  if(lo==='al'||lo.startsWith('annual')) return 'Annual Leave';
+  if(lo==='ul'||lo.startsWith('unpaid')) return 'Unpaid Leave';
+  if(lo==='ph'||lo.startsWith('public')||lo.includes('holiday')) return 'Public Holiday';
+  if(lo.includes('sunday')||lo.startsWith('rest')) return 'Rest Day (Sunday)';
+  if(lo==='ot'||lo.startsWith('overtime')) return 'Overtime';
+  if(lo.startsWith('off')) return 'Off Day';
+  if(lo.startsWith('reg')||lo==='work'||lo==='normal') return 'Regular';
+  return t;
+}
+// Title row of a combined tab looks like "May 2026 — Danny" → month/year fallback
+function titleMonth(rawRows){
+  for(let i=0;i<Math.min(rawRows.length,3);i++){
+    const a=String(rawRows[i][0]??'').trim();
+    for(let m=0;m<12;m++){
+      const re=new RegExp('^'+MN[m].slice(0,3)+'[a-z]*\\s+(\\d{4})','i');
+      const hit=a.match(re);
+      if(hit) return {m0:m,y:+hit[1]};
+    }
+  }
+  return null;
+}
+
+// CSV → app row objects (months stored 0-BASED, matching the app)
+function csvToRows(text,fbY,fbM0){
+  const raw=parseCSV(text);
+  let hIdx=-1;
+  for(let i=0;i<raw.length;i++){
+    const r=raw[i].map(c=>String(c).trim());
+    if(r[0]==='#'&&r[1]==='Date'&&r[2]==='Day'){hIdx=i;break;}
+  }
+  if(hIdx<0) return {error:'No attendance header found ("#,Date,Day,Day Type,…"). Use File → Download → CSV on the month tab, not a copy of the on-screen table.'};
+  const tm=titleMonth(raw);
+  const useY=fbY??(tm?tm.y:null), useM=(fbM0!=null&&!isNaN(fbM0))?fbM0:(tm?tm.m0:null);
+  const out=[],skipped=[];
+  for(let i=hIdx+1;i<raw.length;i++){
+    const r=raw[i];
+    const a=String(r[0]??'').trim(), dRaw=String(r[1]??'').trim(), dt=String(r[3]??'').trim();
+    const joined=(a+' '+dRaw+' '+dt).trim();
+    if(!joined) continue;
+    const aU=a.toUpperCase(), dtU=dt.toUpperCase();
+    if(SKIP_A.some(k=>aU.startsWith(k))){skipped.push(joined);continue;}
+    if(SKIP_LABEL.some(k=>a===k)){skipped.push(joined);continue;}
+    if(dtU.startsWith('SUBTOTAL')||dtU.startsWith('GRAND TOTAL')||/^-{2,}/.test(dt)){skipped.push(joined);continue;}
+    const pd=parseDate(dRaw,useY,useM);
+    if(!pd){skipped.push(joined);continue;}
+    if(pd.m0==null||pd.y==null)
+      return {error:'Row "'+joined.slice(0,40)+'": date "'+dRaw+'" has no month/year and the tab title didn\'t supply one. Fill in the fallback year/month above.'};
+    out.push({
+      year:pd.y, month:pd.m0, date:pd.d,          // 0-BASED month, as the app stores it
+      dayType:fuzzyDayType(dt),
+      timeIn:String(r[4]??'').trim(), timeOut:String(r[5]??'').trim(),
+      regH:nnum(r[6]), otH:nnum(r[7]), totH:nnum(r[8]),
+      rate:nnum(r[9]), pay:nnum(r[10]), meal:nnum(r[11]), att:nnum(r[12]),
+      remarks:String(r[13]??'').trim()
+    });
+  }
+  return {rows:out,skipped:skipped,detected:(useY!=null&&useM!=null)?{y:useY,m0:useM}:null};
+}
+
+// ── state ────────────────────────────────────────────────────────────────
+let base={rows:[],rid:0,year:new Date().getFullYear(),mon:new Date().getMonth(),settings:null};
+let collected=[];   // {label, rows:[]}
+
+$('baseFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const d=JSON.parse(rd.result);
+      if(!d.rows||!Array.isArray(d.rows)) throw new Error('Not a valid backup file — "rows" missing.');
+      base={rows:d.rows,rid:Number(d.rid)||0,
+        year:Number(d.year)||new Date().getFullYear(),
+        mon:(d.mon!=null?Number(d.mon):new Date().getMonth()),
+        settings:d.settings||null};
+      show('baseMsg','ok','Base loaded: '+d.rows.length+' row(s)'+(d.settings?', settings included ✓':', NO settings in file'));
+      rebuild();
+    }catch(ex){ show('baseMsg','err','Could not read that file: '+ex.message); }
+  };
+  rd.readAsText(f);
+};
+// Non-month tabs that must never be read as attendance
+const SKIP_TABS=[/^TAData$/i,/^Attendance Log$/i,/^Leave Balance$/i,/^_Master_Format$/i,/^Payslip\s*-/i];
+function isMonthTab(name){
+  if(SKIP_TABS.some(re=>re.test(name.trim()))) return false;
+  return /^[A-Za-z]{3,9}\s+\d{4}$/.test(name.trim());   // "May 2026" / "January 2026"
+}
+$('xlsxFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  if(typeof XLSX==='undefined'){ show('xlsxMsg','err','The spreadsheet reader did not load. Check your internet connection and reload this page, or use the CSV method below.'); return; }
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(rd.result),{type:'array'});
+      const names=wb.SheetNames.filter(isMonthTab);
+      if(!names.length){ show('xlsxMsg','err','No month tabs found in that workbook. Expected tabs named like "May 2026".'); return; }
+      let okList=[],failList=[];
+      names.forEach(nm=>{
+        const csv=XLSX.utils.sheet_to_csv(wb.Sheets[nm]);
+        const res=csvToRows(csv,null,null);
+        if(res.error||!res.rows||!res.rows.length){ failList.push(nm); return; }
+        const label=MN[res.rows[0].month]+' '+res.rows[0].year;
+        collected=collected.filter(c=>c.label!==label);
+        collected.push({label:label,rows:res.rows});
+        okList.push(label+' ('+res.rows.length+')');
+      });
+      rebuild();
+      show('xlsxMsg', okList.length?'ok':'err',
+        (okList.length?'Loaded '+okList.length+' month tab(s): '+okList.join(', '):'No readable month tabs.')+
+        (failList.length?'\nSkipped (no attendance rows): '+failList.join(', '):''));
+    }catch(ex){ show('xlsxMsg','err','Could not read that file: '+ex.message); }
+  };
+  rd.readAsArrayBuffer(f);
+};
+$('csvFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ $('csvText').value=rd.result; show('addMsg','warn','File read — press "Add this month".'); };
+  rd.readAsText(f);
+};
+$('addBtn').onclick=()=>{
+  const txt=$('csvText').value;
+  if(!txt.trim()){ show('addMsg','err','Paste a CSV or choose a file first.'); return; }
+  const fy=parseInt($('fbYear').value), fm=parseInt($('fbMon').value);
+  const res=csvToRows(txt, isNaN(fy)?null:fy, isNaN(fm)?null:fm-1);
+  if(res.error){ show('addMsg','err',res.error); return; }
+  if(!res.rows.length){ show('addMsg','err','No attendance rows found in that CSV.'); return; }
+  const m0=res.rows[0].month, yy=res.rows[0].year;
+  const label=MN[m0]+' '+yy;
+  if(collected.some(c=>c.label===label)){ show('addMsg','warn',label+' was already added — replacing it.'); collected=collected.filter(c=>c.label!==label); }
+  collected.push({label:label,rows:res.rows});
+  show('addMsg','ok',label+': '+res.rows.length+' row(s) added, '+res.skipped.length+' non-attendance row(s) ignored.');
+  $('csvText').value='';
+  rebuild();
+};
+function renderPills(){
+  $('pills').innerHTML=collected.map((c,i)=>
+    '<span class="pill"><b>'+esc(c.label)+'</b> '+c.rows.length+' rows <span class="x" data-i="'+i+'">✕</span></span>').join('');
+  $('pills').querySelectorAll('.x').forEach(x=>{
+    x.onclick=()=>{ collected.splice(Number(x.dataset.i),1); rebuild(); };
+  });
+}
+
+// merge: CSV months REPLACE same month+date; base rows for other dates kept; ids unique
+let merged=null;
+function rebuild(){
+  renderPills();
+  const incoming=[].concat(...collected.map(c=>c.rows));
+  const key=r=>r.year+'-'+r.month+'-'+parseInt(r.date);
+  const newKeys=new Set(incoming.map(key));
+  const kept=(base.rows||[]).filter(r=>!newKeys.has(key(r)));
+  let rid=Number(base.rid)||0;
+  (base.rows||[]).forEach(r=>{ if(Number(r.id)>rid) rid=Number(r.id); });
+  const added=incoming.map(r=>Object.assign({id:++rid},r));
+  const all=kept.concat(added).sort((a,b)=>a.year-b.year||a.month-b.month||(parseInt(a.date)||0)-(parseInt(b.date)||0));
+  merged={rows:all,rid:rid,year:base.year,mon:base.mon,settings:base.settings};
+
+  // summary by month
+  const by={};
+  all.forEach(r=>{ const k=r.year+'-'+r.month; (by[k]||(by[k]=[])).push(r); });
+  const keys=Object.keys(by).sort((a,b)=>{
+    const[ya,ma]=a.split('-').map(Number),[yb,mb]=b.split('-').map(Number); return ya-yb||ma-mb; });
+  if(!all.length){
+    $('summary').textContent='Nothing loaded yet.'; $('sumTable').innerHTML='';
+    $('dlBtn').disabled=true; return;
+  }
+  $('summary').textContent=all.length+' row(s) across '+keys.length+' month(s). '+
+    (base.settings?'Settings carried over from your backup.':'⚠ No settings in the base file — the app will keep its current Settings.');
+  let h='<tr><th>Month</th><th class="num">Rows</th><th class="num">Recorded days</th><th>Source</th></tr>';
+  keys.forEach(k=>{
+    const[y,m0]=k.split('-').map(Number);
+    const rs=by[k], rec=rs.filter(r=>r.dayType&&r.dayType!=='— Select —').length;
+    const fromCsv=collected.some(c=>c.label===MN[m0]+' '+y);
+    h+='<tr><td>'+esc(MN[m0]+' '+y)+'</td><td class="num">'+rs.length+'</td><td class="num">'+rec+
+      '</td><td>'+(fromCsv?'Sheet tab':'your backup')+'</td></tr>';
+  });
+  $('sumTable').innerHTML=h;
+  $('dlBtn').disabled=false;
+  show('dlMsg','warn','Review the months above. Every month you expect should be listed before you download.');
+}
+$('dlBtn').onclick=()=>{
+  if(!merged) return;
+  const payload={rows:merged.rows,rid:merged.rid,year:merged.year,mon:merged.mon};
+  if(merged.settings) payload.settings=merged.settings;   // omit rather than send null
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='attendance_restore_'+Date.now()+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  show('dlMsg','ok','Downloaded. In the app press ♻️ Restore, pick this file, and check it says '+merged.rows.length+' rows before confirming.');
+};
+rebuild();
+</script>
+</body>
+</html>
