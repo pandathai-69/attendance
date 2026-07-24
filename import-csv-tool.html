@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance — CSV Import Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F6FA;--sur:#fff;--sur2:#F8FAFC;--brd:#E2E8F0;--acc:#2563EB;--acc2:#EFF6FF;
+--grn:#10B981;--grn2:#ECFDF5;--amb:#F59E0B;--amb2:#FFFBEB;--red:#EF4444;--red2:#FEF2F2;
+--txt:#111827;--txt2:#6B7280;--txt3:#9CA3AF;--mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;
+--r:14px;--sh:0 1px 3px rgba(16,24,40,.05),0 8px 24px rgba(16,24,40,.05);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--txt);padding:18px;max-width:900px;margin:0 auto;}
+h1{font-size:20px;font-weight:800;letter-spacing:-.02em;}
+.sub{font-size:12.5px;color:var(--txt3);margin-top:3px;margin-bottom:18px;line-height:1.5;}
+.card{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:16px;overflow:hidden;}
+.card .h{padding:13px 16px;font-size:12px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em;background:var(--sur2);border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center;}
+.card .h .step{background:var(--acc);color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.body{padding:16px;}
+label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px;}
+input,textarea,select{width:100%;border:1px solid var(--brd);border-radius:10px;padding:11px 13px;font-family:var(--sans);font-size:14px;background:var(--sur);}
+input:focus,textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc2);}
+textarea{font-family:var(--mono);font-size:12px;min-height:190px;resize:vertical;white-space:pre;overflow-wrap:normal;overflow-x:auto;}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:13px;}
+.row>div{flex:1;min-width:190px;}
+.btn{border:none;border-radius:10px;padding:12px 18px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;}
+.btn.primary{background:var(--acc);color:#fff;box-shadow:var(--sh);}
+.btn.ghost{background:var(--sur);border:1px solid var(--brd);color:var(--txt2);font-weight:600;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn.danger{background:var(--red);color:#fff;}
+.note{border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.55;margin-bottom:13px;}
+.note.info{background:var(--acc2);border:1px solid #BFDBFE;color:#1E40AF;}
+.note.warn{background:var(--amb2);border:1px solid #FDE68A;color:#92400E;}
+.note.ok{background:var(--grn2);border:1px solid #A7F3D0;color:#065F46;}
+.note.err{background:var(--red2);border:1px solid #FECACA;color:#991B1B;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--txt3);padding:8px 10px;background:var(--sur2);border-bottom:1px solid var(--brd);}
+td{padding:7px 10px;border-bottom:1px solid var(--sur2);font-family:var(--mono);font-size:11.5px;}
+.scroll{max-height:320px;overflow:auto;}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:14px;}
+.p-new{background:var(--grn2);color:#059669;} .p-rep{background:var(--amb2);color:var(--amb);} .p-skip{background:var(--sur2);color:var(--txt3);}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.stat{flex:1;min-width:110px;background:var(--sur2);border:1px solid var(--brd);border-radius:10px;padding:11px 13px;}
+.stat .v{font-family:var(--mono);font-size:19px;font-weight:500;}
+.stat .l{font-size:11px;color:var(--txt3);font-weight:600;margin-top:2px;}
+code{background:var(--sur2);padding:1px 5px;border-radius:4px;font-family:var(--mono);font-size:11.5px;}
+.hide{display:none;}
+</style>
+</head>
+<body>
+
+<h1>CSV Import Tool</h1>
+<div class="sub">Imports a Google Sheets attendance export into Supabase <code>ta_data</code>. Merge-safe: other months are preserved, same-date rows are replaced, <code>rid</code> continues past the current max, and existing Settings are never overwritten.</div>
+
+<div class="note warn"><strong>Before you start:</strong> paste <em>raw CSV</em> (File → Download → CSV in Google Sheets, then open it in a text editor). Copying the rendered table from the Sheets web view produces tab/HTML content, not CSV — that is what causes "No data rows found".</div>
+
+<!-- STEP 1 -->
+<div class="card">
+  <div class="h"><span>Connect</span><span class="step">1</span></div>
+  <div class="body">
+    <div class="note info">Sign in as the <strong>employee whose data this is</strong>. The tool uses that person's own session, so row-level security applies normally — no service_role key is used or stored anywhere.</div>
+    <div class="row">
+      <div><label>Supabase URL</label><input id="sbUrl" placeholder="https://xxxx.supabase.co"></div>
+      <div><label>Publishable / anon key</label><input id="sbKey" placeholder="sb_publishable_… or eyJ…"></div>
+    </div>
+    <div class="row">
+      <div><label>Employee email</label><input id="email" type="email" placeholder="name@company.com"></div>
+      <div><label>Password</label><input id="pw" type="password" placeholder="Their password"></div>
+    </div>
+    <button class="btn primary" id="btnLogin" onclick="doLogin()">Sign in</button>
+    <div id="loginMsg" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="card">
+  <div class="h"><span>Paste CSV</span><span class="step">2</span></div>
+  <div class="body">
+    <label>Raw CSV from the Sheets export</label>
+    <textarea id="csv" placeholder="#,Date,Day,Day Type,Time In,Time Out,Reg Hrs,OT Hrs,Tot Hrs,Rate,OT Pay (RM),Meal (RM),Att. (RM),Remarks
+1,01/05/26,Fri,Public Holiday,,,0.00,0.00,0.00,,,,,
+2,02/05/26,Sat,Regular,09:00,20:00,3.00,7.00,10.00,1.52,133.00,20.00,20.00,"></textarea>
+    <div class="row" style="margin-top:13px">
+      <div><label>Year (if dates lack one)</label><input id="fbYear" class="mono" value="2026"></div>
+      <div><label>Month (if dates lack one)</label>
+        <select id="fbMonth">
+          <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+          <option value="3">April</option><option value="4" selected>May</option><option value="5">June</option>
+          <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+          <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+        </select></div>
+    </div>
+    <button class="btn primary" onclick="doParse()">Parse &amp; preview</button>
+    <div id="parseMsg" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="card hide" id="cardPreview">
+  <div class="h"><span>Preview merge</span><span class="step">3</span></div>
+  <div class="body">
+    <div class="stats" id="stats"></div>
+    <div class="note info">Pay values in the CSV are informational only — the app recalculates every figure from Time In/Out plus the employee's current Settings on load. Make sure their Settings (rate, day rate, OT multiplier, Saturday end) match the source data, or the recalculated pay will differ from the sheet.</div>
+    <div class="scroll"><table id="prevTbl"></table></div>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="card hide" id="cardWrite">
+  <div class="h"><span>Write to Supabase</span><span class="step">4</span></div>
+  <div class="body">
+    <div class="note warn">This updates the employee's <code>ta_data</code> payload. A backup of the current payload is downloaded first so you can restore if anything looks wrong.</div>
+    <button class="btn ghost" onclick="downloadBackup()" style="margin-bottom:10px">Download backup of current data</button>
+    <button class="btn primary" id="btnWrite" onclick="doWrite()">Merge &amp; save to Supabase</button>
+    <div id="writeMsg" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<script>
+/* ---------- state ---------- */
+var SB={url:'',key:'',token:'',uid:''};
+var existing=null;     // current payload {rows,rid,settings}
+var parsed=[];         // rows parsed from CSV
+var plan=[];           // merge plan entries
+var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var VALID_TYPES=['Regular','Overtime','Rest Day (Sunday)','Public Holiday','Off Day','Annual Leave','Medical Leave','Unpaid Leave'];
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function msg(id,cls,html){document.getElementById(id).innerHTML='<div class="note '+cls+'">'+html+'</div>';}
+
+/* ---------- CSV parsing (RFC4180-ish: quotes, embedded commas) ---------- */
+function parseCSV(text){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; }
+      else cur+=c;
+    } else {
+      if(c==='"') q=true;
+      else if(c===','){ row.push(cur);cur=''; }
+      else if(c==='\r'){ /* skip */ }
+      else if(c==='\n'){ row.push(cur);rows.push(row);row=[];cur=''; }
+      else cur+=c;
+    }
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+/* date cell → {y,m,d} ; supports dd/mm/yy, dd/mm/yyyy, yyyy-mm-dd, or bare day number */
+function parseDate(cell,fbY,fbM){
+  const s=String(cell||'').trim();
+  if(!s) return null;
+  let m;
+  if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)))            // 2026-05-02
+    return {y:+m[1],m:+m[2]-1,d:+m[3]};
+  if((m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/))){        // 02/05/26  (dd/mm/yy)
+    let y=+m[3]; if(y<100) y+=2000;
+    return {y:y,m:+m[2]-1,d:+m[1]};
+  }
+  if((m=s.match(/^(\d{1,2})\/(\d{1,2})$/)))                    // 02/05
+    return {y:fbY,m:+m[2]-1,d:+m[1]};
+  if((m=s.match(/^(\d{1,2})$/)))                               // bare day
+    return {y:fbY,m:fbM,d:+m[1]};
+  const t=Date.parse(s);
+  if(!isNaN(t)){const dd=new Date(t);return {y:dd.getFullYear(),m:dd.getMonth(),d:dd.getDate()};}
+  return null;
+}
+function normTime(v){
+  const s=String(v||'').trim();
+  if(!s||s==='—'||s==='-') return '';
+  let m=s.match(/^(\d{1,2}):(\d{2})/);
+  if(m) return String(+m[1]).padStart(2,'0')+':'+m[2];
+  return '';
+}
+function normType(v){
+  const s=String(v||'').trim();
+  if(!s) return '';
+  const hit=VALID_TYPES.find(t=>t.toLowerCase()===s.toLowerCase());
+  if(hit) return hit;
+  const l=s.toLowerCase();
+  if(l.includes('sunday')||l.includes('rest')) return 'Rest Day (Sunday)';
+  if(l.includes('holiday')) return 'Public Holiday';
+  if(l.includes('annual')) return 'Annual Leave';
+  if(l.includes('medical')||l==='mc') return 'Medical Leave';
+  if(l.includes('unpaid')) return 'Unpaid Leave';
+  if(l.includes('off')) return 'Off Day';
+  if(l.includes('over')||l==='ot') return 'Overtime';
+  if(l.includes('regular')||l.includes('normal')) return 'Regular';
+  return s;
+}
+/* header detection — finds the export's real header row anywhere in the file */
+function findHeader(grid){
+  for(let i=0;i<Math.min(grid.length,12);i++){
+    const joined=grid[i].map(c=>String(c).toLowerCase().trim()).join('|');
+    if(joined.includes('date')&&(joined.includes('day type')||joined.includes('daytype'))) return i;
+    if(joined.includes('time in')&&joined.includes('time out')) return i;
+  }
+  return -1;
+}
+function colIndex(hdr,names){
+  for(const n of names){
+    const i=hdr.findIndex(h=>String(h).toLowerCase().trim()===n);
+    if(i>=0) return i;
+  }
+  for(const n of names){
+    const i=hdr.findIndex(h=>String(h).toLowerCase().trim().includes(n));
+    if(i>=0) return i;
+  }
+  return -1;
+}
+
+function doParse(){
+  const raw=document.getElementById('csv').value;
+  if(!raw.trim()){msg('parseMsg','err','Paste the CSV first.');return;}
+  const fbY=parseInt(document.getElementById('fbYear').value)||2026;
+  const fbM=parseInt(document.getElementById('fbMonth').value)||0;
+  const grid=parseCSV(raw);
+  const hi=findHeader(grid);
+  if(hi<0){msg('parseMsg','err','No header row found. Expected a row containing <code>Date</code> and <code>Day Type</code> (or <code>Time In</code>/<code>Time Out</code>).<br>If you copied from the Sheets web view rather than a downloaded CSV file, re-export via File → Download → CSV.');return;}
+  const hdr=grid[hi];
+  const ci={
+    date:colIndex(hdr,['date']),
+    type:colIndex(hdr,['day type','daytype','type']),
+    tin :colIndex(hdr,['time in','timein','in']),
+    tout:colIndex(hdr,['time out','timeout','out']),
+    rmk :colIndex(hdr,['remarks','remark','note'])
+  };
+  if(ci.date<0){msg('parseMsg','err','Could not locate a Date column in the header row.');return;}
+  parsed=[];
+  const skipped=[];
+  for(let i=hi+1;i<grid.length;i++){
+    const r=grid[i];
+    const first=String(r[0]||'').trim().toUpperCase();
+    const joined=r.join('').toUpperCase();
+    if(joined.includes('SUBTOTAL')||joined.includes('GRAND TOTAL')||joined.includes('OVERALL TOTAL')
+       ||first==='EARNINGS'||first==='LEAVE BALANCE'||joined.includes('---')) continue;
+    const d=parseDate(r[ci.date],fbY,fbM);
+    const dt=normType(ci.type>=0?r[ci.type]:'');
+    if(!d||!d.d){continue;}
+    if(!dt||dt==='— Select —'){skipped.push(String(r[ci.date]||'').trim());continue;}
+    parsed.push({
+      year:d.y, month:d.m, date:d.d,           // month stays 0-BASED — app convention
+      dayType:dt,
+      timeIn: ci.tin>=0?normTime(r[ci.tin]):'',
+      timeOut:ci.tout>=0?normTime(r[ci.tout]):'',
+      remarks:ci.rmk>=0?String(r[ci.rmk]||'').trim():''
+    });
+  }
+  if(!parsed.length){msg('parseMsg','err','No usable data rows found. Rows need a valid date and a Day Type.');return;}
+  const months={};parsed.forEach(r=>{months[r.year+'-'+r.month]=(months[r.year+'-'+r.month]||0)+1;});
+  const mlist=Object.keys(months).map(k=>{const[y,m]=k.split('-');return MN[+m]+' '+y+' ('+months[k]+')';}).join(', ');
+  msg('parseMsg','ok','Parsed <strong>'+parsed.length+'</strong> rows — '+esc(mlist)+
+      (skipped.length?'<br><span style="color:#92400E">Skipped '+skipped.length+' row(s) with no Day Type.</span>':''));
+  buildPlan();
+}
+
+/* ---------- merge plan ---------- */
+function buildPlan(){
+  if(!existing){msg('parseMsg','warn','Parsed OK — sign in (Step 1) to preview how this merges with existing data.');return;}
+  const cur=existing.rows||[];
+  const key=r=>r.year+'|'+r.month+'|'+r.date;
+  const map={};cur.forEach(r=>{map[key(r)]=r;});
+  plan=parsed.map(p=>({row:p, action: map[key(p)]?'replace':'new', old: map[key(p)]||null}));
+  const nNew=plan.filter(p=>p.action==='new').length;
+  const nRep=plan.filter(p=>p.action==='replace').length;
+  const touched={};parsed.forEach(r=>touched[r.year+'|'+r.month]=1);
+  const preserved=cur.filter(r=>!touched[r.year+'|'+r.month]).length;
+  document.getElementById('stats').innerHTML=
+    '<div class="stat"><div class="v" style="color:var(--grn)">'+nNew+'</div><div class="l">New rows</div></div>'+
+    '<div class="stat"><div class="v" style="color:var(--amb)">'+nRep+'</div><div class="l">Replaced (same date)</div></div>'+
+    '<div class="stat"><div class="v">'+preserved+'</div><div class="l">Untouched (other months)</div></div>'+
+    '<div class="stat"><div class="v">'+cur.length+' → '+(cur.length-nRep+parsed.length)+'</div><div class="l">Total rows after</div></div>';
+  let html='<tr><th>Date</th><th>Day Type</th><th>In</th><th>Out</th><th>Remarks</th><th>Action</th></tr>';
+  plan.forEach(p=>{
+    const r=p.row;
+    const cls=p.action==='new'?'p-new':'p-rep';
+    html+='<tr><td>'+String(r.date).padStart(2,'0')+'/'+String(r.month+1).padStart(2,'0')+'/'+r.year+
+      '</td><td>'+esc(r.dayType)+'</td><td>'+esc(r.timeIn||'—')+'</td><td>'+esc(r.timeOut||'—')+
+      '</td><td>'+esc(r.remarks||'')+'</td><td><span class="pill '+cls+'">'+p.action+'</span></td></tr>';
+  });
+  document.getElementById('prevTbl').innerHTML=html;
+  document.getElementById('cardPreview').classList.remove('hide');
+  document.getElementById('cardWrite').classList.remove('hide');
+}
+
+/* ---------- Supabase ---------- */
+async function doLogin(){
+  SB.url=document.getElementById('sbUrl').value.trim().replace(/\/+$/,'');
+  SB.key=document.getElementById('sbKey').value.trim();
+  const email=document.getElementById('email').value.trim();
+  const pw=document.getElementById('pw').value;
+  if(!SB.url||!SB.key||!email||!pw){msg('loginMsg','err','Fill in all four fields.');return;}
+  document.getElementById('btnLogin').disabled=true;
+  try{
+    const r=await fetch(SB.url+'/auth/v1/token?grant_type=password',{
+      method:'POST',headers:{'apikey':SB.key,'Content-Type':'application/json'},
+      body:JSON.stringify({email:email,password:pw})
+    });
+    const j=await r.json();
+    if(!r.ok||!j.access_token) throw new Error(j.error_description||j.msg||j.error||('HTTP '+r.status));
+    SB.token=j.access_token; SB.uid=j.user.id;
+    const d=await fetch(SB.url+'/rest/v1/ta_data?employee_id=eq.'+SB.uid+'&select=payload',{
+      headers:{'apikey':SB.key,'Authorization':'Bearer '+SB.token}
+    });
+    const rowsRes=await d.json();
+    if(!d.ok) throw new Error(JSON.stringify(rowsRes).slice(0,200));
+    existing = (rowsRes[0]&&rowsRes[0].payload) ? rowsRes[0].payload : {rows:[],rid:0,settings:{}};
+    if(!Array.isArray(existing.rows)) existing.rows=[];
+    const mset={};existing.rows.forEach(r=>mset[r.year+'-'+r.month]=1);
+    const mtxt=Object.keys(mset).map(k=>{const[y,m]=k.split('-');return MN[+m]+' '+y;}).join(', ')||'none';
+    msg('loginMsg','ok','Signed in as <strong>'+esc(email)+'</strong>.<br>Existing payload: <strong>'+existing.rows.length+
+        '</strong> rows, rid '+(existing.rid||0)+', months: '+esc(mtxt)+
+        '<br>Settings present: '+(existing.settings&&Object.keys(existing.settings).length?'yes (will be preserved)':'none'));
+    if(parsed.length) buildPlan();
+  }catch(e){
+    msg('loginMsg','err','Sign-in failed: '+esc(e.message));
+  }
+  document.getElementById('btnLogin').disabled=false;
+}
+
+function downloadBackup(){
+  if(!existing){alert('Sign in first.');return;}
+  const blob=new Blob([JSON.stringify(existing,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ta_data_backup_'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.json';
+  a.click();
+}
+
+/* merge: replace same-date rows, keep everything else, continue rid past max */
+function mergePayload(cur,incoming){
+  const key=r=>r.year+'|'+r.month+'|'+r.date;
+  const inKeys={};incoming.forEach(r=>inKeys[key(r)]=1);
+  const kept=(cur.rows||[]).filter(r=>!inKeys[key(r)]);
+  let maxRid=cur.rid||0;
+  (cur.rows||[]).forEach(r=>{ if(typeof r.id==='number'&&r.id>maxRid) maxRid=r.id; });
+  const added=incoming.map(r=>Object.assign({id:++maxRid},r));
+  const merged=kept.concat(added).sort((a,b)=>(a.year-b.year)||(a.month-b.month)||(a.date-b.date));
+  return {rows:merged, rid:maxRid, settings:(cur.settings||{})};
+}
+
+async function doWrite(){
+  if(!existing||!parsed.length){msg('writeMsg','err','Sign in and parse a CSV first.');return;}
+  document.getElementById('btnWrite').disabled=true;
+  try{
+    const merged=mergePayload(existing,parsed);
+    const chk=await fetch(SB.url+'/rest/v1/ta_data?employee_id=eq.'+SB.uid+'&select=employee_id',{
+      headers:{'apikey':SB.key,'Authorization':'Bearer '+SB.token}});
+    const chkJson=await chk.json();
+    const exists=Array.isArray(chkJson)&&chkJson.length>0;
+    const url=SB.url+'/rest/v1/ta_data'+(exists?('?employee_id=eq.'+SB.uid):'');
+    const res=await fetch(url,{
+      method: exists?'PATCH':'POST',
+      headers:{'apikey':SB.key,'Authorization':'Bearer '+SB.token,'Content-Type':'application/json','Prefer':'return=representation'},
+      body: JSON.stringify(exists?{payload:merged}:{employee_id:SB.uid,payload:merged})
+    });
+    const out=await res.json();
+    if(!res.ok) throw new Error(JSON.stringify(out).slice(0,250));
+    /* PostgREST reports success even when zero rows changed — verify with a real SELECT */
+    const ver=await fetch(SB.url+'/rest/v1/ta_data?employee_id=eq.'+SB.uid+'&select=payload',{
+      headers:{'apikey':SB.key,'Authorization':'Bearer '+SB.token}});
+    const vj=await ver.json();
+    const saved=vj[0]&&vj[0].payload?vj[0].payload.rows.length:0;
+    if(saved!==merged.rows.length)
+      throw new Error('Verification mismatch — wrote '+merged.rows.length+' rows but database reports '+saved+'. Nothing was corrupted; re-check RLS policies.');
+    existing=merged;
+    msg('writeMsg','ok','Saved and verified: <strong>'+saved+'</strong> rows now in Supabase (rid '+merged.rid+
+        '). Settings preserved. Open the app and confirm the months appear — the app recalculates all hours and pay from Time In/Out on load.');
+  }catch(e){
+    msg('writeMsg','err','Write failed: '+esc(e.message));
+  }
+  document.getElementById('btnWrite').disabled=false;
+}
+</script>
+</body>
+</html>
