@@ -1094,10 +1094,24 @@ function jsonp(url, cbName, timeoutMs, retry){
   });
 }
 
+// Ask the server once per session whether it supports partial saves, so the FIRST
+// save can already be a small one. A server that doesn't know 'caps' returns something
+// without a merge flag, and the app simply stays on full saves.
+let capsAsked=false;
+async function probeCaps(){
+  if(capsAsked||!CLOUD_URL) return;
+  capsAsked=true;
+  try{
+    const cbName='cb'+Date.now();
+    const r=await jsonp(CLOUD_URL+'?action=caps&cb='+cbName, cbName, 15000);
+    if(r&&r.merge===true) mergeOK=true;
+  }catch(ex){ /* stay on full saves */ }
+}
 async function doSave(){
   if(!CLOUD_URL) return;
   if(isSaving){ setStat('warn','⏳ A save is already running…'); return; }
-  isSaving=true;
+  isSaving=true;          // claim the lock BEFORE any await, or two presses both slip through
+  await probeCaps();
   const MAX_RETRIES=3;
   // Partial save: send only the months that changed. Requires the merge-aware
   // Code.gs (it ignores unknown fields, so a full save is always the safe fallback).
