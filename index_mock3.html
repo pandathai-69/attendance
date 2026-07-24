@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<!-- PWA Meta Tags -->
+<meta name="theme-color" content="#1E293B">
+<meta name="description" content="Track daily attendance, overtime, leave and generate payslips">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS PWA Support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Attendance">
+
+<!-- iOS Touch Icons -->
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96.png">
+<title>Time Attendance</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#F0F4F8;--sur:#fff;--sur2:#F8FAFC;--brd:#E2E8F0;--acc:#2563EB;--acc2:#EFF6FF;--grn:#10B981;--grn2:#ECFDF5;--amb:#F59E0B;--amb2:#FFFBEB;--red:#EF4444;--red2:#FEF2F2;--pur:#8B5CF6;--pur2:#F5F3FF;--txt:#111827;--txt2:#4B5563;--txt3:#9CA3AF;--head:#1E40AF;--dark:#1E293B;--mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;--r:10px;--sh:0 1px 4px rgba(0,0,0,.07),0 4px 14px rgba(0,0,0,.04);}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;padding:16px;}.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}.hd h1{font-size:19px;font-weight:700;}.hd p{font-size:11px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}.hd-r{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}.btn{font-family:var(--sans);font-size:12px;font-weight:600;padding:7px 13px;border-radius:7px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s;}.b-blue{background:var(--acc);color:#fff;}.b-blue:hover{background:#1D4ED8;}.b-gray{background:var(--sur2);color:var(--txt2);border:1px solid var(--brd);}.b-gray:hover{background:var(--brd);}.b-red{background:var(--red2);color:var(--red);border:1px solid #fecaca;}.b-red:hover{background:#fee2e2;}.b-grn{background:#166534;color:#fff;}.b-grn:hover{background:#14532d;}.panel{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:14px 18px;box-shadow:var(--sh);margin-bottom:12px;overflow:hidden;}.ptitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--brd);}.row-f{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}.srow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}.sf{display:flex;flex-direction:column;gap:4px;}.sf label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);}.sf input,.sf select{font-family:var(--sans);font-size:13px;padding:6px 9px;border:1px solid var(--brd);border-radius:6px;background:var(--sur);color:var(--txt);outline:none;}.sf input:focus,.sf select:focus{border-color:var(--acc);}.sf .hint{font-size:10px;color:var(--txt3);font-style:italic;margin-top:2px;}.vdiv{width:1px;background:var(--brd);align-self:stretch;margin:0 2px;}.sgroup-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--acc);margin-bottom:8px;margin-top:2px;padding-left:2px;border-left:3px solid var(--acc);padding-left:6px;}.note{font-size:11px;color:#1E40AF;background:var(--acc2);border:1px solid #bfdbfe;border-radius:7px;padding:8px 13px;margin-top:10px;line-height:1.65;}.rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}.rate-card{border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;}.rate-name{font-size:12px;font-weight:700;padding:9px 12px;border-bottom:1px solid rgba(0,0,0,.06);}.rate-inp{font-family:var(--mono);font-size:22px;font-weight:700;width:100%;border:none;border-bottom:1px solid rgba(0,0,0,.06);outline:none;padding:10px 12px;background:transparent;}.rate-inp:focus{background:rgba(255,255,255,.6);}.rate-desc{font-size:10px;color:var(--txt2);padding:7px 12px;line-height:1.4;flex:1;}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:9px;margin-bottom:12px;}.card{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:11px 13px;box-shadow:var(--sh);}.clbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);margin-bottom:4px;}.cval{font-family:var(--mono);font-size:17px;font-weight:500;}.csub{font-size:10px;color:var(--txt3);font-family:var(--mono);margin-top:2px;}.ca{border-color:#bfdbfe;background:var(--acc2);}.ca .cval{color:var(--acc);}.cg{border-color:#a7f3d0;background:var(--grn2);}.cg .cval{color:var(--grn);}.cm{border-color:#fde68a;background:var(--amb2);}.cm .cval{color:var(--amb);}.cr{border-color:#fecaca;background:var(--red2);}.cr .cval{color:var(--red);}.cp{border-color:#ddd6fe;background:var(--pur2);}.cp .cval{color:var(--pur);}.tw{width:100%;overflow-x:auto;margin-bottom:12px;background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);box-shadow:var(--sh);}table{border-collapse:collapse;width:100%;min-width:915px;font-size:12px;table-layout:fixed;}thead th{background:var(--head);color:#fff;padding:9px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;position:sticky;top:0;z-index:2;}tbody tr{border-bottom:1px solid #f1f5f9;}tbody tr:hover{background:#f8fafc;}tbody td{padding:5px 7px;color:var(--txt2);vertical-align:middle;}tbody td.n{font-family:var(--mono);font-size:11px;text-align:right;color:var(--txt);}tbody td input,tbody td select{width:100%;border:1px solid transparent;background:transparent;padding:3px 4px;border-radius:4px;font-size:11.5px;font-family:var(--sans);color:var(--txt);outline:none;}tbody td select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 10 10"><path d="M2 3.5L5 6.5L8 3.5" stroke="%2394A3B8" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');background-repeat:no-repeat;background-position:right 2px center;background-size:8px;padding-right:12px;}tbody td input:focus,tbody td select:focus{border-color:var(--acc);background:var(--acc2);}tbody td input[type="date"],tbody td input[type="time"]{font-family:var(--mono);font-size:11px;text-align:left;}tfoot td{padding:8px;font-family:var(--mono);font-size:11.5px;font-weight:700;}.ftot td{background:#1E40AF;color:#fff;}.fearns td{background:#dbeafe;color:#1e3a8a;}.fsubt td{background:#1e3a8a;color:#fff;}.fded td{background:#fef2f2;color:#991b1b;}.fgrand td{background:#0f2354;color:#fff;font-size:13px;}.fleave-hdr td{background:#1e3a8a;color:#93c5fd;font-family:var(--sans);font-size:10px;text-transform:uppercase;letter-spacing:.6px;}.fleave-col td{background:#dbeafe;color:#1e40af;font-family:var(--sans);font-size:10px;font-weight:700;}.fleave-ann td{background:#fefce8;}.fleave-med td{background:#f0fff4;}.fleave-unp td{background:#fff1f2;}tr.sat{background:#f5f3ff!important;}tr.sun{background:#fff5f5!important;}tr.hol{background:#fef2f2!important;}tr.ann{background:#fefce8!important;}tr.med{background:#f0fff4!important;}tr.unp{background:#fff1f2!important;}tr.off{background:#f0fff4!important;}.xbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:12px 16px;box-shadow:var(--sh);margin-bottom:10px;}.xbar-url{flex:1;min-width:220px;font-family:var(--mono);font-size:11px;padding:6px 9px;border:1px solid var(--brd);border-radius:6px;outline:none;color:var(--txt);}.xbar-url:focus{border-color:var(--acc);}.sstat{font-family:var(--mono);font-size:11px;color:var(--txt3);}@media(max-width:768px){body{padding:8px;}.hd{flex-direction:column;align-items:flex-start;}.hd-r{width:100%;justify-content:flex-start;}.cards{grid-template-columns:repeat(2,1fr);}.xbar{flex-direction:column;align-items:stretch;}.xbar-url{min-width:0;width:100%;}.sstat{text-align:center;}.panel{padding:12px 14px;}.row-f{gap:8px;}.sf input,.sf select{font-size:12px;}.srow{flex-direction:column;gap:8px;}.srow .sf{width:100%;}.srow .sf input{width:100%!important;}.vdiv{display:none;}.rate-inp{font-size:17px!important;text-align:center;}.name-bar{flex-direction:column;gap:8px;}.name-bar input{max-width:100%!important;width:100%!important;}.rtbl{width:100%;max-width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;display:block;}.rtbl thead{display:none;}.rtbl tbody{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:100%;overflow:hidden;}.rtbl tbody tr{display:flex;flex-direction:column;border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;min-width:0;}.rtbl td{display:block;width:100%;box-sizing:border-box;border:none!important;}.rcat{font-size:12px;font-weight:700;padding:8px 10px;width:100%!important;box-sizing:border-box;}.rin{width:100%!important;box-sizing:border-box;}.rin input{width:100%!important;font-size:18px;font-weight:700;padding:6px 10px;text-align:left;box-sizing:border-box;border-top:1px solid var(--brd)!important;}.rdesc{display:block!important;width:100%;box-sizing:border-box;font-size:10px;padding:6px 10px;color:var(--txt2);font-style:normal;line-height:1.4;background:var(--sur2);white-space:normal;word-break:break-word;border-top:1px solid var(--brd);}.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;}table{min-width:715px;font-size:10px;}thead th{padding:7px 5px;font-size:9px;letter-spacing:.2px;}tbody td{padding:4px 5px;}tbody td input,tbody td select{font-size:10px;padding:2px 3px;}tbody td.n{font-size:10px;}tfoot td{padding:6px 5px;font-size:10px;}}
+@media(max-width:414px){
+table{font-size:9.5px;}
+thead th{padding:6px 4px;font-size:8.5px;}
+tbody td{padding:4px 4px;}
+tbody td input,tbody td select{font-size:9.5px;padding:2px 3px;}
+tbody td.n{font-size:9.5px;}
+tfoot td{padding:5px 4px;font-size:9.5px;}
+}
+@media(max-width:375px){
+table{font-size:9px;}
+thead th{padding:5px 3px;font-size:8px;}
+tbody td{padding:3px 3px;}
+tbody td input,tbody td select{font-size:9px;padding:1px 2px;}
+tbody td.n{font-size:9px;}
+tfoot td{padding:4px 3px;font-size:9px;}
+}@media(max-width:480px){.hd h1{font-size:16px;}.btn{padding:6px 10px;font-size:11px;}.cards{grid-template-columns:repeat(2,1fr);gap:7px;}.cval{font-size:14px;}}@media print{.noprint{display:none!important;}.tw{box-shadow:none;}body{background:#fff;padding:0;}body.printing-payslip>*:not(#payslipModal){display:none!important;}body.printing-payslip #payslipModal{display:block!important;position:static;background:#fff;}}#offlineBar{display:none;background:#DC2626;color:#fff;text-align:center;font-size:12px;font-weight:600;padding:6px;letter-spacing:.3px;}body.offline #offlineBar{display:block;}#payslipModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;overflow-y:auto;padding:20px;}#payslipInner{background:#fff;max-width:600px;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.25);}.ps-head{background:#1E293B;color:#fff;padding:24px 28px;}.ps-head h2{font-size:20px;font-weight:700;margin-bottom:4px;}.ps-head p{font-size:12px;opacity:.7;font-family:var(--mono);}.ps-section{padding:16px 28px;border-bottom:1px solid #F1F5F9;}.ps-section:last-child{border-bottom:none;}.ps-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--txt3);margin-bottom:10px;}.ps-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;}.ps-row span:first-child{color:var(--txt2);}.ps-row span:last-child{font-family:var(--mono);font-weight:600;}.ps-total{background:#0F2354;color:#fff;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;}.ps-total span:first-child{font-size:14px;font-weight:700;letter-spacing:.3px;}.ps-total span:last-child{font-family:var(--mono);font-size:20px;font-weight:700;}.ps-leave{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 28px;}.ps-lcard{background:#F8FAFC;border:1px solid var(--brd);border-radius:8px;padding:10px 12px;text-align:center;}.ps-lcard .lname{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);margin-bottom:4px;}.ps-lcard .lbal{font-size:18px;font-weight:700;font-family:var(--mono);}.ps-lcard .lsub{font-size:10px;color:var(--txt3);margin-top:2px;}.ps-actions{display:flex;gap:10px;padding:16px 28px;background:#F8FAFC;}
+tbody td input[type="date"]{min-width:0;}tbody td input[type="date"]::-webkit-calendar-picker-indicator{margin-left:2px;padding:2px;}</style>
+</head>
+<body>
+
+<!-- PWA INSTALL BANNER -->
+<div id="pwaInstallBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:2000;
+  background:#0F2354;color:#fff;padding:14px 16px 14px 16px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.4);font-family:Arial,sans-serif;
+  border-top:3px solid #2563EB;
+  padding-bottom:calc(14px + env(safe-area-inset-bottom));">
+  <div style="display:flex;align-items:center;gap:12px;max-width:600px;margin:0 auto;">
+    <img src="icons/icon-96.png" width="44" height="44"
+         style="border-radius:10px;flex-shrink:0;" alt="icon">
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:700;font-size:14px;">Install Time Attendance</div>
+      <div style="font-size:11px;opacity:.8;margin-top:2px;">
+        Add to Home Screen for the full app experience
+      </div>
+    </div>
+    <button id="pwaInstallBtn"
+      style="background:#2563EB;color:#fff;border:none;border-radius:8px;
+             padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;
+             white-space:nowrap;flex-shrink:0;">
+      Install
+    </button>
+    <button id="pwaInstallDismiss"
+      style="background:transparent;color:rgba(255,255,255,.6);border:none;
+             font-size:20px;cursor:pointer;padding:4px 6px;flex-shrink:0;
+             line-height:1;">✕</button>
+  </div>
+</div>
+
+<!-- iOS INSTALL HINT (shown on Safari/iOS since iOS can't use beforeinstallprompt) -->
+<div id="iosInstallHint" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:2000;
+  background:#0F2354;color:#fff;padding:14px 16px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.4);font-family:Arial,sans-serif;
+  border-top:3px solid #2563EB;text-align:center;
+  padding-bottom:calc(14px + env(safe-area-inset-bottom));">
+  <div style="font-weight:700;font-size:14px;margin-bottom:4px;">
+    📲 Install Time Attendance
+  </div>
+  <div style="font-size:12px;opacity:.85;line-height:1.5;">
+    Tap <strong>Share</strong> <span style="font-size:16px">⬆️</span> then
+    <strong>"Add to Home Screen"</strong> for the full app experience
+  </div>
+  <button id="iosHintDismiss"
+    style="margin-top:10px;background:transparent;color:rgba(255,255,255,.7);
+           border:1px solid rgba(255,255,255,.3);border-radius:6px;
+           padding:5px 16px;font-size:12px;cursor:pointer;">
+    Not now
+  </button>
+</div>
+
+<!-- OFFLINE BAR -->
+<div id="offlineBar">📡 You are offline — changes saved locally, will sync when reconnected</div>
+
+<!-- HEADER -->
+<div class="hd">
+  <div><h1>⏱ Time Attendance</h1><p id="sub">Loading…</p></div>
+  <div class="hd-r noprint">
+    <select id="selMon" onchange="goMon()" style="font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--brd);border-radius:7px;background:var(--sur);color:var(--txt);outline:none;cursor:pointer;">
+      <option value="0">January</option><option value="1">February</option>
+      <option value="2">March</option><option value="3">April</option>
+      <option value="4">May</option><option value="5">June</option>
+      <option value="6">July</option><option value="7">August</option>
+      <option value="8">September</option><option value="9">October</option>
+      <option value="10">November</option><option value="11">December</option>
+    </select>
+    <select id="selYear" onchange="goMon()" style="font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--brd);border-radius:7px;background:var(--sur);color:var(--txt);outline:none;cursor:pointer;width:82px;">
+      <option value="2024">2024</option>
+      <option value="2025">2025</option>
+      <option value="2026" selected>2026</option>
+      <option value="2027">2027</option>
+      <option value="2028">2028</option>
+    </select>
+    <button class="btn b-blue" onclick="addRow()">+ Row</button>
+    <button class="btn b-gray" onclick="fillMonth()">📅 Fill</button>
+    <button class="btn b-gray" onclick="window.print()">🖨</button>
+    <button class="btn b-gray" onclick="showPayslip()">🧾 Payslip</button>
+    <button class="btn b-gray" onclick="archiveMonth()" style="font-size:11px;" title="Export month to Excel then remove from app">📦 Archive</button>
+    
+    <button class="btn b-red" onclick="clearAll()">🗑 Clear</button>
+  </div>
+</div>
+
+<!-- CLOUD SYNC -->
+<div class="xbar noprint">
+  <span style="font-size:11px;font-weight:700;color:var(--txt3);white-space:nowrap;">☁ Cloud</span>
+  <input id="urlIn" class="xbar-url" type="text" placeholder="Paste Google Apps Script Web App URL here…"
+    onchange="setUrl(this.value.trim())">
+  <button class="btn b-blue" onclick="setUrl(document.getElementById('urlIn').value.trim())" style="font-size:11px;padding:6px 12px;">Connect</button>
+  <button class="btn b-gray" onclick="manualLoad()" style="font-size:11px;padding:6px 12px;">↺ Reload</button>
+  <button class="btn b-gray" onclick="manualSave()" style="font-size:11px;padding:6px 12px;">☁ Save Now</button>
+  <button class="btn b-gray" onclick="backupData()" style="font-size:11px;padding:6px 12px;">💾 Backup</button>
+  <button class="btn b-gray" onclick="restoreBackup()" style="font-size:11px;padding:6px 12px;">♻️ Restore</button>
+  <span class="sstat" id="dirtyDot" style="display:none;color:#F59E0B;font-weight:700;">●&nbsp;</span><span class="sstat" id="sstat">⚪ Local only</span>
+  <button class="btn b-grn" onclick="exportXLSX()" style="font-size:11px;padding:6px 12px;">📥 Export Excel</button>
+</div>
+
+<!-- SETTINGS -->
+<div class="panel noprint">
+  <div class="ptitle">Basic Settings</div>
+
+  <!-- Row 1: Shift & Rates -->
+  <div class="sgroup-label">Shift & Pay Rates</div>
+  <div class="row-f" style="margin-bottom:14px;">
+    <div class="sf"><label>Weekday Start</label><input type="time" id="wdS" value="09:00" oninput="recalcAll()"></div>
+    <div class="sf"><label>Weekday End</label><input type="time" id="wdE" value="18:00" oninput="recalcAll()"></div>
+    <div class="sf"><label>Sat Start</label><input type="time" id="saS" value="09:00" oninput="recalcAll()"></div>
+    <div class="sf"><label>Sat End</label><input type="time" id="saE" value="18:00" oninput="recalcAll()"></div>
+    <div class="sf"><label>Break (min)</label><input type="text" id="brk" value="60" style="width:64px" oninput="recalcAll()"></div>
+    <div class="vdiv"></div>
+    <div class="sf"><label>Hourly Rate (RM)</label><input type="text" id="hrR" placeholder="0.00" style="width:100px" oninput="recalcAll()"></div>
+    <div class="sf"><label>Per Day Rate (RM)</label><input type="text" id="drR" placeholder="0.00" style="width:100px" oninput="recalcAll()"></div>
+  </div>
+
+  <!-- Row 2: Salary & Allowances — all 5 inline parallel -->
+  <div class="sgroup-label">Salary &amp; Allowances</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px;">
+    <div class="sf"><label>Basic Salary (RM)</label><input type="text" id="bas" placeholder="0.00" style="width:100%" oninput="calcSummary()"></div>
+    <div class="sf"><label>Allowance (RM)</label><input type="text" id="alw" placeholder="0.00" style="width:100%" oninput="calcSummary()"></div>
+    <div class="sf"><label>Others (RM)</label><input type="text" id="oth" placeholder="0.00" style="width:100%" oninput="calcSummary()"></div>
+    <div class="sf" style="grid-column:1/-1;">
+      <label>Meal Allowance Tiers (RM) — based on OT/extra hours worked</label>
+      <div id="mealTiersWrap" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;"></div>
+      <button type="button" class="btn b-gray" onclick="addMealTier()" style="margin-top:6px;font-size:11px;padding:5px 10px;width:fit-content;">+ Add Tier</button>
+      <div class="hint">Each staff/scenario can have different thresholds — e.g. 1hr→RM15, 2hr→RM20, 3hr→RM25. Highest matching tier applies.</div>
+    </div>
+    <div class="sf"><label>Att. Allow (RM)</label><input type="text" id="aAmt" value="20" style="width:100%" oninput="recalcAll()"><div class="hint">Per check-in</div></div>
+  </div>
+
+  <!-- Row 3: Leave Entitlement — 3 inline parallel -->
+  <div class="sgroup-label">Leave Entitlement (days)</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
+    <div class="sf"><label>Annual Leave</label><input type="text" id="lvA" placeholder="e.g. 14" style="width:100%" oninput="calcSummary()"></div>
+    <div class="sf"><label>Medical Leave</label><input type="text" id="lvM" placeholder="e.g. 14" style="width:100%" oninput="calcSummary()"></div>
+    <div class="sf"><label>Unpaid Leave</label><input type="text" id="lvU" placeholder="opt." style="width:100%" oninput="calcSummary()"></div>
+  </div>
+  <div class="note">
+    📌 Mon–Fri & Sat: 8h regular (break deducted). Hours outside shift = OT. &nbsp;|&nbsp;
+    Sun & Public Holiday: all hours = OT rate, no break. &nbsp;|&nbsp;
+    Unpaid Leave: deducts 1 × Per Day Rate per day.
+  </div>
+</div>
+
+<!-- PAY RATES -->
+<div class="panel noprint">
+  <div class="ptitle">Pay Rate Multipliers — enter (×) for each type</div>
+  <div class="rate-grid">
+    <div class="rate-card" style="border-color:#FDE68A;background:var(--amb2);">
+      <div class="rate-name" style="color:#92400E;">Overtime</div>
+      <input class="rate-inp" type="text" id="rOT" placeholder="e.g. 1.50" oninput="recalcAll()" style="color:#92400E;">
+      <div class="rate-desc">Mon–Fri &amp; Sat hours outside normal shift; Sun/Holiday OT</div>
+    </div>
+    <div class="rate-card" style="border-color:#DDD6FE;background:var(--pur2);">
+      <div class="rate-name" style="color:#5b21b6;">Rest Day (Sunday)</div>
+      <input class="rate-inp" type="text" id="rSun" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#5b21b6;">
+      <div class="rate-desc">All hours on Sunday — no break deducted</div>
+    </div>
+    <div class="rate-card" style="border-color:#FECACA;background:var(--red2);">
+      <div class="rate-name" style="color:#991b1b;">Public Holiday</div>
+      <input class="rate-inp" type="text" id="rHol" placeholder="e.g. 2.00" oninput="recalcAll()" style="color:#991b1b;">
+      <div class="rate-desc">All hours on Public Holidays — no break deducted</div>
+    </div>
+    <div class="rate-card" style="border-color:#A7F3D0;background:var(--grn2);">
+      <div class="rate-name" style="color:#065f46;">Off Day</div>
+      <input class="rate-inp" type="text" id="rOff" placeholder="e.g. 0.00" oninput="recalcAll()" style="color:#065f46;">
+      <div class="rate-desc">Scheduled off / leave</div>
+    </div>
+  </div>
+</div>
+
+<!-- CARDS -->
+<div class="cards">
+  <div class="card ca"><div class="clbl">Days</div><div class="cval" id="cDays">0</div><div class="csub">entries</div></div>
+  <div class="card ca"><div class="clbl">Reg Hrs</div><div class="cval" id="cReg">0.00</div><div class="csub">hours</div></div>
+  <div class="card cm"><div class="clbl">OT Hrs</div><div class="cval" id="cOT">0.00</div><div class="csub">hours</div></div>
+  <div class="card cp"><div class="clbl">Rest Day</div><div class="cval" id="cSun">0.00</div><div class="csub">hours</div></div>
+  <div class="card cr"><div class="clbl">Holiday</div><div class="cval" id="cHol">0.00</div><div class="csub">hours</div></div>
+  <div class="card cg"><div class="clbl">Total Hrs</div><div class="cval" id="cTot">0.00</div><div class="csub">hours</div></div>
+  <div class="card cm"><div class="clbl">Meal Allow</div><div class="cval" id="cMeal">0.00</div><div class="csub">RM</div></div>
+  <div class="card cm"><div class="clbl">Att. Allow</div><div class="cval" id="cAtt">0.00</div><div class="csub">RM</div></div>
+  <div class="card cg"><div class="clbl">OT Pay</div><div class="cval" id="cPay">0.00</div><div class="csub">RM</div></div>
+  <div class="card cg"><div class="clbl">Grand Total</div><div class="cval" id="cGrand">0.00</div><div class="csub">RM</div></div>
+  <div class="card ca"><div class="clbl">Annual Bal</div><div class="cval" id="cLA">—</div><div class="csub">days left</div></div>
+  <div class="card cg"><div class="clbl">Medical Bal</div><div class="cval" id="cLM">—</div><div class="csub">days left</div></div>
+  <div class="card cr"><div class="clbl">Unpaid</div><div class="cval" id="cLU">0</div><div class="csub">days taken</div></div>
+</div>
+
+<!-- NAME FIELD -->
+<div class="name-bar" style="background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);
+  padding:12px 18px;box-shadow:var(--sh);margin-bottom:12px;display:flex;align-items:center;gap:16px;">
+  <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--txt3);white-space:nowrap;">Employee Name</label>
+  <input type="text" id="empName" placeholder="Enter employee name…"
+    style="flex:1;max-width:320px;font-family:var(--sans);font-size:14px;font-weight:500;
+    padding:7px 12px;border:1px solid var(--brd);border-radius:7px;
+    background:var(--sur);color:var(--txt);outline:none;"
+    onfocus="this.style.borderColor='var(--acc)'"
+    onblur="this.style.borderColor='var(--brd)'"
+    oninput="saveLocal()">
+  <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--txt3);white-space:nowrap;">Position / Dept.</label>
+  <input type="text" id="empPos" placeholder="e.g. Engineer, Operations…"
+    style="flex:1;max-width:260px;font-family:var(--sans);font-size:14px;
+    padding:7px 12px;border:1px solid var(--brd);border-radius:7px;
+    background:var(--sur);color:var(--txt);outline:none;"
+    onfocus="this.style.borderColor='var(--acc)'"
+    onblur="this.style.borderColor='var(--brd)'"
+    oninput="saveLocal()">
+</div>
+
+<!-- TABLE -->
+<div class="tw">
+<table id="mainTbl" style="table-layout:fixed;">
+  <colgroup>
+    <col style="width:22px">
+    <col style="width:120px">
+    <col style="width:30px">
+    <col style="width:110px">
+    <col style="width:85px">
+    <col style="width:85px">
+    <col style="width:48px">
+    <col style="width:48px">
+    <col style="width:48px">
+    <col style="width:36px">
+    <col style="width:61px">
+    <col style="width:46px">
+    <col style="width:46px">
+    <col style="width:70px">
+    <col style="width:28px">
+  </colgroup>
+  <thead><tr>
+    <th style="text-align:center">#</th>
+    <th style="text-align:left;padding-left:30px;">Date</th>
+    <th style="text-align:center">Day</th>
+    <th style="padding-left:20px;">Day Type</th>
+    <th style="text-align:left;padding-left:10px;">Time In</th>
+    <th style="text-align:left;padding-left:10px;">Time Out</th>
+    <th style="text-align:right">Reg Hrs</th>
+    <th style="text-align:right">OT Hrs</th>
+    <th style="text-align:right">Tot Hrs</th>
+    <th style="text-align:right">Rate</th>
+    <th style="text-align:right">OT Pay(RM)</th>
+    <th style="text-align:right">Meal</th>
+    <th style="text-align:right">Att.</th>
+    <th>Remarks</th>
+    <th class="noprint"></th>
+  </tr></thead>
+  <tbody id="tbody"></tbody>
+  <tfoot id="tfoot"></tfoot>
+</table>
+</div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────────────────
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const TYPES=['— Select —','Regular','Overtime','Rest Day (Sunday)','Public Holiday','Annual Leave','Medical Leave','Unpaid Leave','Off Day'];
+const SIDS=['wdS','wdE','saS','saE','brk','hrR','drR','bas','alw','oth','mAmt','aAmt','lvA','lvM','lvU','rOT','rSun','rHol','rOff','empName','empPos'];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let year=new Date().getFullYear(), mon=new Date().getMonth(), rows=[], rid=0;
+let CLOUD_URL='';
+let mealTiers=[{hrs:2,amt:20}]; // default: matches old behavior (OT>=2h -> RM20)
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+const g = id => { const el=document.getElementById(id); return el?el.value:''; };
+const n = id => { const v=parseFloat(g(id)); return isNaN(v)?0:v; };
+const toMin = t => { if(!t) return 0; const [h,m]=(t+'').split(':').map(Number); return h*60+(m||0); };
+// Returns worked minutes, handling past-midnight (timeOut < timeIn adds 24h)
+const workedMin = (ti,to) => { let a=toMin(ti), b=toMin(to); if(b<=a) b+=1440; return Math.max(b-a,0); };
+const maxDays = (y,m) => new Date(y,m+1,0).getDate();
+const pad2 = x => String(x).padStart(2,'0');
+const isoD = (y,m,d) => d?`${y}-${pad2(m+1)}-${pad2(d)}`:'';
+const rm  = v => 'RM '+Math.abs(v).toLocaleString('en-MY',{minimumFractionDigits:2});
+const num2= v => Math.abs(v).toLocaleString('en-MY',{minimumFractionDigits:2});  // no RM prefix
+
+function getSettings(){
+  const s={}; SIDS.forEach(id=>{ s[id]=g(id); });
+  s.mealTiersJSON=JSON.stringify(mealTiers);
+  return s;
+}
+function applySettings(s){
+  if(!s) return;
+  SIDS.forEach(id=>{ const el=document.getElementById(id); if(el&&s[id]!==undefined) el.value=s[id]; });
+  if(s.mealTiersJSON){
+    try{ const parsed=JSON.parse(s.mealTiersJSON); if(Array.isArray(parsed)&&parsed.length) mealTiers=parsed; }
+    catch(e){}
+  }
+  renderMealTiers();
+}
+function shiftFor(dow){
+  if(dow===6) return {s:g('saS')||'09:00', e:g('saE')||'18:00', cap:8};
+  return             {s:g('wdS')||'09:00', e:g('wdE')||'18:00', cap:8};
+}
+function autoType(dow){
+  return '— Select —';
+}
+
+// ── CALC ROW ───────────────────────────────────────────────────────────────
+function renderMealTiers(){
+  const wrap=document.getElementById('mealTiersWrap');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  mealTiers.forEach((t,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:8px;align-items:center;';
+    row.innerHTML=`
+      <input type="text" value="${t.hrs}" placeholder="hrs" style="width:70px;font-family:var(--sans);font-size:13px;padding:6px 9px;border:1px solid var(--brd);border-radius:6px;" oninput="updMealTier(${i},'hrs',this.value)">
+      <span style="font-size:11px;color:var(--txt3);">hrs OT →</span>
+      <input type="text" value="${t.amt}" placeholder="RM" style="width:80px;font-family:var(--sans);font-size:13px;padding:6px 9px;border:1px solid var(--brd);border-radius:6px;" oninput="updMealTier(${i},'amt',this.value)">
+      <span style="font-size:11px;color:var(--txt3);">RM</span>
+      <button type="button" class="btn b-red" onclick="delMealTier(${i})" style="font-size:10px;padding:3px 8px;">✕</button>
+    `;
+    wrap.appendChild(row);
+  });
+}
+function addMealTier(){
+  mealTiers.push({hrs:1,amt:0});
+  renderMealTiers(); saveLocal(); scheduleSave();
+}
+function delMealTier(i){
+  mealTiers.splice(i,1);
+  renderMealTiers(); recalcAll(); saveLocal(); scheduleSave();
+}
+function updMealTier(i,field,val){
+  mealTiers[i][field]=parseFloat(val)||0;
+  recalcAll(); saveLocal(); scheduleSave();
+}
+function getMealAllowance(otHours){
+  // Find the tier with the HIGHEST hour threshold that otHours still meets,
+  // and return its RM amount. Returns 0 if no tier is met.
+  let bestTier=null;
+  mealTiers.forEach(t=>{
+    if(otHours>=t.hrs && (!bestTier||t.hrs>bestTier.hrs)) bestTier=t;
+  });
+  return bestTier?bestTier.amt:0;
+}
+
+function calcRow(r){
+  const hr=n('hrR'), dr=n('drR'), brk=n('brk');
+  const rOT=n('rOT'), rSun=n('rSun'), rHol=n('rHol'), rOff=n('rOff');
+  const aAmt=n('aAmt');
+  r.regH=0; r.otH=0; r.totH=0; r.pay=0; r.rate=0; r.meal=0; r.att=0;
+
+  const dt=r.dayType||'';
+
+  if(!r.date||dt==='— Select —'||dt==='Annual Leave'||dt==='Medical Leave'){
+    if(dt==='Unpaid Leave'){ r.pay=-(dr); }
+    return;
+  }
+  if(dt==='Unpaid Leave'){ r.pay=-(dr); return; }
+  if(dt==='Off Day'){ r.pay=n('drR')*rOff; return; }
+
+  if(!r.timeIn||!r.timeOut) return;
+
+  // Attendance allowance for any day with time in
+  r.att = aAmt;
+
+  const dow=new Date(r.year,r.month,r.date).getDay();
+
+  if(dt==='Rest Day (Sunday)'||dt==='Public Holiday'){
+    const wm=workedMin(r.timeIn,r.timeOut);  // handles past midnight
+    const wh=wm/60;
+    r.otH=+wh.toFixed(2); r.totH=r.otH;
+    r.rate=dt==='Rest Day (Sunday)'?rSun:rHol;
+    r.pay=+(wh*r.rate*hr).toFixed(2);
+    r.meal=getMealAllowance(wh);
+    return;
+  }
+
+  if(dt==='Overtime'){
+    const wm=Math.max(workedMin(r.timeIn,r.timeOut)-brk,0);  // handles past midnight
+    const wh=wm/60;
+    r.otH=+wh.toFixed(2); r.totH=r.otH;
+    r.rate=rOT; r.pay=+(wh*rOT*hr).toFixed(2);
+    r.meal=getMealAllowance(wh);
+    return;
+  }
+
+  // Regular — handles past midnight (e.g. timeIn=20:00 timeOut=01:30 next day)
+  const sf=shiftFor(dow);
+  const ss=toMin(sf.s), se=toMin(sf.e);
+  const ai=toMin(r.timeIn);
+  let ao=toMin(r.timeOut);
+  if(ao<=ai) ao+=1440;  // past midnight: add 24h
+  const overlapMin=Math.max(Math.min(ao,se)-Math.max(ai,ss)-brk,0);
+  const overlapH=overlapMin/60;
+  const beforeH=Math.max(ss-ai,0)/60;
+  const afterH=Math.max(ao-se,0)/60;
+  r.regH=+Math.min(overlapH,sf.cap).toFixed(2);
+  r.otH=+(beforeH+afterH+Math.max(overlapH-sf.cap,0)).toFixed(2);
+  r.totH=+(r.regH+r.otH).toFixed(2);
+  r.rate=r.otH>0?rOT:0;
+  r.pay=+(r.otH*rOT*hr).toFixed(2);
+  r.meal=getMealAllowance(r.otH);
+}
+
+function recalcAll(){ rows.forEach(r=>calcRow(r)); renderTable(); calcSummary(); saveLocal(); scheduleSave(); }
+
+// ── ROW MANAGEMENT ─────────────────────────────────────────────────────────
+function addRow(y,m,d,dt,ti,to){
+  y=y??year; m=m??mon; d=d??null;
+  const dow=d?new Date(y,m,d).getDay():null;
+  const r={id:++rid,year:y,month:m,date:d,
+    dayType:dt||(dow!==null?autoType(dow):'— Select —'),
+    timeIn:ti||'', timeOut:to||'',
+    regH:0,otH:0,totH:0,pay:0,rate:0,meal:0,att:0,remarks:''};
+  if(d&&r.dayType!=='— Select —'&&!r.timeIn){
+    const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e;
+  }
+  calcRow(r); rows.push(r);
+  renderTable(); calcSummary(); saveLocal(); scheduleSave(r);
+}
+
+function delRow(id){ const gone=rows.find(r=>r.id===id); rows=rows.filter(r=>r.id!==id); renderTable(); calcSummary(); saveLocal(); scheduleSave(gone); }
+
+function fillMonth(){
+  const nd=maxDays(year,mon);
+  for(let d=1;d<=nd;d++){
+    if(rows.find(r=>r.year===year&&r.month===mon&&r.date===d)) continue;
+    addRow(year,mon,d,'— Select —','','');
+  }
+}
+
+function archiveMonth(){
+  // Guard: nothing to archive?
+  const vis=rows.filter(r=>r.year===year&&r.month===mon);
+  if(!vis.length){
+    alert('No data for '+MN[mon]+' '+year+'. Nothing to archive.');
+    return;
+  }
+  const taken=vis.filter(r=>r.dayType&&r.dayType!=='— Select —').length;
+  if(!confirm('Archive '+MN[mon]+' '+year+'? ('+taken+' rows)\n\n'
+    +'Downloads TWO files first:\n'
+    +'  • Excel (.xlsx) of this month\n'
+    +'  • Full backup (.json) — use ♻️ Restore to undo this\n\n'
+    +'Then removes the month from the app AND from the cloud copy.\n'
+    +'⚠️ ↺ Reload will NOT bring it back afterwards.\n'
+    +'(Your Google Sheet month tab is kept.)')) return;
+
+  // Export to Excel first
+  if(typeof XLSX==='undefined'){
+    alert('SheetJS not loaded yet — try again in a moment.'); return;
+  }
+  const bas=n('bas'),alw=n('alw'),oth=n('oth'),dr=n('drR');
+  const sorted=vis.slice().sort((a,b)=>(a.date||0)-(b.date||0));
+  const tPay=sorted.reduce((s,r)=>s+(r.pay>0?r.pay:0),0);
+  const tMeal=sorted.reduce((s,r)=>s+r.meal,0);
+  const tAtt=sorted.reduce((s,r)=>s+r.att,0);
+  const tReg=sorted.reduce((s,r)=>s+r.regH,0);
+  const tOT=sorted.reduce((s,r)=>s+r.otH,0);
+  const unDed=sorted.filter(r=>r.dayType==='Unpaid Leave').length*dr;
+  const grand=tPay+tMeal+tAtt+bas+alw+oth-unDed;
+
+  const hdr=['#','Date','Day','Day Type','Time In','Time Out',
+             'Reg Hrs','OT Hrs','Tot Hrs','Rate','OT Pay','Meal','Att.','Remarks'];
+  const data=[hdr];
+  sorted.forEach((r,i)=>{
+    const dow=r.date?new Date(r.year,r.month,r.date).getDay():-1;
+    const dd=r.date?pad2(r.date)+'/'+pad2(r.month+1)+'/'+String(r.year).slice(-2):'';
+    const sR=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||(r.otH||0)>0;
+    data.push([i+1,dd,dow>=0?DN[dow]:'',r.dayType||'',
+      r.timeIn||'',r.timeOut||'',
+      +(r.regH||0).toFixed(2),+(r.otH||0).toFixed(2),+(r.totH||0).toFixed(2),
+      sR&&r.rate>0?+(r.rate||0).toFixed(2):0,
+      r.pay>0?+(r.pay||0).toFixed(2):0,
+      +(r.meal||0).toFixed(2),+(r.att||0).toFixed(2),r.remarks||'']);
+  });
+  data.push([]);
+  data.push(['TOTAL','','','','','',+tReg.toFixed(2),+tOT.toFixed(2),'','',
+             +tPay.toFixed(2),+tMeal.toFixed(2),+tAtt.toFixed(2),'']);
+  data.push(['GRAND TOTAL','','','','','','','','','',+grand.toFixed(2),'','','']);
+
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:4},{wch:10},{wch:5},{wch:18},{wch:8},{wch:8},
+               {wch:8},{wch:8},{wch:8},{wch:7},{wch:11},{wch:9},{wch:9},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,MN[mon].slice(0,3)+' '+year);
+  XLSX.writeFile(wb,'Archive_'+MN[mon]+'_'+year+'.xlsx');
+
+  // Full backup BEFORE removal — restoring this file undoes the archive completely.
+  // Must be a FULL payload, not just this month: ♻️ Restore replaces all rows.
+  try{ backupData(); }catch(ex){}
+
+  // Remove this month from rows array
+  rows=rows.filter(r=>!(r.year===year&&r.month===mon));
+  saveLocal(); scheduleSave();
+  renderTable(); calcSummary();
+  alert('✅ Archived '+MN[mon]+' '+year+'\n\n'
+    +'Excel + full backup (.json) downloaded.\n'
+    +'Month removed from the app and the cloud copy.\n\n'
+    +'To undo: ♻️ Restore the .json file just downloaded.');
+}
+
+function clearAll(){
+  if(!confirm('Clear ALL attendance rows from this device?\n\nA backup file will download first.\nGoogle Sheets data is NOT affected — press ↺ Reload to get everything back.')) return;
+  try{ if(rows.length) backupData(); }catch(ex){}   // safety net before wiping
+  rows=[]; rid=0;
+  localStorage.removeItem('att_rows');  // clear rows locally only
+  // Settings and cloud URL are kept
+  // Sync is DISARMED until an explicit Reload or Save Now, so edits made after a
+  // Clear can never silently overwrite the full cloud copy.
+  syncArmed=false;
+  fullSaveNeeded=true; dirtyMonths.clear();   // a later deliberate save replaces everything
+  clearTimeout(saveTimer);
+  renderTable(); calcSummary();
+  setStat('warn','⏸ Cleared — sync paused. Press ↺ Reload to restore everything.');
+}
+
+// ── FIELD UPDATES ──────────────────────────────────────────────────────────
+
+function updDate(id,val){
+  const r=rows.find(x=>x.id===id); if(!r) return;
+  if(!val){ r.date=null; r.year=year; r.month=mon; }
+  else {
+    const p=val.split('-');
+    r.year=parseInt(p[0]); r.month=parseInt(p[1])-1; r.date=parseInt(p[2]);
+  }
+  calcRow(r); renderTable(); calcSummary(); saveLocal(); scheduleSave(r);
+}
+function updDT(id,val){
+  const r=rows.find(x=>x.id===id); if(!r) return;
+  r.dayType=val;
+  if(val==='— Select —'){ r.timeIn=''; r.timeOut=''; }
+  else if(!r.timeIn&&['Regular','Overtime','Rest Day (Sunday)','Public Holiday'].includes(val)){
+    const dow=r.date?new Date(r.year,r.month,r.date).getDay():0;
+    const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e;
+  }
+  calcRow(r); renderRow(r); calcSummary(); saveLocal(); scheduleSave(r);
+}
+
+function updTime(id,f,v){
+  const r=rows.find(x=>x.id===id); if(!r) return;
+  r[f]=v; calcRow(r); renderRow(r); calcSummary(); saveLocal(); scheduleSave(r);
+}
+
+function updField(id,f,v){
+  const r=rows.find(x=>x.id===id); if(!r) return;
+  r[f]=v; saveLocal(); scheduleSave(r);
+}
+
+// ── RENDER TABLE ───────────────────────────────────────────────────────────
+function renderTable(){
+  const tb=document.getElementById('tbody');
+  if(!tb) return;
+  tb.innerHTML='';
+  const vis=rows.filter(r=>r.year===year&&r.month===mon)
+    .sort((a,b)=>(a.date||99)-(b.date||99));
+
+  if(!vis.length){
+    tb.innerHTML=`<tr><td colspan="15" style="text-align:center;padding:28px;color:var(--txt3);font-size:13px">
+      No entries for ${MN[mon]} ${year} — click <strong>+ Row</strong> or <strong>📅 Fill</strong></td></tr>`;
+    renderFooter([]); return;
+  }
+  vis.forEach((r,i)=>{ tb.appendChild(buildRow(r,i)); });
+  renderFooter(vis);
+}
+
+function buildRow(r,i){
+  const dow=r.date?new Date(r.year,r.month,r.date).getDay():-1;
+  const dn=dow>=0?DN[dow]:'';
+  const cls=r.dayType==='Annual Leave'?'ann':r.dayType==='Medical Leave'?'med':
+    r.dayType==='Unpaid Leave'?'unp':r.dayType==='Off Day'?'off':
+    r.dayType==='Public Holiday'?'hol':dow===0?'sun':dow===6?'sat':'';
+  const dc=dow===0?'color:var(--red);font-weight:700':dow===6?'color:var(--pur);font-weight:600':'color:var(--txt3)';
+  const showR=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
+  const opts=TYPES.map(t=>`<option${r.dayType===t?' selected':''}>${t}</option>`).join('');
+  const tr=document.createElement('tr');
+  tr.dataset.id=r.id; if(cls) tr.className=cls;
+  tr.innerHTML=
+    `<td style="color:var(--txt3);font-family:var(--mono);font-size:10px;text-align:center">${i+1}</td>`+
+    `<td><input type="date" value="${isoD(r.year,r.month,r.date)}" style="font-family:var(--mono);font-size:11px;width:100%;max-width:100%;box-sizing:border-box;" onchange="updDate(${r.id},this.value)"></td>`+
+    `<td style="text-align:center;font-family:var(--mono);font-size:10px;${dc}">${dn}</td>`+
+    `<td><select onchange="updDT(${r.id},this.value)">${opts}</select></td>`+
+    `<td><input type="time" value="${r.timeIn||''}" onchange="updTime(${r.id},'timeIn',this.value)"></td>`+
+    `<td><input type="time" value="${r.timeOut||''}" onchange="updTime(${r.id},'timeOut',this.value)"></td>`+
+    `<td class="n">${r.regH.toFixed(2)}</td>`+
+    `<td class="n" style="${r.otH>0?'color:var(--amb)':'color:var(--txt3)'}">${r.otH>0?r.otH.toFixed(2):'—'}</td>`+
+    `<td class="n"><b>${r.totH.toFixed(2)}</b></td>`+
+    `<td class="n" style="font-size:10px;${showR?'color:var(--amb)':'color:var(--txt3)'}">${showR&&r.rate>0?r.rate.toFixed(2)+'×':'—'}</td>`+
+    `<td class="n" style="${r.pay>0?'color:var(--grn);font-weight:600':'color:var(--txt3)'}">${r.pay>0?'RM '+r.pay.toLocaleString('en-MY',{minimumFractionDigits:2}):'—'}</td>`+
+    `<td class="n" style="${r.meal>0?'color:var(--amb)':'color:var(--txt3)'}">${r.meal>0?'RM '+r.meal.toFixed(2):'—'}</td>`+
+    `<td class="n" style="${r.att>0?'color:var(--grn)':'color:var(--txt3)'}">${r.att>0?'RM '+r.att.toFixed(2):'—'}</td>`+
+    `<td><input type="text" value="${r.remarks||''}" placeholder="…" style="font-size:10px;" onchange="updField(${r.id},'remarks',this.value)"></td>`+
+    `<td class="noprint" style="text-align:center"><span onclick="delRow(${r.id})" style="color:var(--red);font-size:14px;font-weight:700;cursor:pointer;">✕</span></td>`;
+  return tr;
+}
+
+function renderRow(r){
+  const tr=document.querySelector(`tr[data-id="${r.id}"]`);
+  if(!tr) return;
+  const i=Array.from(tr.parentNode.children).indexOf(tr);
+  const newTr=buildRow(r,i);
+  tr.parentNode.replaceChild(newTr,tr);
+}
+
+function renderFooter(vis){
+  const tf=document.getElementById('tfoot');
+  if(!tf) return;
+  tf.innerHTML='';
+  const tReg=vis.reduce((a,r)=>a+r.regH,0);
+  const tOT =vis.reduce((a,r)=>a+r.otH,0);
+  const tTot=vis.reduce((a,r)=>a+r.totH,0);
+  const tPay=vis.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
+  const tMeal=vis.reduce((a,r)=>a+r.meal,0);
+  const tAtt =vis.reduce((a,r)=>a+r.att,0);
+  const basic=n('bas'), alw=n('alw'), oth=n('oth');
+  const unDays=vis.filter(r=>r.dayType==='Unpaid Leave').length;
+  const unDed=unDays*n('drR');
+  const subT=tPay+tMeal+tAtt+basic+alw+oth;
+  const grand=subT-unDed;
+
+  const R=(label,val,cls='fearns',right=true)=>{
+    const tr=document.createElement('tr');
+    tr.className=cls;
+    tr.innerHTML=`<td colspan="10" style="text-align:right;font-family:var(--sans);font-size:11px;padding:7px 8px;">${label}</td>`+
+      `<td colspan="3" style="text-align:right;padding:7px 8px;font-family:var(--mono);">${val}</td>`+
+      `<td></td><td class="noprint"></td>`;
+    tf.appendChild(tr); return tr;
+  };
+  const totTr=document.createElement('tr');
+  totTr.className='ftot';
+  const ts='font-family:var(--mono);text-align:right;padding:7px 5px;font-size:11px;font-weight:700;';
+  totTr.innerHTML=
+    `<td style="padding:7px 5px;"></td>`+
+    `<td colspan="5" style="font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:7px 8px;">OT Totals</td>`+
+    `<td style="${ts}">${tReg.toFixed(2)}</td>`+
+    `<td style="${ts}">${tOT.toFixed(2)}</td>`+
+    `<td style="${ts}">${tTot.toFixed(2)}</td>`+
+    `<td style="${ts}color:var(--txt3)">—</td>`+
+    `<td style="${ts}">${rm(tPay)}</td>`+
+    `<td style="${ts}">${rm(tMeal)}</td>`+
+    `<td style="${ts}">${rm(tAtt)}</td>`+
+    `<td></td><td class="noprint"></td>`;
+  tf.appendChild(totTr);
+
+  // Earnings section header
+  const eh=document.createElement('tr');
+  eh.innerHTML=`<td colspan="15" style="background:#1e293b;color:#94a3b8;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;padding:5px 8px;">Earnings</td>`;
+  tf.appendChild(eh);
+
+  R('OT Pay', num2(tPay));
+  R('Meal Allowance', num2(tMeal));
+  R('Attendance Allowance', num2(tAtt));
+  R('Basic Salary', num2(basic));
+  R('Allowance', num2(alw));
+  R('Others', num2(oth));
+
+  const st=document.createElement('tr');
+  st.className='fsubt';
+  st.innerHTML=`<td colspan="10" style="text-align:right;font-family:var(--sans);font-size:11px;font-weight:700;padding:8px;">Sub Total</td>`+
+    `<td colspan="3" style="text-align:right;font-family:var(--mono);font-size:13px;padding:8px;">${num2(subT)}</td>`+
+    `<td></td><td class="noprint"></td>`;
+  tf.appendChild(st);
+
+  if(unDays>0){
+    const dh=document.createElement('tr');
+    dh.innerHTML=`<td colspan="15" style="background:#7f1d1d;color:#fca5a5;font-family:var(--sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;padding:5px 8px;">Deductions</td>`;
+    tf.appendChild(dh);
+    const dr2=document.createElement('tr');
+    dr2.className='fded';
+    dr2.innerHTML=`<td colspan="10" style="text-align:right;font-family:var(--sans);font-size:11px;padding:7px 8px;">Unpaid Leave (${unDays} day × RM${n('drR').toFixed(2)})</td>`+
+      `<td colspan="3" style="text-align:right;font-family:var(--mono);color:#ef4444;padding:7px 8px;">−${rm(unDed)}</td>`+
+      `<td></td><td class="noprint"></td>`;
+    tf.appendChild(dr2);
+  }
+
+  const gt=document.createElement('tr');
+  gt.className='fgrand';
+  gt.innerHTML=`<td colspan="10" style="text-align:right;font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.4px;padding:9px 8px;">Grand Total</td>`+
+    `<td colspan="3" style="text-align:right;font-family:var(--mono);font-size:14px;padding:9px 8px;">${rm(grand)}</td>`+
+    `<td></td><td class="noprint"></td>`;
+  tf.appendChild(gt);
+
+  // Leave balance
+  const allAnnTk=rows.filter(r=>r.dayType==='Annual Leave').length;
+  const allMedTk=rows.filter(r=>r.dayType==='Medical Leave').length;
+  const allUnpTk=rows.filter(r=>r.dayType==='Unpaid Leave').length;
+  const annEnt=n('lvA'), medEnt=n('lvM');
+  const annBal=Math.max(annEnt-allAnnTk,0), medBal=Math.max(medEnt-allMedTk,0);
+
+  const lh=document.createElement('tr');
+  lh.className='fleave-hdr';
+  lh.innerHTML=`<td colspan="15" style="padding:6px 8px;">Leave Balance Summary — Cumulative (All Months)</td>`;
+  tf.appendChild(lh);
+
+  const lc=document.createElement('tr');
+  lc.className='fleave-col';
+  lc.innerHTML=`<td colspan="5" style="padding:6px 8px;">Leave Type</td>`+
+    `<td colspan="3" style="text-align:center;padding:6px 4px;">Entitled</td>`+
+    `<td colspan="2" style="text-align:center;padding:6px 4px;">Taken</td>`+
+    `<td colspan="3" style="text-align:center;padding:6px 4px;">Balance / Deduction</td>`+
+    `<td colspan="2"></td>`;
+  tf.appendChild(lc);
+
+  // Carry-forward leave display
+  const cf2=getLeaveCarryForward(year,mon);
+  const dr2=n('drR');
+
+  // Updated column headers for carry-forward
+  lc.innerHTML=`<td colspan="4" style="padding:6px 8px;">Leave Type</td>`+
+    `<td colspan="2" style="text-align:center;padding:6px 4px;font-size:10px;">Entitled</td>`+
+    `<td colspan="2" style="text-align:center;padding:6px 4px;font-size:10px;">Opening Bal</td>`+
+    `<td colspan="2" style="text-align:center;padding:6px 4px;font-size:10px;">This Month</td>`+
+    `<td colspan="3" style="text-align:center;padding:6px 4px;font-size:10px;">Closing Bal</td>`+
+    `<td colspan="2"></td>`;
+
+  [
+    {cls:'ann', label:'🟡 Annual Leave',
+     ent: cf2.annEnt||'—', open: cf2.annOpen, thisMon: cf2.annThisMon,
+     close: cf2.annEnt ? cf2.annClose+' day(s)' : '—', closeColor:'#10b981'},
+    {cls:'med', label:'🟢 Medical Leave',
+     ent: cf2.medEnt||'—', open: cf2.medOpen, thisMon: cf2.medThisMon,
+     close: cf2.medEnt ? cf2.medClose+' day(s)' : '—', closeColor:'#10b981'},
+    {cls:'unp', label:'🔴 Unpaid Leave',
+     ent: '—', open: '—', thisMon: allUnpTk,
+     close: allUnpTk>0 ? '−RM '+(allUnpTk*dr2).toFixed(2) : 'RM 0.00', closeColor:'#ef4444'},
+  ].forEach(row=>{
+    const lr=document.createElement('tr');
+    lr.className='fleave-'+row.cls;
+    lr.innerHTML=
+      `<td colspan="4" style="padding:7px 8px;font-family:var(--sans);font-size:12px;">${row.label}</td>`+
+      `<td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;color:#1e40af;">${row.ent}</td>`+
+      `<td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;color:#6b7280;">${row.open}</td>`+
+      `<td colspan="2" style="text-align:center;font-family:var(--mono);font-size:12px;color:#ef4444;">${row.thisMon}</td>`+
+      `<td colspan="3" style="text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;color:${row.closeColor};">${row.close}</td>`+
+      `<td colspan="2"></td>`;
+    tf.appendChild(lr);
+  });
+}
+
+// ── PWA: SERVICE WORKER + INSTALL ─────────────────────────────────────────
+(function(){
+  'use strict';
+  var _deferredPrompt = null;
+
+  // Register service worker
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js')
+        .then(function(r){ })
+        .catch(function(e){ });
+    });
+  }
+
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           (navigator.standalone===true);
+  }
+  function isIOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent||'') &&
+           !/crios|fxios/i.test(navigator.userAgent||'');
+  }
+  function isAndroid(){
+    return /android/i.test(navigator.userAgent||'');
+  }
+
+  function getEl(id){ return document.getElementById(id); }
+
+  function hideBanner(){
+    var b=getEl('pwaInstallBanner'); if(b) b.style.display='none';
+  }
+  function showBanner(){
+    if(isStandalone()) return;
+    var b=getEl('pwaInstallBanner');
+    if(b && !localStorage.getItem('pwa_dismissed')) b.style.display='block';
+    var hb=getEl('pwaHeaderBtn'); if(hb) hb.style.display='inline-flex';
+  }
+  function showModal(){
+    var m=getEl('pwaInstallModal'); if(m) m.style.display='flex';
+  }
+  function hideModal(){
+    var m=getEl('pwaInstallModal'); if(m) m.style.display='none';
+  }
+
+  function doInstall(){
+    if(_deferredPrompt){
+      _deferredPrompt.prompt();
+      _deferredPrompt.userChoice.then(function(r){
+        _deferredPrompt=null;
+        if(r.outcome==='accepted') hideBanner();
+      });
+    } else {
+      showModal();
+    }
+  }
+
+  // Capture Chrome/Edge install prompt
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    _deferredPrompt = e;
+    showBanner();
+  });
+
+  window.addEventListener('appinstalled', function(){
+    hideBanner();
+    _deferredPrompt = null;
+    var hb=getEl('pwaHeaderBtn'); if(hb) hb.style.display='none';
+  });
+
+  window.addEventListener('DOMContentLoaded', function(){
+    if(isStandalone()) return;
+
+    // Wire buttons
+    var ib=getEl('pwaInstallBtn');     if(ib) ib.onclick=doInstall;
+    var hb=getEl('pwaHeaderBtn');      if(hb) hb.onclick=doInstall;
+    var db=getEl('pwaInstallDismiss'); if(db) db.onclick=function(){
+      hideBanner(); localStorage.setItem('pwa_dismissed','1');
+    };
+    var mc=getEl('pwaModalClose');     if(mc) mc.onclick=hideModal;
+
+    // iOS Safari: manual instructions
+    if(isIOS() && !sessionStorage.getItem('ios_shown')){
+      setTimeout(function(){
+        var h=getEl('iosInstallHint'); if(h) h.style.display='block';
+      }, 2500);
+      var id=getEl('iosHintDismiss');
+      if(id) id.onclick=function(){
+        var h=getEl('iosInstallHint'); if(h) h.style.display='none';
+        sessionStorage.setItem('ios_shown','1');
+      };
+    }
+
+    // Android: show header install button after 5s as fallback
+    // (in case beforeinstallprompt never fires)
+    if(isAndroid()){
+      setTimeout(function(){
+        var hb=getEl('pwaHeaderBtn');
+        if(hb && !isStandalone() && !localStorage.getItem('pwa_dismissed')){
+          hb.style.display='inline-flex';
+        }
+      }, 5000);
+    }
+  });
+})();
+// ── LEAVE CARRY-FORWARD ────────────────────────────────────────────────────
+// Returns leave taken BEFORE the given year/month (for carry-forward display)
+function getLeaveCarryForward(targetYear, targetMon){
+  const isBefore = r => r.year < targetYear || (r.year===targetYear && r.month < targetMon);
+  const annBefore = rows.filter(r=>isBefore(r)&&r.dayType==='Annual Leave').length;
+  const medBefore = rows.filter(r=>isBefore(r)&&r.dayType==='Medical Leave').length;
+  const annThisMon= rows.filter(r=>r.year===targetYear&&r.month===targetMon&&r.dayType==='Annual Leave').length;
+  const medThisMon= rows.filter(r=>r.year===targetYear&&r.month===targetMon&&r.dayType==='Medical Leave').length;
+  const annEnt=n('lvA'), medEnt=n('lvM');
+  return {
+    // Opening balance at start of this month
+    annOpen: Math.max(annEnt - annBefore, 0),
+    medOpen: Math.max(medEnt - medBefore, 0),
+    // Taken this month only
+    annThisMon, medThisMon,
+    // Closing balance after this month
+    annClose: Math.max(annEnt - annBefore - annThisMon, 0),
+    medClose: Math.max(medEnt - medBefore - medThisMon, 0),
+    // Cumulative taken all time
+    annTotalTk: annBefore + annThisMon,
+    medTotalTk: medBefore + medThisMon,
+    annEnt, medEnt
+  };
+}
+
+// ── SUMMARY CARDS ──────────────────────────────────────────────────────────
+function calcSummary(){
+  const v=rows.filter(r=>r.year===year&&r.month===mon);
+  const tReg=v.reduce((a,r)=>a+r.regH,0);
+  const tOT =v.reduce((a,r)=>a+r.otH,0);
+  const tTot=v.reduce((a,r)=>a+r.totH,0);
+  const tPay=v.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
+  const tMeal=v.reduce((a,r)=>a+r.meal,0);
+  const tAtt =v.reduce((a,r)=>a+r.att,0);
+  const tSun=v.filter(r=>r.dayType==='Rest Day (Sunday)').reduce((a,r)=>a+r.totH,0);
+  const tHol=v.filter(r=>r.dayType==='Public Holiday').reduce((a,r)=>a+r.totH,0);
+  const basic=n('bas'), alw=n('alw'), oth=n('oth');
+  const unDays=v.filter(r=>r.dayType==='Unpaid Leave').length;
+  const grand=tPay+tMeal+tAtt+basic+alw+oth-unDays*n('drR');
+  const annTk=rows.filter(r=>r.dayType==='Annual Leave').length;
+  const medTk=rows.filter(r=>r.dayType==='Medical Leave').length;
+  const unpTk=rows.filter(r=>r.dayType==='Unpaid Leave').length;
+  const annEnt=n('lvA'), medEnt=n('lvM');
+  const s=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  s('cDays',v.length); s('cReg',tReg.toFixed(2)); s('cOT',tOT.toFixed(2));
+  s('cSun',tSun.toFixed(2)); s('cHol',tHol.toFixed(2)); s('cTot',tTot.toFixed(2));
+  s('cMeal',tMeal.toFixed(2)); s('cAtt',tAtt.toFixed(2));
+  s('cPay',tPay.toLocaleString('en-MY',{minimumFractionDigits:2}));
+  s('cGrand',grand.toLocaleString('en-MY',{minimumFractionDigits:2}));
+  // Use carry-forward balances for cards
+  const cf=getLeaveCarryForward(year,mon);
+  s('cLA', cf.annEnt?cf.annClose+' / '+cf.annEnt:'—');
+  s('cLM', cf.medEnt?cf.medClose+' / '+cf.medEnt:'—');
+  s('cLU', unpTk);
+  document.getElementById('sub').textContent=MN[mon]+' '+year+' · '+v.length+' entries';
+}
+
+// ── MONTH / YEAR SELECTION ─────────────────────────────────────────────────
+function buildYearSel(){
+  const el=document.getElementById('selYear'); if(!el) return;
+  const cur=new Date().getFullYear();
+  // Preserve current selection if user already picked a year
+  const curVal=parseInt(el.value)||year||cur;
+  el.innerHTML='';
+  for(let y=cur-5;y<=cur+5;y++){
+    const o=document.createElement('option');
+    o.value=y; o.textContent=y;
+    if(y===curVal) o.selected=true;
+    el.appendChild(o);
+  }
+  // Ensure year global matches
+  if(!year||isNaN(year)) year=cur;
+}
+function syncSels(){
+  const sm=document.getElementById('selMon'), sy=document.getElementById('selYear');
+  if(sm && !isNaN(mon)) sm.value=mon;
+  if(sy && !isNaN(year) && year>2000){
+    // If year not in options, rebuild the list first
+    if(!sy.querySelector('option[value="'+year+'"]')){
+      buildYearSel();
+    }
+    sy.value=year;
+  }
+}
+function goMon(){
+  const sm=document.getElementById('selMon'), sy=document.getElementById('selYear');
+  const newMon=sm?parseInt(sm.value):mon;
+  const newYear=sy?parseInt(sy.value):year;
+  // Guard against NaN - never let invalid values through
+  if(!isNaN(newMon)) mon=newMon;
+  if(!isNaN(newYear) && newYear>2000) year=newYear;
+  renderTable(); calcSummary();
+}
+
+// ── LOCAL STORAGE ──────────────────────────────────────────────────────────
+function saveLocal(){
+  try{ 
+    localStorage.setItem('ta_rows',JSON.stringify({rows,rid,year,mon}));
+    localStorage.setItem('ta_sett',JSON.stringify(getSettings()));
+  }catch(e){}
+}
+function loadLocal(){
+  try{
+    const d=JSON.parse(localStorage.getItem('ta_rows')||'{}');
+    if(d.rows){ rows=d.rows; rid=d.rid||0; year=d.year||new Date().getFullYear(); mon=d.mon||new Date().getMonth(); }
+    rows.forEach(fixRow);
+  }catch(e){ rows=[]; rid=0; }
+  try{
+    const s=JSON.parse(localStorage.getItem('ta_sett')||'{}');
+    applySettings(s);
+  }catch(e){}
+}
+function fixRow(r){
+  if(!r.regH) r.regH=0; if(!r.otH) r.otH=0; if(!r.totH) r.totH=0;
+  if(!r.pay) r.pay=0; if(!r.rate) r.rate=0;
+  if(!r.meal) r.meal=0; if(!r.att) r.att=0;
+  if(!r.remarks) r.remarks='';
+  if(!r.dayType) r.dayType='— Select —';
+  if(r.date===undefined) r.date=null;
+}
+
+// ── CLOUD SYNC ─────────────────────────────────────────────────────────────
+// Each employee connects their own Google Sheet.
+// Leave FALLBACK_URL empty — employees paste their Apps Script URL in the ☁ Cloud field.
+const FALLBACK_URL = '';  // intentionally blank — each user sets their own
+
+let syncArmed=true;   // false after a Clear — blocks autosave from overwriting the cloud copy
+let saveTimer=null;
+let isSaving=false;
+
+// Warn user if they try to close while a cloud save is in progress
+window.addEventListener('beforeunload',function(e){
+  if(isSaving){
+    e.preventDefault();
+    e.returnValue='Data is still syncing to Google Sheets. Are you sure you want to leave?';
+    return e.returnValue;
+  }
+});
+
+// ── MANUAL SAVE + DIRTY TRACKING ──────────────────────────────────────────
+// Autosave is off: edits are written to the device immediately (saveLocal) but only
+// reach Google Sheets when you press Save Now. dirtyMonths records which months
+// changed so the save can send just those. Anything that changes every month
+// (settings, recalc, restore) sets fullSaveNeeded and forces a complete save.
+let mergeOK=false;   // set true once the server's save ACK reports merge support
+let dirtyMonths=new Set();
+let fullSaveNeeded=false;
+let hasUnsaved=false;
+let backstopTimer=null;
+const mKey=(y,m)=>String(y)+'-'+String(m);
+
+function markSaved(){
+  dirtyMonths.clear(); fullSaveNeeded=false; hasUnsaved=false;
+  clearTimeout(backstopTimer);
+  updateDirtyUI();
+}
+function updateDirtyUI(){
+  const el=document.getElementById('dirtyDot');
+  if(el) el.style.display=hasUnsaved?'inline':'none';
+}
+// scheduleSave(r) — pass the affected row to mark only its month.
+// Called with no argument = something global changed = full save.
+function scheduleSave(r){
+  if(!CLOUD_URL) CLOUD_URL=FALLBACK_URL;
+  if(r&&r.year!=null&&r.month!=null) dirtyMonths.add(mKey(r.year,r.month));
+  else fullSaveNeeded=true;
+  hasUnsaved=true;
+  updateDirtyUI();
+  if(!CLOUD_URL){ setStat('warn','⚪ Not connected — paste your Apps Script URL above and click Connect'); return; }
+  if(!syncArmed){ setStat('warn','⏸ Sync paused after Clear — press ↺ Reload to get your data back, or ☁ Save Now to overwrite the Sheet'); return; }
+  setStat('warn','● Unsaved changes — press ☁ Save Now');
+  // Backstop: if changes sit unsaved for 5 minutes, save them anyway.
+  clearTimeout(backstopTimer);
+  backstopTimer=setTimeout(function(){ if(hasUnsaved&&syncArmed&&CLOUD_URL) doSave(); },300000);
+}
+window.addEventListener('beforeunload',function(e){
+  if(hasUnsaved&&CLOUD_URL){ e.preventDefault(); e.returnValue=''; return ''; }
+});
+function setStat(state,msg){
+  const el=document.getElementById('sstat'); if(!el) return;
+  el.textContent=msg;
+  el.style.color=state==='ok'?'#10b981':state==='err'?'#ef4444':'#f59e0b';
+}
+
+// JSONP helper — injects a script tag and waits for callback
+// Retries once on script error (transient network issues)
+function jsonp(url, cbName, timeoutMs, retry){
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    window[cbName]=function(d){ delete window[cbName]; s.remove(); res(d); };
+    s.src=url;
+    s.onerror=function(){
+      delete window[cbName]; s.remove();
+      if(!retry){
+        // Retry once after 1s
+        setTimeout(()=>{
+          jsonp(url, cbName, timeoutMs, true).then(res).catch(rej);
+        }, 1000);
+      } else {
+        rej(new Error('script error after retry — Apps Script may have rejected the request'));
+      }
+    };
+    document.head.appendChild(s);
+    setTimeout(()=>{ delete window[cbName]; s.remove(); rej(new Error('timeout after '+(timeoutMs||10000)+'ms')); }, timeoutMs||10000);
+  });
+}
+
+async function doSave(){
+  if(!CLOUD_URL) return;
+  isSaving=true;
+  const MAX_RETRIES=3;
+  // Partial save: send only the months that changed. Requires the merge-aware
+  // Code.gs (it ignores unknown fields, so a full save is always the safe fallback).
+  let body={rows,rid,year,mon,settings:getSettings()};
+  // mergeOK is set only after a save ACK from a merge-aware Code.gs. Until then every
+  // save is a full replace, so deploying the app before Code.gs is harmless.
+  if(mergeOK && !fullSaveNeeded && dirtyMonths.size>0){
+    const months=[...dirtyMonths].map(k=>{ const p=k.split('-'); return {y:+p[0],m:+p[1]}; });
+    const want=new Set(dirtyMonths);
+    body={mode:'merge',months:months,
+          rows:rows.filter(r=>want.has(mKey(r.year,r.month))),
+          rid,year,mon,settings:getSettings()};
+  }
+  const payload=JSON.stringify(body,null,0);
+  // Chunk size drives BOTH the number of round-trips and the Apps Script side's work:
+  // it re-reads every stored chunk on each request, so cost grows with total².
+  // 2000 raw chars ≈ 3.6 KB encoded URL worst-case — well inside limits.
+  const CHUNK=2000;
+  const total=Math.ceil(payload.length/CHUNK);
+  let lastErr='';
+  for(let attempt=1; attempt<=MAX_RETRIES; attempt++){
+    try{
+      const ts=Date.now();
+      for(let i=0;i<total;i++){
+        const rawChunk=payload.slice(i*CHUNK,(i+1)*CHUNK);
+        const encChunk=encodeURIComponent(rawChunk);
+        const cbName='__taSave_'+ts+'_'+i;
+        const url=CLOUD_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
+        setStat('saving','🔄 Saving '+(i+1)+'/'+total+'…');
+        const ack=await jsonp(url, cbName, 25000);
+        if(ack&&ack.merge===true) mergeOK=true;   // server understands partial saves
+      }
+      markSaved();
+      setStat('ok','🟢 Saved to Google Sheets ✓');
+      isSaving=false;
+      return; // success
+    }catch(e){
+      lastErr=e.message;
+      if(attempt<MAX_RETRIES){
+        setStat('saving','⚠️ Retrying ('+(attempt+1)+'/'+MAX_RETRIES+')…');
+        await new Promise(r=>setTimeout(r,attempt*2000));
+      }
+    }
+  }
+  setStat('err','🔴 Save failed: '+lastErr);
+  isSaving=false;
+}
+
+async function doLoad(){
+  if(!CLOUD_URL){ setStat('warn','⚪ Not connected — paste your Apps Script URL and click Connect'); return; }
+  setStat('saving','🔄 Loading…');
+  try{
+    const cbName='__taLoad_'+Date.now();
+    const url=CLOUD_URL+'?action=load&cb='+cbName+'&ts='+Date.now();
+    const data=await jsonp(url, cbName, 15000);
+    if(data&&data.rows){
+      rows=data.rows; rid=data.rid||0;
+      year=data.year||new Date().getFullYear();
+      mon=data.mon||new Date().getMonth();
+      rows.forEach(fixRow);
+      applySettings(data.settings);
+      saveLocal(); syncSels();
+      syncArmed=true;   // cloud copy is now in hand — safe to sync again
+      markSaved();      // local now matches cloud: nothing pending
+      setStat('ok','🟢 Loaded from Google Sheets ✓');
+    } else {
+      loadLocal();
+      setStat('ok','🟡 Cloud empty — loaded local data');
+    }
+  }catch(e){
+    loadLocal();
+    // Show actionable error
+    if(e.message.includes('script error')){
+      setStat('err','🔴 Apps Script URL rejected — check deployment access (must be "Anyone")');
+    } else if(e.message.includes('timeout')){
+      setStat('err','🔴 Load timed out — check internet connection');
+    } else {
+      setStat('err','🔴 Load failed: '+e.message);
+    }
+  }
+  rows.forEach(r=>calcRow(r));
+  renderTable();
+  calcSummary();
+}
+// ── DEBUG & TEST ─────────────────────────────────────────────────────────
+
+// ── BACKUP & RESTORE ──────────────────────────────────────────────────────
+function backupData(){
+  const payload={rows,rid,year,mon,settings:getSettings()};
+  const json=JSON.stringify(payload,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url2=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const now=new Date();
+  const fname='attendance_backup_'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'.json';
+  a.href=url2; a.download=fname;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url2);
+  setStat('ok','💾 Backup downloaded: '+fname);
+}
+
+function restoreBackup(){
+  const input=document.createElement('input');
+  input.type='file'; input.accept='.json';
+  input.onchange=function(e){
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        const d=JSON.parse(ev.target.result);
+        if(!d.rows||!Array.isArray(d.rows)) throw new Error('Invalid backup file — rows missing');
+        if(!confirm('Restore '+d.rows.length+' rows from "'+file.name+'"?\nThis replaces current data.')) return;
+        rows=d.rows; rid=d.rid||0;
+        fullSaveNeeded=true; dirtyMonths.clear();   // whole dataset replaced
+        year=d.year||new Date().getFullYear();
+        mon=d.mon||new Date().getMonth();
+        rows.forEach(fixRow);
+        if(d.settings) applySettings(d.settings);
+        saveLocal(); syncSels();
+        rows.forEach(r=>calcRow(r));
+        renderTable(); calcSummary();
+        setStat('ok','♻️ Restored '+rows.length+' rows from backup');
+        if(CLOUD_URL) scheduleSave();
+      }catch(ex){ alert('Restore failed: '+ex.message); }
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(input); input.click(); document.body.removeChild(input);
+}
+
+function manualSave(){
+  if(!CLOUD_URL){ setStat('err','⚪ No cloud URL — connect first'); return; }
+  if(!syncArmed){
+    if(!confirm('Sync is paused because you cleared the app.\n\nSaving now will REPLACE your Google Sheet data with the '+rows.length+' row(s) currently in the app.\n\nTo get your old data back instead, press Cancel then ↺ Reload.')) return;
+  }
+  syncArmed=true;
+  clearTimeout(saveTimer);
+  doSave();
+}
+
+function setUrl(url){
+  if(!url){ alert('Please paste a valid Apps Script URL.'); return; }
+  CLOUD_URL=url;
+  localStorage.setItem('ta_url',url);
+  const urlEl=document.getElementById('urlIn');
+  if(urlEl){
+    urlEl.value=url;
+    urlEl.style.borderColor='';
+    urlEl.style.boxShadow='';
+  }
+  doLoad();
+}
+function clearUrl(){ CLOUD_URL=''; localStorage.removeItem('ta_url'); setStat('','⚪ Local only'); }
+async function manualLoad(){ await doLoad(); }
+// ═══════════════════════════════════════════════════════════════════════
+// OFFLINE INDICATOR
+// ═══════════════════════════════════════════════════════════════════════
+function updateOnlineStatus(){
+  document.body.classList.toggle('offline',!navigator.onLine);
+}
+window.addEventListener('online',()=>{ updateOnlineStatus(); if(CLOUD_URL) scheduleSave(); });
+window.addEventListener('offline',updateOnlineStatus);
+
+// ═══════════════════════════════════════════════════════════════════════
+// PUBLIC HOLIDAYS — Malaysia
+// ═══════════════════════════════════════════════════════════════════════
+// ── EXPORT XLSX ────────────────────────────────────────────────────────────
+function exportXLSX(){
+  if(typeof XLSX==='undefined'){alert('SheetJS not loaded — check internet connection.');return;}
+  const vis=rows.filter(r=>r.year===year&&r.month===mon).sort((a,b)=>(a.date||99)-(b.date||99));
+  if(!vis.length){alert('No data to export for '+MN[mon]+' '+year+'.');return;}
+  const bas=n('bas'),alw=n('alw'),oth=n('oth'),dr=n('drR');
+  const tPay=vis.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
+  const tMeal=vis.reduce((a,r)=>a+r.meal,0),tAtt=vis.reduce((a,r)=>a+r.att,0);
+  const tReg=vis.reduce((a,r)=>a+r.regH,0),tOT=vis.reduce((a,r)=>a+r.otH,0);
+  const unDed=vis.filter(r=>r.dayType==='Unpaid Leave').length*dr;
+  const grand=tPay+tMeal+tAtt+bas+alw+oth-unDed;
+  const wb=XLSX.utils.book_new();
+  const hdr=['#','Date','Day','Day Type','Time In','Time Out','Reg Hrs','OT Hrs','Tot Hrs','Rate','OT Pay','Meal','Att.','Remarks'];
+  const data=[hdr];
+  vis.forEach((r,i)=>{
+    const dow=r.date?new Date(r.year,r.month,r.date).getDay():-1;
+    const dd=r.date?pad2(r.date)+'/'+pad2(r.month+1)+'/'+String(r.year).slice(-2):'';
+    const sR=['Rest Day (Sunday)','Public Holiday','Overtime'].includes(r.dayType)||r.otH>0;
+    data.push([i+1,dd,dow>=0?DN[dow]:'',r.dayType||'',r.timeIn||'',r.timeOut||'',
+      r.regH,r.otH,r.totH,sR&&r.rate>0?r.rate:0,r.pay>0?r.pay:0,r.meal,r.att,r.remarks||'']);
+  });
+  data.push([],[' TOTALS','','','','','',tReg,tOT,vis.reduce((a,r)=>a+r.totH,0),'',tPay,tMeal,tAtt,'']);
+  data.push([' OT Pay','','','','','','','','','',tPay,'','','']);
+  data.push([' Meal Allow','','','','','','','','','',tMeal,'','','']);
+  data.push([' Att. Allow','','','','','','','','','',tAtt,'','','']);
+  data.push([' Basic Salary','','','','','','','','','',bas,'','','']);
+  data.push([' Allowance','','','','','','','','','',alw,'','','']);
+  data.push([' Others','','','','','','','','','',oth,'','','']);
+  if(unDed>0) data.push([' Unpaid Deduction','','','','','','','','','','-'+unDed.toFixed(2),'','','']);
+  data.push([' GRAND TOTAL','','','','','','','','','',grand,'','','']);
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:4},{wch:10},{wch:5},{wch:18},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:7},{wch:11},{wch:9},{wch:9},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,ws,MN[mon].slice(0,3)+' '+year);
+  XLSX.writeFile(wb,'Attendance_'+MN[mon]+'_'+year+'.xlsx');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// PAYSLIP
+// ═══════════════════════════════════════════════════════════════════════
+function showPayslip(){
+  const v=rows.filter(r=>r.year===year&&r.month===mon);
+  const tPay=v.reduce((a,r)=>a+(r.pay>0?r.pay:0),0);
+  const tMeal=v.reduce((a,r)=>a+r.meal,0);
+  const tAtt=v.reduce((a,r)=>a+r.att,0);
+  const tReg=v.reduce((a,r)=>a+r.regH,0);
+  const tOT=v.reduce((a,r)=>a+r.otH,0);
+  const tTot=v.reduce((a,r)=>a+r.totH,0);
+  const bas=n('bas'),alw=n('alw'),oth=n('oth'),dr=n('drR');
+  const unDays=v.filter(r=>r.dayType==='Unpaid Leave').length;
+  const unDed=unDays*dr;
+  const grand=tPay+tMeal+tAtt+bas+alw+oth-unDed;
+  const annTk=rows.filter(r=>r.dayType==='Annual Leave').length;
+  const medTk=rows.filter(r=>r.dayType==='Medical Leave').length;
+  const annEnt=n('lvA'),medEnt=n('lvM');
+  const MNfull=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const empName=g('empName')||'—', empPos=g('empPos')||'';
+  const rm2=v=>'RM '+Math.abs(v).toLocaleString('en-MY',{minimumFractionDigits:2});
+  const s=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  s('psPeriod',MNfull[mon]+' '+year);
+  s('psEmployee',empName+(empPos?' · '+empPos:''));
+  s('psDays',v.filter(r=>r.totH>0||['Annual Leave','Medical Leave'].includes(r.dayType)).length+' days');
+  s('psReg',tReg.toFixed(2)+' hrs'); s('psOT',tOT.toFixed(2)+' hrs'); s('psTot',tTot.toFixed(2)+' hrs');
+  s('psBas',rm2(bas)); s('psAlw',rm2(alw)); s('psOth',rm2(oth));
+  s('psPay',rm2(tPay)); s('psMeal',rm2(tMeal)); s('psAtt',rm2(tAtt));
+  s('psGrand',rm2(grand));
+  const cfPs=getLeaveCarryForward(year,mon);
+  s('psLA',cfPs.annEnt?cfPs.annClose+' day(s)':'—');
+  s('psLM',cfPs.medEnt?cfPs.medClose+' day(s)':'—');
+  s('psLU',unDays);
+  // Show carry-forward detail in payslip leave cards
+  const laEl=document.getElementById('psLA');
+  const lmEl=document.getElementById('psLM');
+  if(laEl&&cfPs.annEnt){
+    laEl.innerHTML=cfPs.annClose+'<div style="font-size:10px;font-weight:400;color:#60A5FA;margin-top:2px;">'+
+      'Open: '+cfPs.annOpen+' − This month: '+cfPs.annThisMon+'</div>';
+  }
+  if(lmEl&&cfPs.medEnt){
+    lmEl.innerHTML=cfPs.medClose+'<div style="font-size:10px;font-weight:400;color:#6EE7B7;margin-top:2px;">'+
+      'Open: '+cfPs.medOpen+' − This month: '+cfPs.medThisMon+'</div>';
+  }
+  s('psGenDate',new Date().toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'}));
+  const ded=document.getElementById('psDeductSec');
+  if(ded) ded.style.display=unDays>0?'block':'none';
+  s('psUnpaidLabel','Unpaid Leave ('+unDays+' day x RM'+dr.toFixed(2)+')');
+  s('psUnpaid','- '+rm2(unDed));
+  document.getElementById('payslipModal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+function closePayslip(){
+  document.getElementById('payslipModal').style.display='none';
+  document.body.style.overflow='';
+}
+function printPayslip(){
+  closePayslip();
+  setTimeout(()=>{
+    document.body.classList.add('printing-payslip');
+    window.print();
+    setTimeout(()=>document.body.classList.remove('printing-payslip'),800);
+  },100);
+}
+function exportPayslipPDF(){
+  const inner=document.getElementById('payslipInner');
+  const MNfull=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const empName=g('empName')||'Employee';
+  const win=window.open('','_blank');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payslip '+empName+' '+MNfull[mon]+' '+year+'</title>'+
+    '<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;background:#fff;}'+
+    '.ps-head{background:#1E293B;color:#fff;padding:24px 28px;}.ps-head h2{font-size:20px;font-weight:700;margin-bottom:4px;}'+
+    '.ps-head p{font-size:12px;opacity:.75;}.ps-section{padding:14px 28px;border-bottom:1px solid #E2E8F0;}'+
+    '.ps-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#9CA3AF;margin-bottom:8px;}'+
+    '.ps-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;}'+
+    '.ps-row span:last-child{font-weight:600;font-family:monospace;}'+
+    '.ps-total{background:#0F2354;color:#fff;padding:18px 28px;display:flex;justify-content:space-between;}'+
+    '.ps-total span:first-child{font-size:14px;font-weight:700;}.ps-total span:last-child{font-size:20px;font-weight:700;font-family:monospace;}'+
+    '.ps-leave{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 28px;}'+
+    '.ps-lcard{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px;text-align:center;}'+
+    '.ps-lcard .lname{font-size:10px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:4px;}'+
+    '.ps-lcard .lbal{font-size:18px;font-weight:700;font-family:monospace;}'+
+    '.footer{padding:10px 28px;font-size:10px;color:#9CA3AF;text-align:center;}'+
+    '.noprint,.ps-actions{display:none!important;}</style></head><body>'+
+    inner.innerHTML+'</body></html>');
+  win.document.close();
+  setTimeout(()=>{win.focus();win.print();},600);
+}
+
+(async function init(){
+  // Load saved URL from localStorage, or use the hardcoded fallback
+  const savedUrl=localStorage.getItem('ta_url')||FALLBACK_URL;
+  if(savedUrl){
+    CLOUD_URL=savedUrl;
+    const el=document.getElementById('urlIn');
+    if(el) el.value=savedUrl;
+  }
+  buildYearSel(); loadLocal(); syncSels();
+  updateOnlineStatus();
+  if(CLOUD_URL){
+    await doLoad();
+  } else {
+    rows.forEach(r=>calcRow(r));
+    renderTable(); calcSummary();
+    setStat('warn','⚪ Not connected — paste your Apps Script URL above and click Connect');
+    const urlEl=document.getElementById('urlIn');
+    if(urlEl){ urlEl.style.borderColor='#F59E0B'; urlEl.style.boxShadow='0 0 0 2px #FDE68A'; }
+  }
+})();
+</script>
+<!-- PAYSLIP MODAL -->
+<div id="payslipModal" onclick="if(event.target===this){closePayslip();}">
+  <div id="payslipInner">
+    <div class="ps-head">
+      <h2>📋 Payslip</h2>
+      <p id="psPeriod">—</p>
+      <p id="psEmployee" style="margin-top:4px;font-size:13px;opacity:.9;">—</p>
+    </div>
+    <div class="ps-section">
+      <div class="ps-title">Attendance Summary</div>
+      <div class="ps-row"><span>Working Days</span><span id="psDays">—</span></div>
+      <div class="ps-row"><span>Regular Hours</span><span id="psReg">—</span></div>
+      <div class="ps-row"><span>Overtime Hours</span><span id="psOT">—</span></div>
+      <div class="ps-row"><span>Total Hours</span><span id="psTot">—</span></div>
+    </div>
+    <div class="ps-section">
+      <div class="ps-title">Earnings</div>
+      <div class="ps-row"><span>Basic Salary</span><span id="psBas">—</span></div>
+      <div class="ps-row"><span>Allowance</span><span id="psAlw">—</span></div>
+      <div class="ps-row"><span>Others</span><span id="psOth">—</span></div>
+      <div class="ps-row"><span>OT Pay</span><span id="psPay">—</span></div>
+      <div class="ps-row"><span>Meal Allowance</span><span id="psMeal">—</span></div>
+      <div class="ps-row"><span>Attendance Allowance</span><span id="psAtt">—</span></div>
+    </div>
+    <div class="ps-section" id="psDeductSec" style="display:none;">
+      <div class="ps-title" style="color:var(--red);">Deductions</div>
+      <div class="ps-row" style="color:var(--red);"><span id="psUnpaidLabel">Unpaid Leave</span><span id="psUnpaid">—</span></div>
+    </div>
+    <div class="ps-total">
+      <span>NET PAY</span><span id="psGrand">RM 0.00</span>
+    </div>
+    <div>
+      <div class="ps-section"><div class="ps-title">Leave Balance (Cumulative)</div></div>
+      <div class="ps-leave">
+        <div class="ps-lcard">
+          <div class="lname">Annual</div>
+          <div class="lbal" id="psLA" style="color:var(--acc);">—</div>
+          <div class="lsub">days remaining</div>
+        </div>
+        <div class="ps-lcard">
+          <div class="lname">Medical</div>
+          <div class="lbal" id="psLM" style="color:var(--grn);">—</div>
+          <div class="lsub">days remaining</div>
+        </div>
+        <div class="ps-lcard">
+          <div class="lname">Unpaid Taken</div>
+          <div class="lbal" id="psLU" style="color:var(--red);">0</div>
+          <div class="lsub">days this month</div>
+        </div>
+      </div>
+    </div>
+    <div class="ps-actions noprint">
+      <button class="btn b-blue" onclick="printPayslip()">🖨 Print / Save PDF</button>
+      <button class="btn b-grn" onclick="exportPayslipPDF()">📄 Export PDF</button>
+      <button class="btn b-gray" onclick="closePayslip()">✕ Close</button>
+    </div>
+    <div style="padding:10px 28px;font-size:10px;color:var(--txt3);text-align:center;">
+      Generated by Time Attendance App · <span id="psGenDate"></span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
