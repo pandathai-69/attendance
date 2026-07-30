@@ -1,0 +1,32 @@
+name: Supabase keep-alive
+
+# Runs daily at 06:00 UTC. Any DB activity resets Supabase's 7-day pause timer;
+# daily gives a wide buffer against a missed run. Also runnable by hand from the
+# Actions tab (workflow_dispatch) so you can test it immediately.
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase database
+        run: |
+          code=$(curl -s -o /tmp/resp.txt -w "%{http_code}" \
+            -X POST "$SUPABASE_URL/rest/v1/rpc/ping_keep_alive" \
+            -H "apikey: $SUPABASE_SERVICE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "HTTP $code"
+          cat /tmp/resp.txt
+          # 200/204 = success. Anything else fails the run so you get an email.
+          if [ "$code" != "200" ] && [ "$code" != "204" ]; then
+            echo "Keep-alive failed"; exit 1
+          fi
+          echo "Keep-alive OK"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
