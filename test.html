@@ -341,6 +341,28 @@ const SIDS=['wdS','wdE','saS','saE','brk','hrR','drR','bas','alw','oth','mAmt','
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 let year=new Date().getFullYear(), mon=new Date().getMonth(), rows=[], rid=0;
+
+// ── EXPORT DIRTY-MONTH TRACKING ──────────────────────────────────────────────
+// Which {year,month} pairs have row-level edits since the LAST successful
+// "Export to Sheets" run. Persisted so it survives reloads — this is separate
+// from Supabase sync state entirely. A settings change (bas/alw/oth/rates/leave
+// entitlement/etc.) affects the EARNINGS/LEAVE section of every month, so instead
+// of hooking every settings field individually, exportToSheets() itself compares
+// a snapshot of current settings against the last-exported snapshot and forces a
+// full export whenever they differ — simpler and can't miss a field.
+let dirtyMonths=new Set();
+try{
+  const saved=localStorage.getItem('ta_export_dirty');
+  if(saved) JSON.parse(saved).forEach(k=>dirtyMonths.add(k));
+}catch(e){ console.error('dirtyMonths restore skipped:', e); }
+function saveDirtyMonths(){
+  try{ localStorage.setItem('ta_export_dirty', JSON.stringify([...dirtyMonths])); }catch(e){}
+}
+function markMonthDirty(y,m){
+  if(y==null||m==null) return;
+  dirtyMonths.add(y+'-'+m);
+  saveDirtyMonths();
+}
 let SUPA_URL='', SUPA_KEY='', supaSession=null;
 let EXPORT_URL=''; // employee's own existing Apps Script Web App URL — for on-demand Sheets export only
 let pendingPasswordSetup=null; // holds an authenticated-but-not-yet-password-set session
@@ -492,11 +514,15 @@ function addRow(y,m,d,dt,ti,to){
   if(d&&r.dayType!=='— Select —'&&!r.timeIn){
     const sf=shiftFor(dow); r.timeIn=sf.s; r.timeOut=sf.e;
   }
-  calcRow(r); rows.push(r);
+  calcRow(r); rows.push(r); markMonthDirty(r.year,r.month);
   renderTable(); calcSummary(); saveLocal(); scheduleSave();
 }
 
-function delRow(id){ rows=rows.filter(r=>r.id!==id); renderTable(); calcSummary(); saveLocal(); scheduleSave(); }
+function delRow(id){
+  const r=rows.find(x=>x.id===id);
+  if(r) markMonthDirty(r.year,r.month);
+  rows=rows.filter(r=>r.id!==id); renderTable(); calcSummary(); saveLocal(); scheduleSave();
+}
 
 function fillMonth(){
   const nd=maxDays(year,mon);
@@ -581,15 +607,18 @@ function clearAll(){
 
 function updDate(id,val){
   const r=rows.find(x=>x.id===id); if(!r) return;
+  markMonthDirty(r.year,r.month);  // old month, before the move
   if(!val){ r.date=null; r.year=year; r.month=mon; }
   else {
     const p=val.split('-');
     r.year=parseInt(p[0]); r.month=parseInt(p[1])-1; r.date=parseInt(p[2]);
   }
+  markMonthDirty(r.year,r.month);  // new month, after the move — same row can dirty two tabs
   calcRow(r); renderTable(); calcSummary(); saveLocal(); scheduleSave();
 }
 function updDT(id,val){
   const r=rows.find(x=>x.id===id); if(!r) return;
+  markMonthDirty(r.year,r.month);
   r.dayType=val;
   if(val==='— Select —'){ r.timeIn=''; r.timeOut=''; }
   else if(!r.timeIn&&['Regular','Overtime','Rest Day (Sunday)','Public Holiday'].includes(val)){
@@ -601,11 +630,13 @@ function updDT(id,val){
 
 function updTime(id,f,v){
   const r=rows.find(x=>x.id===id); if(!r) return;
+  markMonthDirty(r.year,r.month);
   r[f]=v; calcRow(r); renderRow(r); calcSummary(); saveLocal(); scheduleSave();
 }
 
 function updField(id,f,v){
   const r=rows.find(x=>x.id===id); if(!r) return;
+  markMonthDirty(r.year,r.month);
   r[f]=v; saveLocal(); scheduleSave();
 }
 
@@ -1417,7 +1448,33 @@ async function exportToSheets(){
   const origLabel=btn?btn.textContent:'';
   if(btn){ btn.disabled=true; }
   try{
-    const payload=JSON.stringify({rows,rid,year,mon,settings:getSettings()});
+    // Settings (bas/alw/oth/rates/leave entitlement/etc.) affect the EARNINGS/LEAVE
+    // section of EVERY month's tab, and there's no single reliable "settings changed"
+    // event to hook (getSettings() reads live from the DOM on demand) — so instead,
+    // compare a snapshot of current settings against the one saved at the last
+    // successful export. Any difference forces a full export; this can't miss a field
+    // the way scattering hooks across every settings input could.
+    const curSettingsJSON=JSON.stringify(getSettings());
+    const everExported=!!localStorage.getItem('ta_last_exported_at');
+    const settingsChanged=!everExported || curSettingsJSON!==(localStorage.getItem('ta_export_last_settings')||'');
+
+    let exportRows, monthsList=null, mode=null;
+    if(settingsChanged){
+      exportRows=rows;  // full export — first time ever, or settings changed since last export
+    } else {
+      if(dirtyMonths.size===0){
+        if(btn){ btn.disabled=false; btn.textContent=origLabel||'\ud83d\udcca Export to Sheets'; }
+        alert('Nothing new to export \u2014 Sheets already reflects your last export.');
+        return;
+      }
+      exportRows=rows.filter(r=>dirtyMonths.has(r.year+'-'+r.month));
+      monthsList=[...dirtyMonths].map(k=>{ const p=k.split('-'); return {y:+p[0],m:+p[1]}; });
+      mode='merge';
+    }
+
+    const payloadObj={rows:exportRows,rid,year,mon,settings:getSettings()};
+    if(mode){ payloadObj.mode=mode; payloadObj.months=monthsList; }
+    const payload=JSON.stringify(payloadObj);
     const CHUNK=700;
     const total=Math.ceil(payload.length/CHUNK);
     const ts=Date.now();
@@ -1453,8 +1510,15 @@ async function exportToSheets(){
     await Promise.all(Array.from({length:Math.min(CONCURRENCY,total)},worker));
     if(aborted) throw abortErr;
     try{ localStorage.setItem('ta_last_exported_at', String(Date.now())); }catch(e){}
+    try{ localStorage.setItem('ta_export_last_settings', curSettingsJSON); }catch(e){}
+    dirtyMonths.clear(); saveDirtyMonths();
     updateStaleWarning();
-    alert('Exported! Your Google Sheet\u2019s Monthly tabs, Log, and Payslip tabs have been regenerated.');
+    if(mode==='merge'){
+      const monthNames=monthsList.map(mm=>MN[mm.m]+' '+mm.y).join(', ');
+      alert('Exported! Updated: '+monthNames+'. Other months\u2019 tabs were left untouched (unchanged since last export).');
+    } else {
+      alert('Exported! Your Google Sheet\u2019s Monthly tabs, Log, and Payslip tabs have been regenerated.');
+    }
   }catch(e){
     alert('Export failed: '+e.message);
   }
