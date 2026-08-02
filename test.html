@@ -1421,17 +1421,37 @@ async function exportToSheets(){
     const CHUNK=700;
     const total=Math.ceil(payload.length/CHUNK);
     const ts=Date.now();
-    for(let i=0;i<total;i++){
+    // CONCURRENCY chunks in flight at once instead of one at a time. Each chunk writes
+    // its own independent PropertiesService key server-side, so send order never matters —
+    // this just overlaps network + Apps Script invocation latency instead of paying it
+    // sequentially 59x. Per-chunk retry (3x, 2s/4s backoff) still applies to each one.
+    const CONCURRENCY=4;
+    let completed=0, nextIndex=0, aborted=false, abortErr=null;
+    async function sendChunk(i){
       const rawChunk=payload.slice(i*CHUNK,(i+1)*CHUNK);
       const encChunk=encodeURIComponent(rawChunk);
-      const cbName='__taExport_'+ts+'_'+i;
-      const exUrl=EXPORT_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
-      if(btn) btn.textContent='Exporting '+(i+1)+'/'+total+'\u2026';
-      // 90s (was 25s) — Apps Script cold-start/execution latency can exceed 25s on real
-      // mobile networks; this mirrors the same timeout fix already proven on index.html's
-      // save path (chunk timeout 25s->90s, 2026-07-30 session).
-      await jsonpExport(exUrl, cbName, 90000);
+      const backoffs=[0,2000,4000];
+      let sent=false, lastErr=null;
+      for(let attempt=0;attempt<backoffs.length && !sent;attempt++){
+        if(attempt>0) await new Promise(r=>setTimeout(r,backoffs[attempt]));
+        const cbName='__taExport_'+ts+'_'+i+'_'+attempt;
+        const exUrl=EXPORT_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
+        try{ await jsonpExport(exUrl, cbName, 90000); sent=true; }
+        catch(e){ lastErr=e; }
+      }
+      if(!sent) throw new Error('chunk '+(i+1)+' of '+total+' failed after 3 attempts: '+(lastErr?lastErr.message:'unknown error'));
+      completed++;
+      if(btn) btn.textContent='Exporting '+completed+'/'+total+'\u2026';
     }
+    async function worker(){
+      while(nextIndex<total && !aborted){
+        const i=nextIndex++;
+        try{ await sendChunk(i); }
+        catch(e){ aborted=true; abortErr=e; }
+      }
+    }
+    await Promise.all(Array.from({length:Math.min(CONCURRENCY,total)},worker));
+    if(aborted) throw abortErr;
     try{ localStorage.setItem('ta_last_exported_at', String(Date.now())); }catch(e){}
     updateStaleWarning();
     alert('Exported! Your Google Sheet\u2019s Monthly tabs, Log, and Payslip tabs have been regenerated.');
