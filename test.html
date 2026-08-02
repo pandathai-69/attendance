@@ -1427,7 +1427,10 @@ async function exportToSheets(){
       const cbName='__taExport_'+ts+'_'+i;
       const exUrl=EXPORT_URL+'?action=save&chunk='+i+'&total='+total+'&d='+encChunk+'&cb='+cbName+'&ts='+ts;
       if(btn) btn.textContent='Exporting '+(i+1)+'/'+total+'\u2026';
-      await jsonpExport(exUrl, cbName, 25000);
+      // 90s (was 25s) — Apps Script cold-start/execution latency can exceed 25s on real
+      // mobile networks; this mirrors the same timeout fix already proven on index.html's
+      // save path (chunk timeout 25s->90s, 2026-07-30 session).
+      await jsonpExport(exUrl, cbName, 90000);
     }
     try{ localStorage.setItem('ta_last_exported_at', String(Date.now())); }catch(e){}
     updateStaleWarning();
