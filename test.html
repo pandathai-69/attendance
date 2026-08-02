@@ -1456,7 +1456,13 @@ async function exportToSheets(){
     // the way scattering hooks across every settings input could.
     const curSettingsJSON=JSON.stringify(getSettings());
     const everExported=!!localStorage.getItem('ta_last_exported_at');
-    const settingsChanged=!everExported || curSettingsJSON!==(localStorage.getItem('ta_export_last_settings')||'');
+    const lastSettingsRaw=localStorage.getItem('ta_export_last_settings');
+    // If Sheets was already exported once under an OLDER version of this file (before
+    // this settings-snapshot tracking existed), there's no baseline to compare against
+    // yet. Don't treat "no baseline" as "settings changed" — that would force one
+    // needless full resend on migration. Only force full when a baseline EXISTS and
+    // actually differs from current settings.
+    const settingsChanged=!everExported || (lastSettingsRaw!==null && curSettingsJSON!==lastSettingsRaw);
 
     let exportRows, monthsList=null, mode=null;
     if(settingsChanged){
