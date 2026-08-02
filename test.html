@@ -570,7 +570,7 @@ function archiveMonth(){
 function clearAll(){
   if(!confirm('Clear ALL attendance rows from this device?\n\nNote: Google Sheets data will NOT be affected.\nYou can reload from cloud anytime using the ↺ Reload button.')) return;
   rows=[]; rid=0;
-  localStorage.removeItem('att_rows');  // clear rows locally only
+  localStorage.removeItem('ta_rows');  // clear rows locally only — matches the key saveLocal()/loadLocal() actually use
   // Settings and cloud URL are kept
   // Do NOT sync to cloud — Google Sheets keeps its data intact
   renderTable(); calcSummary();
