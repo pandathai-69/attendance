@@ -1463,12 +1463,22 @@ async function exportToSheets(){
     // needless full resend on migration. Only force full when a baseline EXISTS and
     // actually differs from current settings.
     const settingsChanged=!everExported || (lastSettingsRaw!==null && curSettingsJSON!==lastSettingsRaw);
+    console.log('[export debug] everExported:', everExported);
+    console.log('[export debug] lastSettingsRaw exists:', lastSettingsRaw!==null);
+    console.log('[export debug] settingsChanged:', settingsChanged);
+    console.log('[export debug] dirtyMonths:', [...dirtyMonths]);
+    if(lastSettingsRaw!==null && curSettingsJSON!==lastSettingsRaw){
+      console.log('[export debug] settings OLD:', lastSettingsRaw);
+      console.log('[export debug] settings NEW:', curSettingsJSON);
+    }
 
     let exportRows, monthsList=null, mode=null;
     if(settingsChanged){
       exportRows=rows;  // full export — first time ever, or settings changed since last export
+      console.log('[export debug] FULL export chosen. reason:', !everExported?'never exported before':'settings baseline differs');
     } else {
       if(dirtyMonths.size===0){
+        console.log('[export debug] SKIP — nothing dirty and settings unchanged');
         if(btn){ btn.disabled=false; btn.textContent=origLabel||'\ud83d\udcca Export to Sheets'; }
         alert('Nothing new to export \u2014 Sheets already reflects your last export.');
         return;
@@ -1476,6 +1486,7 @@ async function exportToSheets(){
       exportRows=rows.filter(r=>dirtyMonths.has(r.year+'-'+r.month));
       monthsList=[...dirtyMonths].map(k=>{ const p=k.split('-'); return {y:+p[0],m:+p[1]}; });
       mode='merge';
+      console.log('[export debug] MERGE export chosen. months:', JSON.stringify(monthsList), '| rows in merge:', exportRows.length, '/ total rows:', rows.length);
     }
 
     const payloadObj={rows:exportRows,rid,year,mon,settings:getSettings()};
