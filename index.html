@@ -545,7 +545,7 @@ function clearAll(){
   if(!confirm('Clear ALL attendance rows from this device?\n\nA backup file will download first.\nGoogle Sheets data is NOT affected — press ↺ Reload to get everything back.')) return;
   try{ if(rows.length) backupData(); }catch(ex){}   // safety net before wiping
   rows=[]; rid=0;
-  localStorage.removeItem('att_rows');  // clear rows locally only
+  localStorage.removeItem('ta_rows');  // clear rows locally only — matches the key saveLocal()/loadLocal() actually use
   // Settings and cloud URL are kept
   // Sync is DISARMED until an explicit Reload or Save Now, so edits made after a
   // Clear can never silently overwrite the full cloud copy.
@@ -1411,13 +1411,17 @@ function exportPayslipPDF(){
 }
 
 (async function init(){
-  // Load saved URL from localStorage, or use the hardcoded fallback
-  const savedUrl=localStorage.getItem('ta_url')||FALLBACK_URL;
-  if(savedUrl){
-    CLOUD_URL=savedUrl;
-    const el=document.getElementById('urlIn');
-    if(el) el.value=savedUrl;
-  }
+  // Load saved URL from localStorage, or use the hardcoded fallback.
+  // Guarded exactly like saveLocal()/loadLocal() already are — if localStorage throws
+  // (opaque origin, privacy mode, some in-app browsers), the rest of init() must still run.
+  try{
+    const savedUrl=localStorage.getItem('ta_url')||FALLBACK_URL;
+    if(savedUrl){
+      CLOUD_URL=savedUrl;
+      const el=document.getElementById('urlIn');
+      if(el) el.value=savedUrl;
+    }
+  }catch(e){ console.error('Saved URL restore skipped:', e); }
   buildYearSel(); loadLocal(); syncSels();
   updateOnlineStatus();
   if(CLOUD_URL){
