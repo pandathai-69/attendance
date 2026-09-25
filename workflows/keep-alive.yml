@@ -1,0 +1,61 @@
+name: Supabase keep-alive
+
+# Runs 4x daily (every 6h). Supabase's own docs say pausing is based on "a few
+# user requests... each day" over the trailing 7 days — a single daily ping may
+# not clear that bar even though the workflow itself succeeds every time. Also
+# runnable by hand from the Actions tab (workflow_dispatch) to test immediately.
+#
+# IMPORTANT: this workflow also commits a trivial timestamp file on every run.
+# GitHub auto-disables scheduled workflows after 60 days of REPO inactivity
+# (any commit resets this, unrelated to whether the workflow itself succeeds) —
+# that silent disable is what actually broke keep-alive before, not a Supabase
+# threshold issue. Self-committing means the repo can never go 60 days quiet
+# as long as this workflow is enabled, so it can't recur this way again.
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ping Supabase database
+        run: |
+          code=$(curl -s -o /tmp/resp.txt -w "%{http_code}" \
+            -X POST "$SUPABASE_URL/rest/v1/rpc/ping_keep_alive" \
+            -H "apikey: $SUPABASE_SERVICE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "HTTP $code"
+          cat /tmp/resp.txt
+          # 200/204 = success. Anything else fails the run so you get an email.
+          if [ "$code" != "200" ] && [ "$code" != "204" ]; then
+            echo "Keep-alive failed"; exit 1
+          fi
+          echo "Keep-alive OK"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      - name: Keep the repo itself active too (prevents GitHub's 60-day auto-disable)
+        run: |
+          # Only commit once/day (the 00:00 UTC run) even though Supabase gets
+          # pinged 4x/day above — no need to clutter the commit history 4x too.
+          # Manual runs (workflow_dispatch) always commit, useful for testing.
+          hour=$(date -u +%H)
+          if [ "$hour" != "00" ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            echo "Skipping commit (only runs once/day at 00:00 UTC, current hour: $hour)"
+            exit 0
+          fi
+          mkdir -p .github
+          date -u +"Last keep-alive ping: %Y-%m-%d %H:%M UTC" > .github/keep-alive-log.txt
+          git config user.name "keep-alive-bot"
+          git config user.email "actions@github.com"
+          git add .github/keep-alive-log.txt
+          git diff --cached --quiet || git commit -m "chore: keep-alive ping $(date -u +%Y-%m-%d)"
+          git push
